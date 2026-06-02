@@ -8,6 +8,7 @@ export function useCategories() {
   const addCategory = async (cat: Omit<Category, 'id'>) => {
     const id = crypto.randomUUID()
     await db.categories.add({ id, ...cat })
+    return id
   }
 
   const updateCategory = async (id: string, updates: Partial<Category>) => {

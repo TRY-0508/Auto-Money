@@ -5,12 +5,29 @@ import { parseTransaction } from '@/services/llm'
 import { startRecognition, isSpeechSupported, stopRecognition } from '@/services/speech'
 import type { ParsedTransaction } from '@/types'
 
+const NEW_CAT_ICONS = ['📦', '☕', '🐱', '🎁', '💡', '✈️', '🏋️', '🎵', '👕', '💄', '🍺', '🏥']
+const NEW_CAT_COLORS = ['#3b82f6', '#22c55e', '#ef4444', '#eab308', '#a855f7', '#f97316', '#ec4899', '#06b6d4']
+
 type Step = 'input' | 'parsed' | 'manual'
 
 export default function AddTransaction() {
   const navigate = useNavigate()
   const { addTransaction, transactions } = useTransactions()
-  const { categories } = useCategories()
+  const { categories, addCategory } = useCategories()
+
+  // Inline new category creation
+  const [showNewCat, setShowNewCat] = useState(false)
+  const [newCatName, setNewCatName] = useState('')
+  const [newCatIcon, setNewCatIcon] = useState('📦')
+  const [newCatColor, setNewCatColor] = useState('#3b82f6')
+
+  const handleQuickAddCategory = async () => {
+    if (!newCatName.trim()) return
+    const catId = await addCategory({ name: newCatName.trim(), type: manualType, icon: newCatIcon, color: newCatColor, isSystem: false })
+    setManualCategoryId(catId)
+    setShowNewCat(false)
+    setNewCatName('')
+  }
 
   // Quick templates: top 6 most frequent description+category combos
   const templates = useMemo(() => {
@@ -74,13 +91,27 @@ export default function AddTransaction() {
     }
   }
 
-  const handleConfirmParsed = () => {
+  const handleConfirmParsed = async () => {
     if (!parsed) return
-    const cat = categories.find(c => c.name === parsed.category && c.type === parsed.type)
-    const filtered = categories.filter(c => c.type === parsed.type)
-    setManualType(parsed.type); setManualAmount(String(parsed.amount))
-    setManualCategoryId(cat?.id || filtered[0]?.id || ''); setManualDate(parsed.date)
-    setManualDesc(parsed.description); setStep('manual')
+    let cat = categories.find(c => c.name === parsed.category && c.type === parsed.type)
+    // Auto-create category if it doesn't exist
+    if (!cat) {
+      const catId = await addCategory({
+        name: parsed.category,
+        type: parsed.type,
+        icon: NEW_CAT_ICONS[Math.floor(Math.random() * NEW_CAT_ICONS.length)],
+        color: NEW_CAT_COLORS[Math.floor(Math.random() * NEW_CAT_COLORS.length)],
+        isSystem: false,
+      })
+      setManualCategoryId(catId)
+    } else {
+      setManualCategoryId(cat.id)
+    }
+    setManualType(parsed.type)
+    setManualAmount(String(parsed.amount))
+    setManualDate(parsed.date)
+    setManualDesc(parsed.description)
+    setStep('manual')
   }
 
   const handleSave = async () => {
@@ -217,6 +248,17 @@ export default function AddTransaction() {
                 </div>
               ))}
             </div>
+
+            {/* AI category mismatch hint */}
+            {!categories.find(c => c.name === parsed.category && c.type === parsed.type) && (
+              <div className="p-3 rounded-2xl bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800">
+                <p className="text-xs text-yellow-700 dark:text-yellow-400 flex items-center gap-1.5">
+                  <span>💡</span> 「{parsed.category}」不在现有分类中
+                </p>
+                <p className="text-xs text-yellow-600 dark:text-yellow-500 mt-1">确认时将自动创建该分类，你也可以在确认后修改</p>
+              </div>
+            )}
+
             <div className="flex gap-2">
               <button onClick={() => { setStep('input'); setParsed(null); setTextInput('') }}
                 className="flex-1 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 text-sm">🔄 重新输入</button>
@@ -248,7 +290,39 @@ export default function AddTransaction() {
                   <span className="text-xl">{cat.icon}</span><span className="text-[10px]">{cat.name}</span>
                 </button>
               ))}
+              {/* Quick add category button */}
+              <button onClick={() => setShowNewCat(!showNewCat)}
+                className="flex flex-col items-center justify-center gap-1 p-2.5 rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-600 text-gray-400 hover:border-blue-400 hover:text-blue-400 transition-all text-xs">
+                <span className="text-lg">{showNewCat ? '✕' : '+'}</span>
+                <span className="text-[10px]">新建</span>
+              </button>
             </div>
+
+            {/* Inline category creation form */}
+            {showNewCat && (
+              <div className="p-3 rounded-2xl bg-gray-50 dark:bg-gray-800 space-y-2 slide-up">
+                <div className="flex gap-2">
+                  <input type="text" value={newCatName} onChange={e => setNewCatName(e.target.value)}
+                    placeholder="分类名称" autoFocus
+                    onKeyDown={e => e.key === 'Enter' && handleQuickAddCategory()}
+                    className="flex-1 px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
+                  <button onClick={handleQuickAddCategory} disabled={!newCatName.trim()}
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-sm font-medium disabled:opacity-50">添加</button>
+                </div>
+                <div className="flex gap-1">
+                  {NEW_CAT_ICONS.map(icon => (
+                    <button key={icon} onClick={() => setNewCatIcon(icon)}
+                      className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm ${newCatIcon === icon ? 'bg-blue-100 dark:bg-blue-900/50 ring-1 ring-blue-400' : 'hover:bg-white dark:hover:bg-gray-700'}`}>{icon}</button>
+                  ))}
+                </div>
+                <div className="flex gap-1">
+                  {NEW_CAT_COLORS.map(color => (
+                    <button key={color} onClick={() => setNewCatColor(color)}
+                      className="w-6 h-6 rounded-full border-2" style={{ backgroundColor: color, borderColor: newCatColor === color ? '#374151' : 'transparent' }} />
+                  ))}
+                </div>
+              </div>
+            )}
 
             <input type="date" value={manualDate} onChange={e => setManualDate(e.target.value)}
               className="w-full px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
