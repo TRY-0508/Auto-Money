@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from './index'
-import type { Transaction, Category, Budget, Settings, ChatMessage } from '@/types'
+import type { Transaction, Category, Budget, Settings, ChatMessage, Project } from '@/types'
 
 export function useCategories() {
   const categories = useLiveQuery(() => db.categories.toArray()) ?? []
@@ -101,4 +101,28 @@ export function useChatMessages() {
   }
 
   return { messages, addMessage, clearMessages }
+}
+
+export function useProjects() {
+  const projects = useLiveQuery(() => db.projects.toArray()) ?? []
+
+  const addProject = async (p: Omit<Project, 'id' | 'createdAt'>) => {
+    const id = crypto.randomUUID()
+    await db.projects.add({ id, ...p, createdAt: Date.now() })
+    return id
+  }
+
+  const updateProject = async (id: string, updates: Partial<Project>) => {
+    await db.projects.update(id, updates)
+  }
+
+  const deleteProject = async (id: string) => {
+    await db.projects.delete(id)
+    const txs = await db.transactions.where('projectId').equals(id).toArray()
+    for (const t of txs) {
+      await db.transactions.update(t.id, { projectId: undefined })
+    }
+  }
+
+  return { projects, addProject, updateProject, deleteProject }
 }

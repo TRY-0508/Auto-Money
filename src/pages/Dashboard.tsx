@@ -1,17 +1,24 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTransactions, useCategories } from '@/db/hooks'
 import { getMonthlyStats, getCategoryBreakdown, getDailyTrend } from '@/lib/stats'
 import { getCurrentYearMonth, formatAmount } from '@/lib/utils'
 import CategoryIcon from '@/components/CategoryIcon'
 import EmptyState from '@/components/EmptyState'
+import ProjectSwitcher from '@/components/ProjectSwitcher'
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis } from 'recharts'
 
 export default function Dashboard() {
   const navigate = useNavigate()
   const yearMonth = getCurrentYearMonth()
-  const { transactions } = useTransactions({ month: yearMonth })
+  const [projectId, setProjectId] = useState<string | null>(null)
+  const { transactions: allTransactions } = useTransactions({ month: yearMonth })
   const { categories } = useCategories()
+
+  const transactions = useMemo(
+    () => projectId ? allTransactions.filter(t => t.projectId === projectId) : allTransactions,
+    [allTransactions, projectId]
+  )
 
   const [year, month] = yearMonth.split('-').map(Number)
   const stats = useMemo(() => getMonthlyStats(transactions, yearMonth), [transactions, yearMonth])
@@ -21,6 +28,8 @@ export default function Dashboard() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-4 slide-up">
+      {/* Project Switcher */}
+      <ProjectSwitcher selectedId={projectId} onChange={setProjectId} />
       {/* Welcome Banner */}
       <div className="rounded-3xl bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 p-5 text-white shadow-lg">
         <p className="text-white/80 text-sm">{year}年{month}月</p>

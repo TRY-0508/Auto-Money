@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { useSettings, useCategories, useTransactions } from '@/db/hooks'
+import { useSettings, useCategories, useTransactions, useProjects } from '@/db/hooks'
 import { encryptApiKey, decryptApiKey } from '@/lib/crypto'
 import { exportAllData, importAllData, exportCSV, downloadFile } from '@/services/export'
 
@@ -11,6 +11,7 @@ export default function Settings() {
   const { settings, updateSettings } = useSettings()
   const { categories, addCategory, updateCategory, deleteCategory } = useCategories()
   const { transactions } = useTransactions()
+  const { projects, addProject, updateProject, deleteProject } = useProjects()
 
   const [apiKey, setApiKey] = useState('')
   const [baseUrl, setBaseUrl] = useState('https://api.deepseek.com/v1')
@@ -30,6 +31,12 @@ export default function Settings() {
   const [editCatName, setEditCatName] = useState('')
   const [editCatIcon, setEditCatIcon] = useState('')
   const [editCatColor, setEditCatColor] = useState('')
+
+  // Project form
+  const [showAddProject, setShowAddProject] = useState(false)
+  const [newProjectName, setNewProjectName] = useState('')
+  const [newProjectIcon, setNewProjectIcon] = useState('📋')
+  const [newProjectColor, setNewProjectColor] = useState('#3b82f6')
 
   // Import
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -78,6 +85,12 @@ export default function Settings() {
   const handleSaveEditCat = async (id: string) => {
     await updateCategory(id, { name: editCatName, icon: editCatIcon, color: editCatColor })
     setEditingCatId(null)
+  }
+
+  const handleAddProject = async () => {
+    if (!newProjectName.trim()) return
+    await addProject({ name: newProjectName.trim(), icon: newProjectIcon, color: newProjectColor })
+    setNewProjectName(''); setShowAddProject(false)
   }
 
   const handleExportJSON = async () => {
@@ -206,6 +219,57 @@ export default function Settings() {
               onSave={handleSaveEditCat} onDelete={deleteCategory} allIcons={ALL_ICONS} allColors={ALL_COLORS} />
           ))}
         </div>
+      </div>
+
+      {/* Project Management */}
+      <div className="glass rounded-3xl shadow-sm border border-white/50 dark:border-gray-800/50 overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 dark:border-gray-800">
+          <h3 className="font-semibold text-sm flex items-center gap-1.5"><span>📁</span> 分账单</h3>
+          <button onClick={() => setShowAddProject(!showAddProject)}
+            className="text-xs text-blue-500 hover:text-blue-600 font-medium">
+            {showAddProject ? '取消' : '+ 新建'}
+          </button>
+        </div>
+
+        {showAddProject && (
+          <div className="p-4 border-b border-gray-100 dark:border-gray-800 space-y-2 bg-gray-50 dark:bg-gray-800/50">
+            <div className="flex gap-1">
+              {ALL_ICONS.map(icon => (
+                <button key={icon} onClick={() => setNewProjectIcon(icon)}
+                  className={`w-7 h-7 flex items-center justify-center rounded-lg text-xs ${newProjectIcon === icon ? 'bg-blue-100 dark:bg-blue-900/50 ring-1 ring-blue-400' : 'hover:bg-white dark:hover:bg-gray-700'}`}>{icon}</button>
+              ))}
+            </div>
+            <div className="flex gap-1.5">
+              {ALL_COLORS.map(color => (
+                <button key={color} onClick={() => setNewProjectColor(color)}
+                  className="w-6 h-6 rounded-full border-2" style={{ backgroundColor: color, borderColor: newProjectColor === color ? '#374151' : 'transparent' }} />
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <input type="text" value={newProjectName} onChange={e => setNewProjectName(e.target.value)}
+                placeholder="分账单名称，如：春节旅游、游戏开支"
+                className="flex-1 px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm"
+                onKeyDown={e => e.key === 'Enter' && handleAddProject()} />
+              <button onClick={handleAddProject} disabled={!newProjectName.trim()}
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-sm font-medium disabled:opacity-50">创建</button>
+            </div>
+          </div>
+        )}
+
+        {projects.length === 0 && !showAddProject ? (
+          <div className="px-5 py-4 text-center text-sm text-gray-400">
+            暂无分账单，点击「+ 新建」创建第一个
+          </div>
+        ) : (
+          projects.map(p => (
+            <div key={p.id} className="flex items-center gap-3 px-5 py-2.5 border-b border-gray-50 dark:border-gray-800/30 last:border-0 group">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm" style={{ backgroundColor: p.color + '20' }}>{p.icon}</div>
+              <span className="flex-1 text-sm">{p.name}</span>
+              <button onClick={() => deleteProject(p.id)}
+                className="text-xs text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity">删除</button>
+            </div>
+          ))
+        )}
       </div>
 
       {/* Data Management */}

@@ -107,6 +107,20 @@ interface Budget {
 }
 ```
 
+### Project（分账单）
+
+```typescript
+interface Project {
+  id: string
+  name: string         // "春节旅游""游戏开支"
+  icon: string         // emoji
+  color: string
+  createdAt: number
+}
+```
+
+Transaction 中可选的 `projectId` 字段将记录关联到某个分账单。首页和账本页顶部有分账单切换器，选中后所有图表和列表仅显示该分账单的数据。分账单在设置页管理。
+
 ### Settings（设置）
 
 ```typescript

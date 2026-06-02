@@ -2,6 +2,8 @@ import { useState, useMemo, useRef } from 'react'
 import { useTransactions, useCategories } from '@/db/hooks'
 import CategoryIcon from '@/components/CategoryIcon'
 import EmptyState from '@/components/EmptyState'
+import ProjectSwitcher from '@/components/ProjectSwitcher'
+import { useProjects } from '@/db/hooks'
 import { formatDate, formatAmount, getCurrentYearMonth } from '@/lib/utils'
 import type { Transaction } from '@/types'
 
@@ -146,6 +148,7 @@ export default function TransactionList() {
   const [dateTo, setDateTo] = useState('')
   const [calendarMonth, setCalendarMonth] = useState(getCurrentYearMonth())
   const [selectedDay, setSelectedDay] = useState<string | null>(null)
+  const [projectId, setProjectId] = useState<string | null>(null)
 
   const [editing, setEditing] = useState<Transaction | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
@@ -154,9 +157,11 @@ export default function TransactionList() {
   const [editDate, setEditDate] = useState('')
   const [editCatId, setEditCatId] = useState('')
   const [editType, setEditType] = useState<'expense' | 'income'>('expense')
+  const [editProjectId, setEditProjectId] = useState('')
 
   const { transactions, updateTransaction, deleteTransaction } = useTransactions()
   const { categories } = useCategories()
+  const { projects } = useProjects()
 
   // Apply all filters
   const filtered = useMemo(() => {
@@ -170,6 +175,7 @@ export default function TransactionList() {
       const q = searchQuery.toLowerCase()
       data = data.filter(t => t.description.toLowerCase().includes(q) || (categories.find(c => c.id === t.categoryId)?.name || '').toLowerCase().includes(q))
     }
+    if (projectId) data = data.filter(t => t.projectId === projectId)
     return data
   }, [transactions, filterType, filterCategory, dateFrom, dateTo, selectedDay, searchQuery, categories])
 
@@ -184,12 +190,12 @@ export default function TransactionList() {
 
   const handleEdit = (t: Transaction) => {
     setEditing(t); setEditAmount(String(t.amount)); setEditDesc(t.description)
-    setEditDate(t.date); setEditCatId(t.categoryId); setEditType(t.type)
+    setEditDate(t.date); setEditCatId(t.categoryId); setEditType(t.type); setEditProjectId(t.projectId || '')
   }
   const handleSaveEdit = async () => {
     if (!editing) return
     const a = parseFloat(editAmount); if (!a || a <= 0) return
-    await updateTransaction(editing.id, { amount: a, description: editDesc, date: editDate, categoryId: editCatId, type: editType })
+    await updateTransaction(editing.id, { amount: a, description: editDesc, date: editDate, categoryId: editCatId, type: editType, projectId: editProjectId || undefined })
     setEditing(null)
   }
   const handleDelete = async (id: string) => { await deleteTransaction(id); setDeleteId(null) }
@@ -206,6 +212,9 @@ export default function TransactionList() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-4 slide-up">
+      {/* Project Switcher */}
+      <ProjectSwitcher selectedId={projectId} onChange={setProjectId} />
+
       {/* Calendar */}
       <CalendarHeatmap
         transactions={calendarTransactions}
@@ -317,6 +326,15 @@ export default function TransactionList() {
               </div>
               <input type="date" value={editDate} onChange={e => setEditDate(e.target.value)} className="w-full px-3 py-2 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
               <input type="text" value={editDesc} onChange={e => setEditDesc(e.target.value)} placeholder="描述" className="w-full px-3 py-2 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
+              {projects.length > 0 && (
+                <select value={editProjectId} onChange={e => setEditProjectId(e.target.value)}
+                  className="w-full px-3 py-2 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300">
+                  <option value="">📁 分账单（可选）</option>
+                  {projects.map(p => (
+                    <option key={p.id} value={p.id}>{p.icon} {p.name}</option>
+                  ))}
+                </select>
+              )}
               <div className="flex gap-2 pt-1">
                 <button onClick={() => setEditing(null)} className="flex-1 py-2 rounded-2xl border border-gray-200 dark:border-gray-700 text-sm">取消</button>
                 <button onClick={handleSaveEdit} className="flex-1 py-2 rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-sm font-medium">保存</button>

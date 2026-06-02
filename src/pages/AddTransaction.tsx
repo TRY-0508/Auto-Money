@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useTransactions, useCategories } from '@/db/hooks'
+import { useTransactions, useCategories, useProjects } from '@/db/hooks'
 import { parseTransaction } from '@/services/llm'
 import { startRecognition, isSpeechSupported, stopRecognition } from '@/services/speech'
 import type { ParsedTransaction } from '@/types'
@@ -14,6 +14,7 @@ export default function AddTransaction() {
   const navigate = useNavigate()
   const { addTransaction, transactions } = useTransactions()
   const { categories, addCategory } = useCategories()
+  const { projects } = useProjects()
 
   // Inline new category creation
   const [showNewCat, setShowNewCat] = useState(false)
@@ -57,12 +58,13 @@ export default function AddTransaction() {
   const [manualCategoryId, setManualCategoryId] = useState('')
   const [manualDate, setManualDate] = useState(new Date().toISOString().slice(0, 10))
   const [manualDesc, setManualDesc] = useState('')
+  const [manualProjectId, setManualProjectId] = useState('')
 
   const reset = () => {
     setTextInput(''); setParsed(null); setError(''); setStep('input'); setMode('text')
     setManualAmount(''); setManualCategoryId(''); setManualDesc('')
     setManualDate(new Date().toISOString().slice(0, 10)); setManualType('expense')
-    setVoiceText(''); setVoiceListening(false); setLoading(false)
+    setVoiceText(''); setVoiceListening(false); setLoading(false); setManualProjectId('')
   }
 
   const handleParse = async () => {
@@ -119,7 +121,7 @@ export default function AddTransaction() {
     const amount = parseFloat(manualAmount)
     if (!amount || amount <= 0) { setError('请输入有效金额'); return }
     if (!manualCategoryId) { setError('请选择分类'); return }
-    try { await addTransaction({ type: manualType, amount, categoryId: manualCategoryId, description: manualDesc, date: manualDate }); navigate('/transactions') }
+    try { await addTransaction({ type: manualType, amount, categoryId: manualCategoryId, description: manualDesc, date: manualDate, projectId: manualProjectId || undefined }); navigate('/transactions') }
     catch (err: any) { setError(err.message || '保存失败') }
   }
 
@@ -354,6 +356,17 @@ export default function AddTransaction() {
             <input type="text" value={manualDesc} onChange={e => setManualDesc(e.target.value)}
               placeholder="💬 备注（可选）"
               className="w-full px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
+
+            {/* Project selector */}
+            {projects.length > 0 && (
+              <select value={manualProjectId} onChange={e => setManualProjectId(e.target.value)}
+                className="w-full px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300">
+                <option value="">📁 归属分账单（可选）</option>
+                {projects.map(p => (
+                  <option key={p.id} value={p.id}>{p.icon} {p.name}</option>
+                ))}
+              </select>
+            )}
 
             <div className="flex gap-2 pt-1">
               <button onClick={() => { if (parsed) { setStep('parsed') } else { setStep('input') } }}

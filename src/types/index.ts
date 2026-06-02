@@ -8,6 +8,7 @@ export interface Transaction {
   createdAt: number
   updatedAt: number
   aiParsed?: boolean
+  projectId?: string
 }
 
 export interface Category {
@@ -25,6 +26,14 @@ export interface Budget {
   amount: number
   period: 'monthly' | 'yearly'
   yearMonth: string
+}
+
+export interface Project {
+  id: string
+  name: string
+  icon: string
+  color: string
+  createdAt: number
 }
 
 export interface Settings {
