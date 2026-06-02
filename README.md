@@ -16,26 +16,26 @@ AI 驱动的个人收支管理助手。说句话就能记账。
 ### 前提
 
 - Node.js >= 18
-- 一个 LLM API Key（支持 OpenAI 及兼容接口）
+- 一个 LLM API Key（支持 DeepSeek 及 OpenAI 兼容接口）
 
 ### 安装
 
 ```bash
-git clone https://github.com/<your-username>/auto-money.git
-cd auto-money
+git clone https://github.com/TRY-0508/Auto-Money.git
+cd Auto-Money
 npm install
 npm run dev
 ```
 
 ### 使用
 
-1. 打开 `http://localhost:5173`
+1. 打开 `http://localhost:5173/Auto-Money/`
 2. 进入「设置」页面，填入你的 API Key
 3. 点击「记账」，用文字或语音记录一笔收支
 
 ## 技术栈
 
-React · TypeScript · Vite · Tailwind CSS · shadcn/ui · Dexie.js · Zustand · Recharts
+React · TypeScript · Vite · Tailwind CSS · Dexie.js · Zustand · Recharts · OpenAI SDK
 
 ## 文档
 
