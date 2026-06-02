@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import AppLayout from '@/components/layout/AppLayout'
 import Dashboard from '@/pages/Dashboard'
@@ -7,8 +8,13 @@ import Reports from '@/pages/Reports'
 import Chat from '@/pages/Chat'
 import Budget from '@/pages/Budget'
 import Settings from '@/pages/Settings'
+import { seedDatabase } from '@/db/seed'
 
 function App() {
+  useEffect(() => {
+    seedDatabase()
+  }, [])
+
   return (
     <Routes>
       <Route element={<AppLayout />}>

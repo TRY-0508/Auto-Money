@@ -7,6 +7,7 @@ export interface Transaction {
   date: string
   createdAt: number
   updatedAt: number
+  aiParsed?: boolean
 }
 
 export interface Category {
