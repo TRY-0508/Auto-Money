@@ -54,12 +54,11 @@
 
 | 路由 | 页面 | 说明 |
 |---|---|---|
-| `/` | Dashboard | 本月概览、分类饼图、趋势图、最近交易 |
-| `/transactions` | 交易列表 | 筛选、搜索、分组列表、编辑删除 |
-| `/add` | 记账入口 | 文字/语音输入 + AI 解析确认 |
+| `/` | Dashboard | 月度统计 + 图表 + 交易列表（筛选/搜索/编辑删除）+ FAB 快捷记账 |
 | `/ai` | AI 助手 | 两个 Tab：智能报告 + 对话查询 |
-| `/budget` | 预算管理 | 分类预算设置与跟踪 |
-| `/settings` | 设置 | API Key、自定义分类、导出/导入 |
+| `/settings` | 设置 | API Key、自定义分类管理、月度预算、数据导入导出 |
+
+记账通过全局 Modal 弹窗触发（桌面端 Header 按钮 + 移动端底部中间 FAB），无需独立路由。
 
 ## 4. 数据模型
 
@@ -254,52 +253,32 @@ LLM 提示词核心逻辑：
 ```
 App
 ├── Layout
-│   ├── Sidebar (桌面端) / BottomNav (移动端)
-│   └── Header (面包屑、快速记账按钮)
-├── Pages
+│   ├── Sidebar (桌面端3项)
+│   ├── BottomNav (移动端3项 + 居中FAB)
+│   └── Header (面包屑 + 记账按钮)
+├── Pages (3 routes)
 │   ├── Dashboard
-│   │   ├── OverviewCards (本月收入/支出/结余)
-│   │   ├── RecentTransactions
-│   │   ├── ExpenseChart (分类饼图)
-│   │   ├── TrendChart (近7天/30天趋势)
-│   │   └── QuickAddButton (FAB)
-│   ├── TransactionList
-│   │   ├── FilterBar (类型、分类、日期范围)
-│   │   ├── TransactionItem (列表项，支持滑动删除)
-│   │   └── EmptyState
-│   ├── AddTransaction
-│   │   ├── InputModeToggle (文字/语音)
-│   │   ├── TextInput + ParseButton
-│   │   ├── VoiceInput (录音波形动画)
-│   │   ├── ParsedResultCard (AI 解析结果，用户确认/修改)
-│   │   └── RecentTemplates (常用记录模板)
-│   ├── Reports
-│   │   ├── ReportTypeSelector (周报/月报)
-
+│   │   ├── MonthSelector + 图表折叠
+│   │   ├── StatsCards (收入/支出/结余)
+│   │   ├── PieChart + TrendChart
+│   │   ├── FilterBar (类型/分类/搜索)
+│   │   ├── TransactionList (按日分组)
+│   │   ├── EditModal + DeleteConfirm
+│   │   └── FAB (quick add)
 │   ├── AIAssistant
 │   │   ├── TabBar (智能报告 / 对话助手)
-│   │   ├── ReportTab (数据概要 + 生成报告)
-│   │   └── ChatTab (对话列表 + 输入 + 建议)
-│   ├── Chat
-│   │   ├── ChatMessages
-│   │   ├── ChatInput
-│   │   └── SuggestedQuestions
-│   ├── Budget
-│   │   ├── BudgetOverview (总预算 vs 总分类预算)
-│   │   ├── BudgetItem (每类预算进度条)
-│   │   └── AIBudgetSuggestion
+│   │   ├── ReportTab
+│   │   └── ChatTab
 │   └── Settings
 │       ├── ApiKeyConfig
-│       ├── CategoryManager
-│       ├── DataExportImport
-│       └── LanguageThemeSwitch
+│       ├── CategoryManager (新建/编辑/删除分类)
+│       ├── BudgetManager (总预算 + 分类预算进度)
+│       └── DataExportImport
+├── Modals (global)
+│   └── AddModal (3-step: input→parsed→manual, text/voice)
 └── Shared Components
     ├── CategoryIcon
-    ├── AmountDisplay
-    ├── DatePicker
-    ├── ConfirmDialog
-    ├── Toast/Notification
-    └── LoadingSkeleton
+    └── EmptyState
 ```
 
 ## 7. 源码目录结构
