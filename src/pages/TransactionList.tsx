@@ -1,16 +1,26 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import { useTransactions, useCategories } from '@/db/hooks'
 import CategoryIcon from '@/components/CategoryIcon'
 import EmptyState from '@/components/EmptyState'
-import { formatDate, getCurrentYearMonth, formatAmount } from '@/lib/utils'
+import { formatDate, formatAmount, getCurrentYearMonth } from '@/lib/utils'
 import type { Transaction } from '@/types'
 
 type FilterType = 'all' | 'expense' | 'income'
 
-function CalendarHeatmap({ transactions, selectedMonth }: { transactions: Transaction[]; selectedMonth: string }) {
-  const [year, month] = selectedMonth.split('-').map(Number)
+function CalendarHeatmap({
+  transactions, yearMonth, selectedDay, onSelectDay, onMonthChange,
+}: {
+  transactions: Transaction[]
+  yearMonth: string
+  selectedDay: string | null
+  onSelectDay: (date: string | null) => void
+  onMonthChange: (ym: string) => void
+}) {
+  const [year, month] = yearMonth.split('-').map(Number)
   const daysInMonth = new Date(year, month, 0).getDate()
   const firstDay = new Date(year, month - 1, 1).getDay()
+
+  const today = new Date().toISOString().slice(0, 10)
 
   const dailyTotals = useMemo(() => {
     const map: Record<string, number> = {}
@@ -34,9 +44,8 @@ function CalendarHeatmap({ transactions, selectedMonth }: { transactions: Transa
     weeks.push(week)
   }
 
-  const getIntensity = (day: number | null): string => {
+  const getIntensity = (day: number | null, dateStr: string): string => {
     if (day === null) return ''
-    const dateStr = `${selectedMonth}-${String(day).padStart(2, '0')}`
     const total = dailyTotals[dateStr] || 0
     if (total === 0) return 'bg-gray-100 dark:bg-gray-800 text-gray-400'
     const ratio = total / maxTotal
@@ -45,27 +54,75 @@ function CalendarHeatmap({ transactions, selectedMonth }: { transactions: Transa
     return 'bg-yellow-200 dark:bg-yellow-700 text-gray-700 dark:text-gray-200'
   }
 
+  const prevMonth = () => {
+    let y = year, m = month - 1
+    if (m === 0) { m = 12; y-- }
+    onMonthChange(`${y}-${String(m).padStart(2, '0')}`)
+  }
+  const nextMonth = () => {
+    let y = year, m = month + 1
+    if (m === 13) { m = 1; y++ }
+    onMonthChange(`${y}-${String(m).padStart(2, '0')}`)
+  }
+
+  // Swipe support
+  const touchStartX = useRef(0)
+  const handleTouchStart = (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX }
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const diff = touchStartX.current - e.changedTouches[0].clientX
+    if (Math.abs(diff) > 60) {
+      if (diff > 0) nextMonth()
+      else prevMonth()
+    }
+  }
+
   return (
-    <div className="glass rounded-3xl p-4 shadow-sm border border-white/50 dark:border-gray-800/50">
-      <h3 className="text-sm font-semibold mb-3 flex items-center gap-1.5"><span>📅</span> {year}年{month}月 每日支出</h3>
+    <div className="glass rounded-3xl p-4 shadow-sm border border-white/50 dark:border-gray-800/50" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+      {/* Month navigation */}
+      <div className="flex items-center justify-between mb-3">
+        <button onClick={prevMonth} className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-lg leading-none">‹</button>
+        <h3 className="text-sm font-semibold flex items-center gap-1.5">
+          <span>📅</span> {year}年{month}月
+        </h3>
+        <button onClick={nextMonth} className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-lg leading-none">›</button>
+      </div>
+
+      {/* Day headers */}
       <div className="grid grid-cols-7 gap-1 mb-1">
         {['日', '一', '二', '三', '四', '五', '六'].map(d => (
           <div key={d} className="text-center text-[10px] text-gray-400">{d}</div>
         ))}
       </div>
+
+      {/* Calendar grid */}
       {weeks.map((w, wi) => (
         <div key={wi} className="grid grid-cols-7 gap-1 mb-1">
-          {w.map((day, di) => (
-            <div
-              key={di}
-              className={`aspect-square rounded-md flex items-center justify-center text-[11px] font-medium transition-colors ${getIntensity(day)}`}
-              title={day ? `${day}日: ¥${(dailyTotals[`${selectedMonth}-${String(day).padStart(2, '0')}`] || 0).toFixed(2)}` : ''}
-            >
-              {day}
-            </div>
-          ))}
+          {w.map((day, di) => {
+            if (day === null) return <div key={di} />
+            const dateStr = `${yearMonth}-${String(day).padStart(2, '0')}`
+            const isSelected = selectedDay === dateStr
+            const isToday = dateStr === today
+            return (
+              <button
+                key={di}
+                onClick={() => onSelectDay(isSelected ? null : dateStr)}
+                className={`aspect-square rounded-md flex flex-col items-center justify-center text-[11px] font-medium transition-all relative
+                  ${getIntensity(day, dateStr)}
+                  ${isSelected ? 'ring-2 ring-blue-500 ring-offset-1 dark:ring-offset-gray-900' : ''}
+                  ${isToday && !isSelected ? 'ring-1 ring-blue-300' : ''}
+                `}
+                title={`${day}日: ¥${(dailyTotals[dateStr] || 0).toFixed(2)}`}
+              >
+                {day}
+                {(dailyTotals[dateStr] || 0) > 0 && (
+                  <div className="w-1 h-1 rounded-full bg-white/60 mt-0.5" />
+                )}
+              </button>
+            )
+          })}
         </div>
       ))}
+
       <div className="flex items-center justify-center gap-2 mt-3 text-[10px] text-gray-400">
         <span>少</span>
         <div className="w-3 h-3 rounded-sm bg-gray-100 dark:bg-gray-800" />
@@ -73,6 +130,9 @@ function CalendarHeatmap({ transactions, selectedMonth }: { transactions: Transa
         <div className="w-3 h-3 rounded-sm bg-orange-300 dark:bg-orange-600" />
         <div className="w-3 h-3 rounded-sm bg-red-400 dark:bg-red-600" />
         <span>多</span>
+        {selectedDay && (
+          <button onClick={() => onSelectDay(null)} className="ml-auto text-blue-500 hover:text-blue-600">清除选择</button>
+        )}
       </div>
     </div>
   )
@@ -82,7 +142,11 @@ export default function TransactionList() {
   const [filterType, setFilterType] = useState<FilterType>('all')
   const [filterCategory, setFilterCategory] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedMonth, setSelectedMonth] = useState(getCurrentYearMonth())
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
+  const [calendarMonth, setCalendarMonth] = useState(getCurrentYearMonth())
+  const [selectedDay, setSelectedDay] = useState<string | null>(null)
+
   const [editing, setEditing] = useState<Transaction | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [editAmount, setEditAmount] = useState('')
@@ -91,19 +155,23 @@ export default function TransactionList() {
   const [editCatId, setEditCatId] = useState('')
   const [editType, setEditType] = useState<'expense' | 'income'>('expense')
 
-  const { transactions, updateTransaction, deleteTransaction } = useTransactions({ month: selectedMonth })
+  const { transactions, updateTransaction, deleteTransaction } = useTransactions()
   const { categories } = useCategories()
 
+  // Apply all filters
   const filtered = useMemo(() => {
     let data = transactions
     if (filterType !== 'all') data = data.filter(t => t.type === filterType)
     if (filterCategory) data = data.filter(t => t.categoryId === filterCategory)
+    if (dateFrom) data = data.filter(t => t.date >= dateFrom)
+    if (dateTo) data = data.filter(t => t.date <= dateTo)
+    if (selectedDay) data = data.filter(t => t.date === selectedDay)
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase()
       data = data.filter(t => t.description.toLowerCase().includes(q) || (categories.find(c => c.id === t.categoryId)?.name || '').toLowerCase().includes(q))
     }
     return data
-  }, [transactions, filterType, filterCategory, searchQuery, categories])
+  }, [transactions, filterType, filterCategory, dateFrom, dateTo, selectedDay, searchQuery, categories])
 
   const grouped = useMemo(() => {
     const g: Record<string, Transaction[]> = {}
@@ -113,16 +181,6 @@ export default function TransactionList() {
 
   const totalExpense = filtered.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0)
   const totalIncome = filtered.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0)
-
-  const monthOptions = useMemo(() => {
-    const opts: { value: string; label: string }[] = []
-    const now = new Date()
-    for (let i = 0; i < 12; i++) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
-      opts.push({ value: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`, label: `${d.getFullYear()}年${d.getMonth() + 1}月` })
-    }
-    return opts
-  }, [])
 
   const handleEdit = (t: Transaction) => {
     setEditing(t); setEditAmount(String(t.amount)); setEditDesc(t.description)
@@ -140,8 +198,47 @@ export default function TransactionList() {
   const incomeCats = categories.filter(c => c.type === 'income')
   const currentCats = editType === 'expense' ? expenseCats : incomeCats
 
+  // Get calendar month's transactions for heatmap only
+  const calendarTransactions = useMemo(
+    () => transactions.filter(t => t.date.startsWith(calendarMonth)),
+    [transactions, calendarMonth]
+  )
+
   return (
     <div className="max-w-4xl mx-auto space-y-4 slide-up">
+      {/* Calendar */}
+      <CalendarHeatmap
+        transactions={calendarTransactions}
+        yearMonth={calendarMonth}
+        selectedDay={selectedDay}
+        onSelectDay={setSelectedDay}
+        onMonthChange={setCalendarMonth}
+      />
+
+      {/* Filters - independent from calendar */}
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="flex rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+          {(['all', 'expense', 'income'] as FilterType[]).map(t => (
+            <button key={t} onClick={() => setFilterType(t)}
+              className={`px-3 py-1.5 text-xs font-medium transition-colors ${filterType === t ? 'bg-blue-500 text-white' : 'bg-white/80 dark:bg-gray-900/80 text-gray-500'}`}>
+              {t === 'all' ? '全部' : t === 'expense' ? '支出' : '收入'}
+            </button>
+          ))}
+        </div>
+        <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)}
+          className="px-2 py-1.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 text-xs backdrop-blur focus:outline-none focus:ring-2 focus:ring-blue-300" />
+        <span className="text-xs text-gray-400">至</span>
+        <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)}
+          className="px-2 py-1.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 text-xs backdrop-blur focus:outline-none focus:ring-2 focus:ring-blue-300" />
+        <select value={filterCategory} onChange={e => setFilterCategory(e.target.value)}
+          className="px-2 py-1.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 text-xs backdrop-blur">
+          <option value="">全部分类</option>
+          {categories.map(c => <option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
+        </select>
+        <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+          placeholder="🔍 搜索..." className="flex-1 min-w-[100px] px-3 py-1.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 text-xs backdrop-blur focus:outline-none focus:ring-2 focus:ring-blue-300" />
+      </div>
+
       {/* Summary */}
       <div className="glass rounded-3xl p-4 shadow-sm border border-white/50 dark:border-gray-800/50">
         <div className="grid grid-cols-3 gap-3 text-center">
@@ -160,38 +257,15 @@ export default function TransactionList() {
             </p>
           </div>
         </div>
+        {filtered.length > 0 && (
+          <p className="text-xs text-gray-400 text-center mt-2">{filtered.length} 笔记录</p>
+        )}
       </div>
 
-      {/* Calendar Heatmap */}
-      <CalendarHeatmap transactions={transactions} selectedMonth={selectedMonth} />
-
-      {/* Filters */}
-      <div className="flex flex-wrap items-center gap-2">
-        <select value={selectedMonth} onChange={e => setSelectedMonth(e.target.value)}
-          className="px-3 py-2 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 text-sm font-medium backdrop-blur focus:outline-none">
-          {monthOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-        </select>
-        <div className="flex rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-          {(['all', 'expense', 'income'] as FilterType[]).map(t => (
-            <button key={t} onClick={() => setFilterType(t)}
-              className={`px-3 py-1.5 text-xs font-medium transition-colors ${filterType === t ? 'bg-blue-500 text-white' : 'bg-white/80 dark:bg-gray-900/80 text-gray-500'}`}>
-              {t === 'all' ? '全部' : t === 'expense' ? '支出' : '收入'}
-            </button>
-          ))}
-        </div>
-        <select value={filterCategory} onChange={e => setFilterCategory(e.target.value)}
-          className="px-2 py-1.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 text-xs backdrop-blur">
-          <option value="">全部分类</option>
-          {categories.map(c => <option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
-        </select>
-        <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-          placeholder="🔍 搜索..." className="flex-1 min-w-[100px] px-3 py-1.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 text-xs backdrop-blur focus:outline-none focus:ring-2 focus:ring-blue-300" />
-      </div>
-
-      {/* List */}
+      {/* Transaction List */}
       <div className="glass rounded-3xl shadow-sm border border-white/50 dark:border-gray-800/50 overflow-hidden">
         {grouped.length === 0 ? (
-          <EmptyState icon="📋" title="没有找到记录" description={searchQuery ? '试试修改筛选条件' : '开始记一笔吧'} />
+          <EmptyState icon="📋" title="没有找到记录" description="试试调整筛选条件或滑动日历" />
         ) : (
           grouped.map(([date, items]) => (
             <div key={date}>
