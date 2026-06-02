@@ -35,30 +35,30 @@ function CalendarHeatmap({ transactions, selectedMonth }: { transactions: Transa
   }
 
   const getIntensity = (day: number | null): string => {
-    if (day === null) return 'bg-transparent'
+    if (day === null) return ''
     const dateStr = `${selectedMonth}-${String(day).padStart(2, '0')}`
     const total = dailyTotals[dateStr] || 0
-    if (total === 0) return 'bg-gray-100 dark:bg-gray-800'
+    if (total === 0) return 'bg-gray-100 dark:bg-gray-800 text-gray-400'
     const ratio = total / maxTotal
-    if (ratio > 0.66) return 'bg-red-400 dark:bg-red-600'
-    if (ratio > 0.33) return 'bg-orange-300 dark:bg-orange-600'
-    return 'bg-yellow-200 dark:bg-yellow-700'
+    if (ratio > 0.66) return 'bg-red-400 dark:bg-red-600 text-white'
+    if (ratio > 0.33) return 'bg-orange-300 dark:bg-orange-600 text-white'
+    return 'bg-yellow-200 dark:bg-yellow-700 text-gray-700 dark:text-gray-200'
   }
 
   return (
     <div className="glass rounded-3xl p-4 shadow-sm border border-white/50 dark:border-gray-800/50">
       <h3 className="text-sm font-semibold mb-3 flex items-center gap-1.5"><span>📅</span> {year}年{month}月 每日支出</h3>
-      <div className="flex gap-1 mb-1">
+      <div className="grid grid-cols-7 gap-1 mb-1">
         {['日', '一', '二', '三', '四', '五', '六'].map(d => (
-          <div key={d} className="w-8 text-center text-[10px] text-gray-400">{d}</div>
+          <div key={d} className="text-center text-[10px] text-gray-400">{d}</div>
         ))}
       </div>
       {weeks.map((w, wi) => (
-        <div key={wi} className="flex gap-1 mb-1">
+        <div key={wi} className="grid grid-cols-7 gap-1 mb-1">
           {w.map((day, di) => (
             <div
               key={di}
-              className={`w-8 h-7 rounded-md flex items-center justify-center text-[11px] font-medium transition-colors ${getIntensity(day)} ${day && (dailyTotals[`${selectedMonth}-${String(day).padStart(2, '0')}`] || 0) > 0 ? 'text-white' : 'text-gray-500 dark:text-gray-400'}`}
+              className={`aspect-square rounded-md flex items-center justify-center text-[11px] font-medium transition-colors ${getIntensity(day)}`}
               title={day ? `${day}日: ¥${(dailyTotals[`${selectedMonth}-${String(day).padStart(2, '0')}`] || 0).toFixed(2)}` : ''}
             >
               {day}
@@ -66,14 +66,12 @@ function CalendarHeatmap({ transactions, selectedMonth }: { transactions: Transa
           ))}
         </div>
       ))}
-      <div className="flex items-center gap-3 mt-3 text-[10px] text-gray-400">
+      <div className="flex items-center justify-center gap-2 mt-3 text-[10px] text-gray-400">
         <span>少</span>
-        <div className="flex gap-0.5">
-          <div className="w-3 h-3 rounded-sm bg-gray-100 dark:bg-gray-800" />
-          <div className="w-3 h-3 rounded-sm bg-yellow-200 dark:bg-yellow-700" />
-          <div className="w-3 h-3 rounded-sm bg-orange-300 dark:bg-orange-600" />
-          <div className="w-3 h-3 rounded-sm bg-red-400 dark:bg-red-600" />
-        </div>
+        <div className="w-3 h-3 rounded-sm bg-gray-100 dark:bg-gray-800" />
+        <div className="w-3 h-3 rounded-sm bg-yellow-200 dark:bg-yellow-700" />
+        <div className="w-3 h-3 rounded-sm bg-orange-300 dark:bg-orange-600" />
+        <div className="w-3 h-3 rounded-sm bg-red-400 dark:bg-red-600" />
         <span>多</span>
       </div>
     </div>

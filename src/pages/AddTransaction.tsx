@@ -83,8 +83,9 @@ export default function AddTransaction() {
     )
   }
 
-  const handleVoiceStop = () => {
-    stopRecognition(); setVoiceListening(false)
+  const handleVoiceEnd = () => {
+    stopRecognition()
+    setVoiceListening(false)
     if (voiceText.trim()) {
       setTextInput(voiceText.trim()); setLoading(true)
       parseTransaction(voiceText.trim()).then(r => { setParsed(r); setStep('parsed') }).catch(e => setError(e.message || '失败')).finally(() => setLoading(false))
@@ -176,7 +177,7 @@ export default function AddTransaction() {
                 {voiceText ? (
                   <div className="p-5 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 text-sm font-medium text-center">{voiceText}</div>
                 ) : (
-                  <div className="text-center py-10">
+                  <div className="text-center py-8">
                     {voiceListening ? (
                       <div className="space-y-4">
                         <div className="flex items-center justify-center gap-1.5">
@@ -186,21 +187,45 @@ export default function AddTransaction() {
                           ))}
                         </div>
                         <p className="text-blue-500 font-medium animate-pulse">🎤 正在聆听...</p>
-                        <p className="text-xs text-gray-400">说完后点击停止，AI 会自动解析</p>
+                        <p className="text-xs text-gray-400">松手后自动识别</p>
                       </div>
                     ) : (
                       <div className="space-y-2">
                         <p className="text-5xl">🎤</p>
-                        <p className="text-gray-400 text-sm">点击下方按钮开始语音输入</p>
-                        <p className="text-xs text-gray-300">Chrome / Edge 浏览器效果最佳</p>
+                        <p className="text-gray-400 text-sm">按住下方按钮开始说话</p>
+                        <p className="text-xs text-gray-300">Chrome / Edge 效果最佳</p>
                       </div>
                     )}
                   </div>
                 )}
-                <button onClick={voiceListening ? handleVoiceStop : handleVoiceStart}
-                  className={`w-full py-3.5 rounded-2xl text-sm font-medium text-white transition-all ${voiceListening ? 'bg-red-400 hover:bg-red-500' : 'bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600'}`}>
-                  {voiceListening ? '⏹ 停止录音' : '🎤 开始说话'}
-                </button>
+
+                {/* Hold-to-speak button */}
+                {!voiceText && (
+                  <button
+                    onMouseDown={handleVoiceStart}
+                    onMouseUp={handleVoiceEnd}
+                    onMouseLeave={voiceListening ? handleVoiceEnd : undefined}
+                    onTouchStart={handleVoiceStart}
+                    onTouchEnd={handleVoiceEnd}
+                    className={`w-full py-14 rounded-3xl text-sm font-medium text-white transition-all select-none ${
+                      voiceListening
+                        ? 'bg-red-400 scale-95'
+                        : 'bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 active:scale-95'
+                    }`}
+                  >
+                    {voiceListening ? '松开发送，上滑取消' : '按住 说话'}
+                  </button>
+                )}
+
+                {/* Re-record or parse buttons after voice captured */}
+                {voiceText && !voiceListening && (
+                  <div className="flex gap-2">
+                    <button onClick={() => { setVoiceText(''); setVoiceListening(false) }}
+                      className="flex-1 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 text-sm text-gray-500">🔄 重说</button>
+                    <button onClick={handleVoiceEnd}
+                      className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-sm font-medium">✨ AI 解析</button>
+                  </div>
+                )}
               </div>
             )}
 
