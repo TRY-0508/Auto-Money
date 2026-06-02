@@ -48,7 +48,7 @@ export default function AddTransaction() {
     }
   }
 
-  const handleVoiceStart = async () => {
+  const handleVoiceStart = () => {
     if (!isSpeechSupported()) {
       setError('浏览器不支持语音识别，请使用 Chrome 或 Edge')
       return
@@ -56,31 +56,32 @@ export default function AddTransaction() {
     setVoiceListening(true)
     setVoiceText('')
     setError('')
-    try {
-      const text = await startRecognition('zh-CN')
-      setVoiceText(text)
-      setVoiceListening(false)
 
-      // Auto-parse after voice
-      setTextInput(text)
-      setLoading(true)
-      try {
-        const result = await parseTransaction(text)
-        setParsed(result)
-      } catch (err: any) {
-        setError(err.message || '解析失败')
-      } finally {
-        setLoading(false)
+    startRecognition(
+      (text) => {
+        setVoiceText(text)
+      },
+      (errMsg) => {
+        setVoiceListening(false)
+        setError(errMsg)
+      },
+      () => {
+        setVoiceListening(false)
       }
-    } catch (err: any) {
-      setVoiceListening(false)
-      setError(err.message || '语音识别失败')
-    }
+    )
   }
 
   const handleVoiceStop = () => {
     stopRecognition()
     setVoiceListening(false)
+    if (voiceText.trim()) {
+      setTextInput(voiceText.trim())
+      setLoading(true)
+      parseTransaction(voiceText.trim())
+        .then((result) => setParsed(result))
+        .catch((err) => setError(err.message || '解析失败'))
+        .finally(() => setLoading(false))
+    }
   }
 
   const handleConfirmParsed = () => {
@@ -292,7 +293,7 @@ export default function AddTransaction() {
 
             <div>
               <label className="text-sm text-gray-500 mb-1 block">分类</label>
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
                 {currentCats.map((cat) => (
                   <button
                     key={cat.id}
@@ -425,29 +426,35 @@ export default function AddTransaction() {
         ) : (
           <div className="space-y-4">
             {voiceText ? (
-              <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800 text-sm">
-                {voiceText}
+              <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800 text-sm">
+                <p>{voiceText}</p>
               </div>
             ) : (
               <div className="text-center py-8">
                 {voiceListening ? (
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-center gap-1">
-                      {[0, 1, 2, 3, 4].map((i) => (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-center gap-1.5">
+                      {[1, 2, 3, 4, 5].map((i) => (
                         <div
                           key={i}
-                          className="w-1 bg-blue-500 rounded-full animate-pulse"
+                          className="w-1.5 bg-blue-500 rounded-full animate-pulse"
                           style={{
-                            height: `${16 + Math.random() * 24}px`,
-                            animationDelay: `${i * 0.15}s`,
+                            height: `${12 + i * 6}px`,
+                            animationDelay: `${i * 0.12}s`,
+                            animationDuration: '0.8s',
                           }}
                         />
                       ))}
                     </div>
-                    <p className="text-sm text-gray-500">正在聆听...</p>
+                    <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">正在聆听...</p>
+                    <p className="text-xs text-gray-400">说完后点击停止，AI 会自动解析</p>
                   </div>
                 ) : (
-                  <p className="text-gray-400 text-sm">点击下方按钮开始语音输入</p>
+                  <div className="space-y-2">
+                    <p className="text-4xl">🎤</p>
+                    <p className="text-gray-400 text-sm">点击下方按钮开始语音输入</p>
+                    <p className="text-xs text-gray-300">支持 Chrome / Edge 浏览器</p>
+                  </div>
                 )}
               </div>
             )}

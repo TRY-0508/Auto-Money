@@ -98,18 +98,18 @@ export default function TransactionList() {
   return (
     <div className="max-w-4xl mx-auto">
       {/* Summary Bar */}
-      <div className="flex gap-4 mb-4">
-        <div className="flex-1 bg-white dark:bg-gray-900 rounded-xl p-3 shadow-sm border border-gray-100 dark:border-gray-800 text-center">
+      <div className="grid grid-cols-3 gap-2 mb-4">
+        <div className="bg-white dark:bg-gray-900 rounded-xl p-3 shadow-sm border border-gray-100 dark:border-gray-800 text-center">
           <p className="text-xs text-gray-400">支出</p>
-          <p className="text-lg font-bold text-red-500">¥{totalExpense.toFixed(2)}</p>
+          <p className="text-base sm:text-lg font-bold text-red-500">¥{totalExpense.toFixed(2)}</p>
         </div>
-        <div className="flex-1 bg-white dark:bg-gray-900 rounded-xl p-3 shadow-sm border border-gray-100 dark:border-gray-800 text-center">
+        <div className="bg-white dark:bg-gray-900 rounded-xl p-3 shadow-sm border border-gray-100 dark:border-gray-800 text-center">
           <p className="text-xs text-gray-400">收入</p>
-          <p className="text-lg font-bold text-green-500">¥{totalIncome.toFixed(2)}</p>
+          <p className="text-base sm:text-lg font-bold text-green-500">¥{totalIncome.toFixed(2)}</p>
         </div>
-        <div className="flex-1 bg-white dark:bg-gray-900 rounded-xl p-3 shadow-sm border border-gray-100 dark:border-gray-800 text-center">
+        <div className="bg-white dark:bg-gray-900 rounded-xl p-3 shadow-sm border border-gray-100 dark:border-gray-800 text-center">
           <p className="text-xs text-gray-400">结余</p>
-          <p className={`text-lg font-bold ${totalIncome - totalExpense >= 0 ? 'text-blue-500' : 'text-red-500'}`}>
+          <p className={`text-base sm:text-lg font-bold ${totalIncome - totalExpense >= 0 ? 'text-blue-500' : 'text-red-500'}`}>
             ¥{(totalIncome - totalExpense).toFixed(2)}
           </p>
         </div>
@@ -117,7 +117,7 @@ export default function TransactionList() {
 
       {/* Filters */}
       <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 mb-4">
-        <div className="flex items-center gap-2 p-3 border-b border-gray-100 dark:border-gray-800">
+        <div className="flex flex-wrap items-center gap-2 p-3 border-b border-gray-100 dark:border-gray-800">
           <select
             value={selectedMonth}
             onChange={(e) => setSelectedMonth(e.target.value)}
@@ -133,7 +133,7 @@ export default function TransactionList() {
               <button
                 key={t}
                 onClick={() => setFilterType(t)}
-                className={`px-3 py-1 text-xs font-medium transition-colors ${
+                className={`px-2.5 py-1 text-xs font-medium transition-colors ${
                   filterType === t
                     ? 'bg-blue-600 text-white'
                     : 'bg-white dark:bg-gray-800 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700'
@@ -147,7 +147,7 @@ export default function TransactionList() {
           <select
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
-            className="ml-auto px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs"
+            className="px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs"
           >
             <option value="">全部分类</option>
             {categories.map((c) => (
@@ -225,7 +225,7 @@ export default function TransactionList() {
                 placeholder="金额"
                 className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
                 {currentCats.map((c) => (
                   <button
                     key={c.id}
