@@ -5,8 +5,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/': '概览',
   '/transactions': '账本',
   '/add': '记账',
-  '/reports': 'AI 报告',
-  '/chat': 'AI 对话',
+  '/ai': 'AI 助手',
   '/budget': '预算管理',
   '/settings': '设置',
 }

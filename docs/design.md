@@ -54,13 +54,12 @@
 
 | 路由 | 页面 | 说明 |
 |---|---|---|
-| `/` | Dashboard | 本月概览、最近交易、快速入口 |
-| `/transactions` | 交易列表 | 筛选、搜索、分页浏览 |
+| `/` | Dashboard | 本月概览、分类饼图、趋势图、最近交易 |
+| `/transactions` | 交易列表 | 筛选、搜索、分组列表、编辑删除 |
 | `/add` | 记账入口 | 文字/语音输入 + AI 解析确认 |
-| `/reports` | AI 报告 | 周报/月报，AI 生成的图文总结 |
-| `/chat` | AI 对话 | 自然语言查询收支情况 |
+| `/ai` | AI 助手 | 两个 Tab：智能报告 + 对话查询 |
 | `/budget` | 预算管理 | 分类预算设置与跟踪 |
-| `/settings` | 设置 | API Key、分类、导出/导入、语言 |
+| `/settings` | 设置 | API Key、自定义分类、导出/导入 |
 
 ## 4. 数据模型
 
@@ -276,8 +275,11 @@ App
 │   │   └── RecentTemplates (常用记录模板)
 │   ├── Reports
 │   │   ├── ReportTypeSelector (周报/月报)
-│   │   ├── ReportContent (AI 生成内容)
-│   │   └── ExportButton
+
+│   ├── AIAssistant
+│   │   ├── TabBar (智能报告 / 对话助手)
+│   │   ├── ReportTab (数据概要 + 生成报告)
+│   │   └── ChatTab (对话列表 + 输入 + 建议)
 │   ├── Chat
 │   │   ├── ChatMessages
 │   │   ├── ChatInput

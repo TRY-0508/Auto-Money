@@ -4,7 +4,7 @@ const NAV_ITEMS = [
   { to: '/', label: '概览', icon: '📊' },
   { to: '/transactions', label: '账本', icon: '📋' },
   { to: '/add', label: '记账', icon: '➕' },
-  { to: '/reports', label: '报告', icon: '📈' },
+  { to: '/ai', label: 'AI', icon: '🤖' },
   { to: '/settings', label: '设置', icon: '⚙️' },
 ]
 

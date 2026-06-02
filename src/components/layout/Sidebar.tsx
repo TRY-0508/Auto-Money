@@ -4,8 +4,7 @@ import { useUIStore } from '@/stores/uiStore'
 const NAV_ITEMS = [
   { to: '/', label: '概览', icon: '📊' },
   { to: '/transactions', label: '账本', icon: '📋' },
-  { to: '/reports', label: '报告', icon: '📈' },
-  { to: '/chat', label: '对话', icon: '💬' },
+  { to: '/ai', label: 'AI 助手', icon: '🤖' },
   { to: '/budget', label: '预算', icon: '🎯' },
   { to: '/settings', label: '设置', icon: '⚙️' },
 ]

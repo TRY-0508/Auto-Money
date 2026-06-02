@@ -74,9 +74,6 @@ export default function TransactionList() {
     setDeleteConfirm(null)
   }
 
-  const totalExpense = filtered.filter((t) => t.type === 'expense').reduce((s, t) => s + t.amount, 0)
-  const totalIncome = filtered.filter((t) => t.type === 'income').reduce((s, t) => s + t.amount, 0)
-
   const expenseCats = categories.filter((c) => c.type === 'expense')
   const incomeCats = categories.filter((c) => c.type === 'income')
   const currentCats = editType === 'expense' ? expenseCats : incomeCats
@@ -97,24 +94,6 @@ export default function TransactionList() {
 
   return (
     <div className="max-w-4xl mx-auto">
-      {/* Summary Bar */}
-      <div className="grid grid-cols-3 gap-2 mb-4">
-        <div className="bg-white dark:bg-gray-900 rounded-xl p-3 shadow-sm border border-gray-100 dark:border-gray-800 text-center">
-          <p className="text-xs text-gray-400">支出</p>
-          <p className="text-base sm:text-lg font-bold text-red-500">¥{totalExpense.toFixed(2)}</p>
-        </div>
-        <div className="bg-white dark:bg-gray-900 rounded-xl p-3 shadow-sm border border-gray-100 dark:border-gray-800 text-center">
-          <p className="text-xs text-gray-400">收入</p>
-          <p className="text-base sm:text-lg font-bold text-green-500">¥{totalIncome.toFixed(2)}</p>
-        </div>
-        <div className="bg-white dark:bg-gray-900 rounded-xl p-3 shadow-sm border border-gray-100 dark:border-gray-800 text-center">
-          <p className="text-xs text-gray-400">结余</p>
-          <p className={`text-base sm:text-lg font-bold ${totalIncome - totalExpense >= 0 ? 'text-blue-500' : 'text-red-500'}`}>
-            ¥{(totalIncome - totalExpense).toFixed(2)}
-          </p>
-        </div>
-      </div>
-
       {/* Filters */}
       <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 mb-4">
         <div className="flex flex-wrap items-center gap-2 p-3 border-b border-gray-100 dark:border-gray-800">
