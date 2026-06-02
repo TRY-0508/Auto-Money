@@ -142,41 +142,41 @@ export default function Settings() {
   const totalBudget = budgets.filter(b => b.categoryId === null).reduce((s, b) => s + b.amount, 0)
 
   return (
-    <div className="max-w-lg mx-auto space-y-4">
+    <div className="max-w-lg mx-auto space-y-4 slide-up">
       {/* API Config */}
-      <div className="bg-white dark:bg-gray-900 rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-800">
-        <h3 className="font-semibold text-sm mb-4">🤖 API 配置</h3>
+      <div className="glass rounded-3xl p-5 shadow-sm border border-white/50 dark:border-gray-800/50">
+        <h3 className="font-semibold text-sm mb-4 flex items-center gap-1.5"><span>🤖</span> API 配置</h3>
         <div className="space-y-3">
           <div>
             <label className="text-xs text-gray-400 mb-1 block">API Key</label>
             <input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)}
               placeholder={settings?.apiKey ? '已配置（输入新 Key 覆盖）' : 'sk-...'}
-              className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              className="w-full px-3 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
           </div>
           <div>
             <label className="text-xs text-gray-400 mb-1 block">Base URL</label>
             <input type="text" value={baseUrl} onChange={(e) => setBaseUrl(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              className="w-full px-3 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
           </div>
           <div>
             <label className="text-xs text-gray-400 mb-1 block">模型</label>
             <input type="text" value={model} onChange={(e) => setModel(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              className="w-full px-3 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
           </div>
           {testResult && <p className={`text-xs ${testResult.includes('成功') ? 'text-green-500' : 'text-red-500'}`}>{testResult}</p>}
           <div className="flex gap-2">
             <button onClick={handleTestConnection}
-              className="flex-1 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800">测试连接</button>
+              className="flex-1 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800">测试连接</button>
             <button onClick={handleSaveApiKey}
-              className="flex-1 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700">{saved ? '已保存' : '保存设置'}</button>
+              className="flex-1 py-2.5 rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-sm font-medium hover:from-blue-600 hover:to-indigo-600">{saved ? '✅ 已保存' : '保存设置'}</button>
           </div>
         </div>
       </div>
 
       {/* Category Management */}
-      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+      <div className="glass rounded-3xl shadow-sm border border-white/50 dark:border-gray-800/50 overflow-hidden">
         <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 dark:border-gray-800">
-          <h3 className="font-semibold text-sm">🏷️ 收支分类</h3>
+          <h3 className="font-semibold text-sm flex items-center gap-1.5"><span>🏷️</span> 收支分类</h3>
           <button onClick={() => { setShowAddCat(!showAddCat); setEditingCatId(null) }}
             className="text-xs text-blue-600 dark:text-blue-400 hover:underline">
             {showAddCat ? '取消' : '+ 新建分类'}
@@ -246,8 +246,8 @@ export default function Settings() {
       </div>
 
       {/* Budget Management */}
-      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
-        <h3 className="font-semibold text-sm px-5 py-3 border-b border-gray-100 dark:border-gray-800">🎯 月度预算</h3>
+      <div className="glass rounded-3xl shadow-sm border border-white/50 dark:border-gray-800/50 overflow-hidden">
+        <h3 className="font-semibold text-sm px-5 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center gap-1.5"><span>🎯</span> 月度预算</h3>
 
         {/* Total Budget */}
         <div className="px-5 py-3 border-b border-gray-50 dark:border-gray-800/50">
@@ -321,15 +321,15 @@ export default function Settings() {
       </div>
 
       {/* Data Management */}
-      <div className="bg-white dark:bg-gray-900 rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-800">
-        <h3 className="font-semibold text-sm mb-3">💾 数据管理</h3>
+      <div className="glass rounded-3xl p-5 shadow-sm border border-white/50 dark:border-gray-800/50">
+        <h3 className="font-semibold text-sm mb-3 flex items-center gap-1.5"><span>💾</span> 数据管理</h3>
         <div className="space-y-2">
           <button onClick={handleExportJSON}
-            className="w-full py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800">导出全部数据 (JSON)</button>
+            className="w-full py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">📦 导出全部数据 (JSON)</button>
           <button onClick={handleExportCSV}
-            className="w-full py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800">导出交易记录 (CSV)</button>
+            className="w-full py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">📊 导出交易记录 (CSV)</button>
           <button onClick={() => fileInputRef.current?.click()}
-            className="w-full py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800">导入数据 (JSON)</button>
+            className="w-full py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">📥 导入数据 (JSON)</button>
           <input ref={fileInputRef} type="file" accept=".json" onChange={handleImport} className="hidden" />
           {importMessage && <p className={`text-xs text-center ${importMessage.includes('成功') ? 'text-green-500' : 'text-red-500'}`}>{importMessage}</p>}
         </div>
