@@ -1,9 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
-import { useSettings, useCategories, useTransactions, useBudgets } from '@/db/hooks'
+import { useSettings, useCategories, useTransactions } from '@/db/hooks'
 import { encryptApiKey, decryptApiKey } from '@/lib/crypto'
 import { exportAllData, importAllData, exportCSV, downloadFile } from '@/services/export'
-import { getMonthlyStats, getCategoryBreakdown } from '@/lib/stats'
-import { getCurrentYearMonth, formatAmount } from '@/lib/utils'
 
 const ALL_ICONS = ['🍽️', '🚗', '🛍️', '🎮', '🏠', '💊', '📚', '📱', '🧴', '📦', '💰', '💼', '📈', '🧧', '📋', '🎁', '💡', '✈️', '🐱', '🐶', '☕', '🎬', '🏋️', '🎵', '🌍', '🔧', '👕', '💄', '🍺', '🏥']
 
@@ -13,11 +11,6 @@ export default function Settings() {
   const { settings, updateSettings } = useSettings()
   const { categories, addCategory, updateCategory, deleteCategory } = useCategories()
   const { transactions } = useTransactions()
-  const { budgets, addBudget, updateBudget, deleteBudget } = useBudgets()
-
-  const yearMonth = getCurrentYearMonth()
-  const stats = getMonthlyStats(transactions, yearMonth)
-  const breakdown = getCategoryBreakdown(transactions, categories, 'expense', yearMonth)
 
   const [apiKey, setApiKey] = useState('')
   const [baseUrl, setBaseUrl] = useState('https://api.deepseek.com/v1')
@@ -37,10 +30,6 @@ export default function Settings() {
   const [editCatName, setEditCatName] = useState('')
   const [editCatIcon, setEditCatIcon] = useState('')
   const [editCatColor, setEditCatColor] = useState('')
-
-  // Budget
-  const [budgetEditingId, setBudgetEditingId] = useState<string | null>(null)
-  const [budgetAmount, setBudgetAmount] = useState('')
 
   // Import
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -112,34 +101,8 @@ export default function Settings() {
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
-  const handleSaveBudget = async (categoryId: string | null) => {
-    const amount = parseFloat(budgetAmount)
-    if (!amount || amount <= 0) return
-    const existing = budgets.find(b => b.categoryId === categoryId)
-    if (existing) {
-      await updateBudget(existing.id, { amount, yearMonth })
-    } else {
-      await addBudget({ categoryId, amount, period: 'monthly', yearMonth })
-    }
-    setBudgetEditingId(null); setBudgetAmount('')
-  }
-
-  const getSpent = (categoryId: string | null) => {
-    if (categoryId === null) return stats.totalExpense
-    return breakdown.find(b => b.categoryId === categoryId)?.amount || 0
-  }
-
-  const getProgressColor = (spent: number, budget: number) => {
-    const ratio = spent / budget
-    if (ratio > 1) return 'bg-red-500'
-    if (ratio > 0.8) return 'bg-yellow-500'
-    return 'bg-green-500'
-  }
-
   const expenseCats = categories.filter((c) => c.type === 'expense')
   const incomeCats = categories.filter((c) => c.type === 'income')
-
-  const totalBudget = budgets.filter(b => b.categoryId === null).reduce((s, b) => s + b.amount, 0)
 
   return (
     <div className="max-w-lg mx-auto space-y-4 slide-up">
@@ -243,81 +206,6 @@ export default function Settings() {
               onSave={handleSaveEditCat} onDelete={deleteCategory} allIcons={ALL_ICONS} allColors={ALL_COLORS} />
           ))}
         </div>
-      </div>
-
-      {/* Budget Management */}
-      <div className="glass rounded-3xl shadow-sm border border-white/50 dark:border-gray-800/50 overflow-hidden">
-        <h3 className="font-semibold text-sm px-5 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center gap-1.5"><span>🎯</span> 月度预算</h3>
-
-        {/* Total Budget */}
-        <div className="px-5 py-3 border-b border-gray-50 dark:border-gray-800/50">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium">总预算</span>
-            <span className="text-xs text-gray-400">{formatAmount(stats.totalExpense)} / {totalBudget > 0 ? formatAmount(totalBudget) : '未设置'}</span>
-          </div>
-          {totalBudget > 0 && (
-            <div className="w-full h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden mb-1">
-              <div className={`h-full rounded-full ${getProgressColor(stats.totalExpense, totalBudget)}`}
-                style={{ width: `${Math.min((stats.totalExpense / totalBudget) * 100, 100)}%` }} />
-            </div>
-          )}
-          {budgetEditingId === 'total' ? (
-            <div className="flex gap-2 mt-2">
-              <input type="number" value={budgetAmount} onChange={e => setBudgetAmount(e.target.value)}
-                placeholder="月度总预算" autoFocus onKeyDown={e => e.key === 'Enter' && handleSaveBudget(null)}
-                className="flex-1 px-2 py-1 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm" />
-              <button onClick={() => handleSaveBudget(null)} className="text-xs text-blue-600 font-medium">保存</button>
-              <button onClick={() => { setBudgetEditingId(null); setBudgetAmount('') }} className="text-xs text-gray-400">取消</button>
-            </div>
-          ) : (
-            <button onClick={() => { setBudgetEditingId('total'); setBudgetAmount(totalBudget > 0 ? String(totalBudget) : '') }}
-              className="text-xs text-blue-600 dark:text-blue-400 hover:underline">
-              {totalBudget > 0 ? '修改总预算' : '设置总预算'}
-            </button>
-          )}
-        </div>
-
-        {/* Category Budgets */}
-        {expenseCats.map(cat => {
-          const budget = budgets.find(b => b.categoryId === cat.id)
-          const spent = getSpent(cat.id)
-          return (
-            <div key={cat.id} className="px-5 py-2.5 border-b border-gray-50 dark:border-gray-800/50 last:border-0">
-              {budgetEditingId === cat.id ? (
-                <div className="flex items-center gap-2">
-                  <span>{cat.icon}</span><span className="text-sm flex-1">{cat.name}</span>
-                  <input type="number" value={budgetAmount} onChange={e => setBudgetAmount(e.target.value)}
-                    placeholder="金额" autoFocus onKeyDown={e => e.key === 'Enter' && handleSaveBudget(cat.id)}
-                    className="w-24 px-2 py-1 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm" />
-                  <button onClick={() => handleSaveBudget(cat.id)} className="text-xs text-blue-600 font-medium">保存</button>
-                  <button onClick={() => { setBudgetEditingId(null); setBudgetAmount('') }} className="text-xs text-gray-400">取消</button>
-                </div>
-              ) : (
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="flex items-center gap-2">
-                      <span>{cat.icon}</span><span className="text-sm">{cat.name}</span>
-                    </div>
-                    <span className="text-xs text-gray-400">
-                      已花 {formatAmount(spent)}{budget ? ` / ${formatAmount(budget.amount)}` : ''}
-                    </span>
-                  </div>
-                  {budget && (
-                    <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                      <div className={`h-full rounded-full ${getProgressColor(spent, budget.amount)}`}
-                        style={{ width: `${Math.min((spent / budget.amount) * 100, 100)}%` }} />
-                    </div>
-                  )}
-                  <button
-                    onClick={() => { setBudgetEditingId(cat.id); setBudgetAmount(budget ? String(budget.amount) : '') }}
-                    className="text-xs text-blue-600 dark:text-blue-400 hover:underline mt-1">
-                    {budget ? '修改' : '设置预算'}
-                  </button>
-                </div>
-              )}
-            </div>
-          )
-        })}
       </div>
 
       {/* Data Management */}

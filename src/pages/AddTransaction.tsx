@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTransactions, useCategories } from '@/db/hooks'
 import { parseTransaction } from '@/services/llm'
@@ -9,8 +9,22 @@ type Step = 'input' | 'parsed' | 'manual'
 
 export default function AddTransaction() {
   const navigate = useNavigate()
-  const { addTransaction } = useTransactions()
+  const { addTransaction, transactions } = useTransactions()
   const { categories } = useCategories()
+
+  // Quick templates: top 6 most frequent description+category combos
+  const templates = useMemo(() => {
+    const map = new Map<string, { desc: string; catName: string; type: string; count: number }>()
+    for (const t of transactions) {
+      const cat = categories.find(c => c.id === t.categoryId)
+      if (!cat || !t.description) continue
+      const key = `${t.description}|${cat.name}|${t.type}`
+      const existing = map.get(key)
+      if (existing) existing.count++
+      else map.set(key, { desc: t.description, catName: cat.name, type: t.type, count: 1 })
+    }
+    return Array.from(map.values()).sort((a, b) => b.count - a.count).slice(0, 6)
+  }, [transactions, categories])
 
   const [mode, setMode] = useState<'text' | 'voice'>('text')
   const [textInput, setTextInput] = useState('')
@@ -156,6 +170,25 @@ export default function AddTransaction() {
                   className={`w-full py-3.5 rounded-2xl text-sm font-medium text-white transition-all ${voiceListening ? 'bg-red-400 hover:bg-red-500' : 'bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600'}`}>
                   {voiceListening ? '⏹ 停止录音' : '🎤 开始说话'}
                 </button>
+              </div>
+            )}
+
+            {/* Quick Templates */}
+            {templates.length > 0 && (
+              <div className="pt-2">
+                <p className="text-xs text-gray-400 mb-2 flex items-center gap-1"><span>⚡</span> 常用记录</p>
+                <div className="flex flex-wrap gap-2">
+                  {templates.map((t, i) => (
+                    <button
+                      key={i}
+                      onClick={() => { setTextInput(t.desc); handleParse() }}
+                      className="px-3 py-2 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 text-xs text-gray-600 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-200 dark:hover:border-blue-800 transition-all"
+                    >
+                      <span className="mr-1">{categories.find(c => c.name === t.catName)?.icon || '📦'}</span>
+                      {t.desc}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </div>
