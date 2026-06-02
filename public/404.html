@@ -4,9 +4,15 @@
     <meta charset="utf-8" />
     <title>Auto Money</title>
     <script>
-      sessionStorage.redirect = location.href;
+      // Store the intended path and redirect to root with it as a query param
+      var path = location.pathname.replace(/\/$/, '') || '/'
+      var repo = '/Auto-Money'
+      if (path.indexOf(repo) === 0) {
+        path = path.slice(repo.length) || '/'
+      }
+      sessionStorage.setItem('redirect', path)
+      location.replace(repo + '/?p=' + encodeURIComponent(path))
     </script>
-    <meta http-equiv="refresh" content="0;URL='/Auto-Money/'" />
   </head>
   <body></body>
 </html>
