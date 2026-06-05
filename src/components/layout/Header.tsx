@@ -24,7 +24,7 @@ export default function Header() {
         <h1 className="font-semibold text-lg">{title}</h1>
       </div>
       <Link to="/add"
-        className="inline-flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-sm rounded-2xl hover:from-blue-600 hover:to-indigo-600 transition-all shadow-sm">
+        className="inline-flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-violet-500 to-purple-500 text-white text-sm rounded-2xl hover:from-violet-600 hover:to-purple-600 transition-all shadow-sm">
         <span>+</span> 记账
       </Link>
     </header>

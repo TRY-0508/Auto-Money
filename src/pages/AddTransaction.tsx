@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTransactions, useCategories, useProjects } from '@/db/hooks'
 import { parseTransaction } from '@/services/llm'
 import { startRecognition, isSpeechSupported, stopRecognition } from '@/services/speech'
+import { MOODS } from '@/lib/constants'
 import type { ParsedTransaction } from '@/types'
 
 const NEW_CAT_ICONS = ['📦', '☕', '🐱', '🎁', '💡', '✈️', '🏋️', '🎵', '👕', '💄', '🍺', '🏥']
@@ -59,12 +60,13 @@ export default function AddTransaction() {
   const [manualDate, setManualDate] = useState(new Date().toISOString().slice(0, 10))
   const [manualDesc, setManualDesc] = useState('')
   const [manualProjectId, setManualProjectId] = useState('')
+  const [manualMood, setManualMood] = useState('')
 
   const reset = () => {
     setTextInput(''); setParsed(null); setError(''); setStep('input'); setMode('text')
     setManualAmount(''); setManualCategoryId(''); setManualDesc('')
     setManualDate(new Date().toISOString().slice(0, 10)); setManualType('expense')
-    setVoiceText(''); setVoiceListening(false); setLoading(false); setManualProjectId('')
+    setVoiceText(''); setVoiceListening(false); setLoading(false); setManualProjectId(''); setManualMood('')
   }
 
   const handleParse = async () => {
@@ -121,7 +123,7 @@ export default function AddTransaction() {
     const amount = parseFloat(manualAmount)
     if (!amount || amount <= 0) { setError('请输入有效金额'); return }
     if (!manualCategoryId) { setError('请选择分类'); return }
-    try { await addTransaction({ type: manualType, amount, categoryId: manualCategoryId, description: manualDesc, date: manualDate, projectId: manualProjectId || undefined }); navigate('/transactions') }
+    try { await addTransaction({ type: manualType, amount, categoryId: manualCategoryId, description: manualDesc, date: manualDate, projectId: manualProjectId || undefined, mood: manualMood || undefined }); navigate('/transactions') }
     catch (err: any) { setError(err.message || '保存失败') }
   }
 
@@ -367,6 +369,22 @@ export default function AddTransaction() {
                 ))}
               </select>
             )}
+
+            {/* Mood picker */}
+            <div>
+              <p className="text-xs text-gray-400 mb-2">💭 此刻心情</p>
+              <div className="flex gap-1.5">
+                {MOODS.map(m => (
+                  <button key={m.value} onClick={() => setManualMood(manualMood === m.value ? '' : m.value)}
+                    className={`flex flex-col items-center gap-0.5 p-2 rounded-2xl text-xs transition-all ${
+                      manualMood === m.value ? 'bg-purple-50 dark:bg-purple-900/30 ring-2 ring-purple-400 scale-105' : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'
+                    }`}>
+                    <span className="text-lg">{m.emoji}</span>
+                    <span className="text-[10px]">{m.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
 
             <div className="flex gap-2 pt-1">
               <button onClick={() => { if (parsed) { setStep('parsed') } else { setStep('input') } }}

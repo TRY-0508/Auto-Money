@@ -1,5 +1,16 @@
 import type { Settings } from '@/types'
 
+export const MOODS = [
+  { emoji: '😊', label: '开心', value: 'happy' },
+  { emoji: '😌', label: '平静', value: 'calm' },
+  { emoji: '😐', label: '一般', value: 'neutral' },
+  { emoji: '😢', label: '难过', value: 'sad' },
+  { emoji: '😰', label: '焦虑', value: 'anxious' },
+  { emoji: '😡', label: '愤怒', value: 'angry' },
+  { emoji: '🤩', label: '兴奋', value: 'excited' },
+  { emoji: '😴', label: '疲惫', value: 'tired' },
+]
+
 export const CATEGORY_COLORS: Record<string, string> = {
   blue: '#3b82f6',
   green: '#22c55e',

@@ -9,6 +9,8 @@ export interface Transaction {
   updatedAt: number
   aiParsed?: boolean
   projectId?: string
+  mood?: string       // emoji: 😊😐😢😡🤩😰😴
+  moodNote?: string   // 心情备注
 }
 
 export interface Category {

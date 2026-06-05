@@ -11,8 +11,8 @@ class AutoMoneyDB extends Dexie {
 
   constructor() {
     super('AutoMoneyDB')
-    this.version(2).stores({
-      transactions: 'id, date, type, categoryId, projectId',
+    this.version(3).stores({
+      transactions: 'id, date, type, categoryId, projectId, mood',
       categories: 'id, type',
       budgets: 'id, categoryId, yearMonth',
       settings: 'id',

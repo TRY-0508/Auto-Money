@@ -66,17 +66,22 @@
 
 ```typescript
 interface Transaction {
-  id: string;           // UUID
-  type: 'income' | 'expense';
-  amount: number;       // 金额，单位元
-  categoryId: string;   // 关联分类
-  description: string;  // 描述（用户原始输入）
-  date: string;         // 交易日期 YYYY-MM-DD
-  createdAt: number;    // 创建时间戳
-  updatedAt: number;    // 更新时间戳
-  aiParsed: boolean;    // 是否经过 AI 解析
+  id: string
+  type: 'income' | 'expense'
+  amount: number
+  categoryId: string
+  description: string
+  date: string
+  createdAt: number
+  updatedAt: number
+  aiParsed?: boolean
+  projectId?: string     // 归属分账单（可选）
+  mood?: string          // 心情 emoji（可选）😊😐😢😡🤩😰😴
+  moodNote?: string      // 心情备注（可选）
 }
 ```
+
+心情记录是项目核心心理学元素。用户在记账时可选记录当前心情（8 种），系统据此分析情绪-消费关联。
 
 ### Category（分类）
 

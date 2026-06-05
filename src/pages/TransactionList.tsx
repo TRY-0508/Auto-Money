@@ -3,6 +3,7 @@ import { useTransactions, useCategories } from '@/db/hooks'
 import CategoryIcon from '@/components/CategoryIcon'
 import EmptyState from '@/components/EmptyState'
 import ProjectSwitcher from '@/components/ProjectSwitcher'
+import { MOODS } from '@/lib/constants'
 import { useProjects } from '@/db/hooks'
 import { formatDate, formatAmount, getCurrentYearMonth } from '@/lib/utils'
 import type { Transaction } from '@/types'
@@ -158,6 +159,7 @@ export default function TransactionList() {
   const [editCatId, setEditCatId] = useState('')
   const [editType, setEditType] = useState<'expense' | 'income'>('expense')
   const [editProjectId, setEditProjectId] = useState('')
+  const [editMood, setEditMood] = useState('')
 
   const { transactions, updateTransaction, deleteTransaction } = useTransactions()
   const { categories } = useCategories()
@@ -190,12 +192,12 @@ export default function TransactionList() {
 
   const handleEdit = (t: Transaction) => {
     setEditing(t); setEditAmount(String(t.amount)); setEditDesc(t.description)
-    setEditDate(t.date); setEditCatId(t.categoryId); setEditType(t.type); setEditProjectId(t.projectId || '')
+    setEditDate(t.date); setEditCatId(t.categoryId); setEditType(t.type); setEditProjectId(t.projectId || ''); setEditMood(t.mood || '')
   }
   const handleSaveEdit = async () => {
     if (!editing) return
     const a = parseFloat(editAmount); if (!a || a <= 0) return
-    await updateTransaction(editing.id, { amount: a, description: editDesc, date: editDate, categoryId: editCatId, type: editType, projectId: editProjectId || undefined })
+    await updateTransaction(editing.id, { amount: a, description: editDesc, date: editDate, categoryId: editCatId, type: editType, projectId: editProjectId || undefined, mood: editMood || undefined })
     setEditing(null)
   }
   const handleDelete = async (id: string) => { await deleteTransaction(id); setDeleteId(null) }
@@ -295,6 +297,7 @@ export default function TransactionList() {
                   <p className={`text-sm font-semibold ${t.type === 'expense' ? 'text-red-400' : 'text-green-400'}`}>
                     {t.type === 'expense' ? '-' : '+'}{formatAmount(t.amount)}
                   </p>
+                  {t.mood && <span className="text-sm ml-1">{t.mood}</span>}
                   <button onClick={e => { e.stopPropagation(); setDeleteId(t.id) }}
                     className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-400 transition-all">
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
@@ -335,6 +338,17 @@ export default function TransactionList() {
                   ))}
                 </select>
               )}
+              <div>
+                <p className="text-xs text-gray-400 mb-1.5">💭 心情</p>
+                <div className="flex flex-wrap gap-1">
+                  {MOODS.map(m => (
+                    <button key={m.value} onClick={() => setEditMood(editMood === m.value ? '' : m.value)}
+                      className={`px-2 py-1 rounded-xl text-sm transition-all ${editMood === m.value ? 'bg-purple-50 dark:bg-purple-900/30 ring-1 ring-purple-400' : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100'}`}>
+                      {m.emoji} {m.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <div className="flex gap-2 pt-1">
                 <button onClick={() => setEditing(null)} className="flex-1 py-2 rounded-2xl border border-gray-200 dark:border-gray-700 text-sm">取消</button>
                 <button onClick={handleSaveEdit} className="flex-1 py-2 rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-sm font-medium">保存</button>
