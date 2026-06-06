@@ -13,6 +13,7 @@ import { PieChart as RPie, Pie, Cell, ResponsiveContainer } from 'recharts'
 const BANNER: Record<string, string> = { happy:'banner-happy',calm:'banner-calm',neutral:'banner-neutral',sad:'banner-sad',anxious:'banner-anxious',angry:'banner-angry',excited:'banner-excited',tired:'banner-tired' }
 const PAGE: Record<string, string> = { happy:'page-happy',calm:'page-calm',neutral:'page-neutral',sad:'page-sad',anxious:'page-anxious',angry:'page-angry',excited:'page-excited',tired:'page-tired' }
 type FilterType = 'all'|'expense'|'income'
+const CHART_COLORS = ['#8b5cf6','#3b82f6','#f59e0b','#10b981','#f43f5e','#ec4899','#06b6d4','#84cc16','#f97316','#6366f1','#14b8a6','#eab308']
 
 function CalendarHeatmap({ transactions, yearMonth, selectedDay, onSelectDay, onMonthChange }: { transactions: Transaction[]; yearMonth: string; selectedDay: string|null; onSelectDay:(d:string|null)=>void; onMonthChange:(ym:string)=>void }) {
   const [y,m]=yearMonth.split('-').map(Number); const dim=new Date(y,m,0).getDate(); const fd=new Date(y,m-1,1).getDay(); const today=new Date().toISOString().slice(0,10)
@@ -117,16 +118,21 @@ export default function Dashboard() {
               <div className="card-header"><PieChart size={18} strokeWidth={1.8} className="text-violet-500"/>心情统计</div>
               <div className="card-body">
                 {moodStats.length>0?(
-                  <div className="space-y-3">{moodStats.map(m=>{const MI=m.Icon;const color=MOOD_COLOR_MAP[m.value]||'#6b7280';return(
-                    <div key={m.value} className="flex items-center gap-3 group">
-                      <div className="w-9 h-9 rounded-xl flex items-center justify-center transition-all group-hover:scale-110" style={{backgroundColor:color+'18'}}><MI size={20} strokeWidth={1.8} color={color}/></div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex justify-between text-sm mb-1"><span className="font-semibold">{m.label}</span><span className="text-xs text-gray-400">{m.count}次 {formatAmount(m.totalSpent)}</span></div>
-                        <div className="h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden"><div className="h-full rounded-full transition-all duration-700" style={{width:`${Math.min((m.totalSpent/moodStats[0].totalSpent)*100,100)}%`,backgroundColor:color}}/></div>
-                      </div>
+                  <div className="space-y-4">
+                    {/* Rainbow bar */}
+                    <div className="flex h-4 rounded-full overflow-hidden">
+                      {(()=>{const total=moodStats.reduce((s,m)=>s+m.count,0);return moodStats.map((m,i)=>{const pct=Math.round((m.count/total)*100);return pct>0?<div key={m.value} className="h-full transition-all duration-700 first:rounded-l-full last:rounded-r-full" style={{width:`${pct}%`,backgroundColor:MOOD_COLOR_MAP[m.value]||'#6b7280'}} title={`${m.label} ${pct}%`}/>:null})})()}
                     </div>
-                  )})}</div>
-                ):<p className="body-sm text-gray-400 text-center py-6">记账时选心情，这里就会出现统计</p>}
+                    {/* Mood pills */}
+                    <div className="flex flex-wrap gap-1.5">
+                      {moodStats.map(m=>{const MI=m.Icon;const color=MOOD_COLOR_MAP[m.value]||'#6b7280';return(
+                        <div key={m.value} className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium" style={{backgroundColor:color+'15',color}}>
+                          <MI size={14} strokeWidth={1.8}/>{m.label} {m.count}次
+                        </div>
+                      )})}
+                    </div>
+                  </div>
+                ):<p className="text-sm text-muted text-center py-6">记账时选心情，这里就会出现统计</p>}
               </div>
             </div>
 
@@ -135,7 +141,7 @@ export default function Dashboard() {
               <div className="card-body">
                 {expBrk.length>0?(
                   <div className="flex items-center gap-4">
-                    <div className="w-28 h-28"><ResponsiveContainer><RPie><Pie data={expBrk} cx="50%" cy="50%" innerRadius={26} outerRadius={46} paddingAngle={3} dataKey="amount">{expBrk.map(e=><Cell key={e.categoryId} fill={e.categoryColor} strokeWidth={0}/>)}</Pie></RPie></ResponsiveContainer></div>
+                    <div className="w-28 h-28"><ResponsiveContainer><RPie><Pie data={expBrk} cx="50%" cy="50%" innerRadius={26} outerRadius={46} paddingAngle={3} dataKey="amount">{expBrk.map((e,i)=><Cell key={e.categoryId} fill={CHART_COLORS[i%CHART_COLORS.length]} strokeWidth={0}/>)}</Pie></RPie></ResponsiveContainer></div>
                     <div className="flex-1 space-y-2">{expBrk.slice(0,5).map(item=><div key={item.categoryId} className="flex items-center gap-2 text-xs"><CategoryIcon categoryId={item.categoryId} size={14}/><span className="flex-1 font-medium truncate">{item.categoryName}</span><span className="text-gray-400 amount">{item.percentage}%</span></div>)}</div>
                   </div>
                 ):<p className="body-sm text-gray-400 text-center py-6">暂无支出</p>}
