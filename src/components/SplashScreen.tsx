@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { MOOD_LIST, MOOD_ICON_MAP, MOOD_COLOR_MAP } from '@/lib/icons'
+import { MOOD_LIST, CAT_ICON_OPTIONS } from '@/lib/icons'
 
 interface Props {
   onEnter: () => void
@@ -22,23 +22,21 @@ export default function SplashScreen({ onEnter }: Props) {
         <div className="absolute w-80 h-80 rounded-full bg-white/6 -bottom-20 left-1/4 animate-[float_10s_ease-in-out_infinite_2s]" />
       </div>
 
-      {/* Floating mood icons */}
+      {/* Floating icons */}
       <div className="absolute inset-0 pointer-events-none">
-        {MOOD_LIST.map((m, i) => {
-          const Icon = m.Icon
-          const x = 10 + (i * 11) % 85
-          const y = 5 + (i * 17) % 80
-          const delay = i * 0.8
+        {[
+          ...MOOD_LIST.map(m => ({ Icon: m.Icon, key: m.value })),
+          ...CAT_ICON_OPTIONS.map(c => ({ Icon: c.Icon, key: c.key })),
+        ].map((item, i) => {
+          const Icon = item.Icon
+          const x = 5 + (i * 7.3) % 90
+          const y = 3 + (i * 8.7) % 88
+          const delay = i * 0.35
+          const sz = 18 + (i % 4) * 12
           return (
-            <div
-              key={m.value}
-              className="absolute opacity-15 scale-75"
-              style={{
-                left: `${x}%`, top: `${y}%`,
-                animation: `float ${4 + i % 3}s ease-in-out ${delay}s infinite`,
-              }}
-            >
-              <Icon size={32 + (i % 3) * 16} strokeWidth={1.5} color="#fff" />
+            <div key={item.key + i} className="absolute opacity-12"
+              style={{ left: `${x}%`, top: `${y}%`, animation: `float ${5 + (i % 4)}s ease-in-out ${delay}s infinite` }}>
+              <Icon size={sz} strokeWidth={1.5} color="#fff" />
             </div>
           )
         })}
