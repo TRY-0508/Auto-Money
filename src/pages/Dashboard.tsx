@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
-import { useTransactions, useCategories, useProjects, useBudgets } from '@/db/hooks'
+import { useTransactions, useCategories, useProjects } from '@/db/hooks'
 import { getMonthlyStats, getCategoryBreakdown } from '@/lib/stats'
 import { getCurrentYearMonth, formatAmount, formatDate } from '@/lib/utils'
 import { MOOD_LIST, MOOD_ICON_MAP, MOOD_COLOR_MAP, CATEGORY_ICON_MAP, MoreHorizontal, BarChart3, Trash2, PieChart, List, Calendar as CalendarIcon, Check } from '@/lib/icons'
@@ -55,15 +55,13 @@ export default function Dashboard() {
 
   const [yearMonth,setYearMonth]=useState(getCurrentYearMonth());const [year,month]=yearMonth.split('-').map(Number)
   const {transactions:all,updateTransaction,deleteTransaction}=useTransactions({month:yearMonth})
-  const {categories}=useCategories();const {projects}=useProjects();const {budgets}=useBudgets()
+  const {categories}=useCategories();const {projects}=useProjects()
   const txs=useMemo(()=>projectId?all.filter(t=>t.projectId===projectId):all,[all,projectId])
   const stats=useMemo(()=>getMonthlyStats(txs,yearMonth),[txs,yearMonth])
   const expBrk=useMemo(()=>getCategoryBreakdown(txs,categories,'expense',yearMonth),[txs,categories,yearMonth])
 
   const moodStats=useMemo(()=>{const m:Record<string,{count:number;totalSpent:number}>={};for(const t of txs){if(!t.mood||t.type!=='expense')continue;if(!m[t.mood])m[t.mood]={count:0,totalSpent:0};m[t.mood].count++;m[t.mood].totalSpent+=t.amount};return MOOD_LIST.filter(x=>m[x.value]).map(x=>({...x,...m[x.value]})).sort((a,b)=>b.count-a.count)},[txs])
   const dom=moodStats[0];const moodKey=dom?.value||'neutral'
-
-  const budgetItems=useMemo(()=>{const r:{cat:any;spent:number;pct:number}[]=[];for(const c of categories.filter(c=>c.type==='expense')){const b=budgets.find(x=>x.categoryId===c.id&&x.yearMonth===yearMonth);if(!b)continue;r.push({cat:c,spent:txs.filter(t=>t.categoryId===c.id&&t.type==='expense').reduce((s,t)=>s+t.amount,0),pct:Math.round((txs.filter(t=>t.categoryId===c.id&&t.type==='expense').reduce((s,t)=>s+t.amount,0)/b.amount)*100)})};return r},[categories,budgets,yearMonth,txs])
 
   const moodTimeline=useMemo(()=>{const today=new Date();return Array.from({length:14},(_,i)=>{const d=new Date(today);d.setDate(d.getDate()-(13-i));const ds=d.toISOString().slice(0,10);const dayTxs=txs.filter(t=>t.date===ds);const lm=dayTxs.filter(t=>t.mood).pop();return{date:ds,label:i===13?'今天':i===12?'昨天':`${d.getMonth()+1}/${d.getDate()}`,moodVal:lm?.mood||null,spent:dayTxs.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0)}})},[txs])
 
@@ -148,24 +146,6 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
-
-          {budgetItems.length>0&&(
-            <div className="card card-hover">
-              <div className="card-header">分类预算</div>
-              <div className="card-body space-y-3">
-                {budgetItems.map(({cat,spent,pct})=>(
-                  <div key={cat.id} className="flex items-center gap-3">
-                    <CategoryIcon categoryId={cat.id} size={16}/>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between text-sm mb-1"><span className="font-semibold">{cat.name}</span><span className="text-xs text-gray-400 amount">{formatAmount(spent)}</span></div>
-                      <div className="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden"><div className={`h-full rounded-full transition-all duration-700 ${pct>100?'bg-red-400':pct>80?'bg-amber-400':'bg-emerald-400'}`} style={{width:`${Math.min(pct,100)}%`}}/></div>
-                    </div>
-                    <span className={`text-xs font-bold w-10 text-right amount ${pct>100?'text-red-500':pct>80?'text-amber-500':'text-emerald-500'}`}>{pct}%</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
 
           <div className="card card-hover overflow-hidden">
             <div className="card-header"><CalendarIcon size={18} strokeWidth={1.8} className="text-violet-500"/>心情时间线</div>

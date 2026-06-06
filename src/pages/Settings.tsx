@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
-import { useSettings, useCategories, useTransactions, useProjects, useBudgets } from '@/db/hooks'
+import { useSettings, useCategories, useTransactions, useProjects } from '@/db/hooks'
 import { encryptApiKey, decryptApiKey } from '@/lib/crypto'
 import { exportAllData, importAllData, exportCSV, downloadFile } from '@/services/export'
 import { db } from '@/db'
 import { getCurrentYearMonth, formatAmount } from '@/lib/utils'
 import { getMonthlyStats, getCategoryBreakdown } from '@/lib/stats'
-import { CAT_ICON_OPTIONS, CATEGORY_ICON_MAP, PROJECT_ICON_MAP, PROJECT_ICONS as PROJ_ICONS_LIST, MoreHorizontal, Settings as SettingsIcon, Tag, Target, FolderOpen, Database, Download, Upload, Trash2, Edit3, Check, X } from '@/lib/icons'
+import { CAT_ICON_OPTIONS, CATEGORY_ICON_MAP, PROJECT_ICON_MAP, PROJECT_ICONS as PROJ_ICONS_LIST, MoreHorizontal, Settings as SettingsIcon, Tag, FolderOpen, Database, Download, Upload, Trash2, Edit3, Check, X } from '@/lib/icons'
 
 const ALL_COLORS = ['#3b82f6', '#22c55e', '#ef4444', '#eab308', '#a855f7', '#f97316', '#ec4899', '#06b6d4', '#6366f1', '#14b8a6', '#84cc16', '#f59e0b', '#78716c']
 
@@ -34,14 +34,10 @@ export default function Settings() {
   const { categories, addCategory, updateCategory, deleteCategory } = useCategories()
   const { transactions } = useTransactions()
   const { projects, addProject, deleteProject } = useProjects()
-  const { budgets, addBudget, updateBudget } = useBudgets()
-
-  const yearMonth = getCurrentYearMonth(); const stats = getMonthlyStats(transactions, yearMonth); const breakdown = getCategoryBreakdown(transactions, categories, 'expense', yearMonth)
 
   const [apiKey, setApiKey] = useState(''); const [baseUrl, setBaseUrl] = useState('https://api.deepseek.com/v1'); const [model, setModel] = useState('deepseek-chat'); const [saved, setSaved] = useState(false); const [testResult, setTestResult] = useState('')
   const [showAddCat, setShowAddCat] = useState(false); const [newCatName, setNewCatName] = useState(''); const [newCatType, setNewCatType] = useState<'expense' | 'income'>('expense'); const [newCatIcon, setNewCatIcon] = useState('more-horizontal')
   const [showAddProject, setShowAddProject] = useState(false); const [newProjectName, setNewProjectName] = useState(''); const [newProjectIcon, setNewProjectIcon] = useState('package'); const [newProjectColor, setNewProjectColor] = useState('#3b82f6')
-  const [budgetEditingId, setBudgetEditingId] = useState<string | null>(null); const [budgetAmount, setBudgetAmount] = useState('')
   const [showClearConfirm, setShowClearConfirm] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null); const [importMessage, setImportMessage] = useState('')
 
@@ -51,9 +47,7 @@ export default function Settings() {
   const handleTestConnection = async () => { setTestResult('测试中...'); try { const key = apiKey || (settings?.apiKey ? await decryptApiKey(settings.apiKey) : ''); if (!key) { setTestResult('请先填入 API Key'); return }; const r = await fetch(`${baseUrl}/models`, { headers: { Authorization: `Bearer ${key}` } }); setTestResult(r.ok ? '连接成功' : `失败 (${r.status})`) } catch { setTestResult('网络错误') } }
   const handleAddCategory = async () => { if (!newCatName.trim()) return; await addCategory({ name: newCatName.trim(), type: newCatType, icon: newCatIcon, color: '#6b7280', isSystem: false }); setNewCatName(''); setShowAddCat(false) }
   const handleAddProject = async () => { if (!newProjectName.trim()) return; await addProject({ name: newProjectName.trim(), icon: newProjectIcon, color: newProjectColor }); setNewProjectName(''); setShowAddProject(false) }
-  const handleSaveBudget = async (categoryId: string | null) => { const a = parseFloat(budgetAmount); if (!a || a <= 0) return; const exist = budgets.find(b => b.categoryId === categoryId && b.yearMonth === yearMonth); if (exist) await updateBudget(exist.id, { amount: a }); else await addBudget({ categoryId, amount: a, period: 'monthly', yearMonth }); setBudgetEditingId(null); setBudgetAmount('') }
-  const handleClearAllData = async () => { await db.transactions.clear(); await db.chatMessages.clear(); await db.budgets.clear(); await db.projects.clear(); setShowClearConfirm(false); window.location.reload() }
-  const getSpent = (catId: string | null) => catId === null ? stats.totalExpense : (breakdown.find(b => b.categoryId === catId)?.amount || 0)
+  const handleClearAllData = async () => { await db.transactions.clear(); await db.chatMessages.clear(); await db.projects.clear(); setShowClearConfirm(false); window.location.reload() }
   const handleExportJSON = async () => { downloadFile(await exportAllData(), `auto-money-${new Date().toISOString().slice(0, 10)}.json`, 'application/json') }
   const handleExportCSV = async () => { downloadFile(exportCSV(transactions, categories), `auto-money-${new Date().toISOString().slice(0, 10)}.csv`, 'text/csv') }
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => { const f = e.target.files?.[0]; if (!f) return; try { await importAllData(await f.text()); setImportMessage('导入成功'); setTimeout(() => setImportMessage(''), 2000) } catch { setImportMessage('导入失败') }; if (fileInputRef.current) fileInputRef.current.value = '' }
@@ -104,44 +98,6 @@ export default function Settings() {
               {!cat.isSystem && <button onClick={(e) => { e.stopPropagation(); deleteCategory(cat.id) }} className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-400 text-white text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">×</button>}
             </button>
           )})}</div>
-        </div>
-      </div>
-
-      {/* Budget */}
-      <div className="glow-card overflow-hidden p-0">
-        <h3 className="text-sm font-bold tracking-tight px-5 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2"><Target size={18} strokeWidth={1.8} className="text-violet-500" />分类预算</h3>
-        <div className="p-4">
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {expenseCats.map((cat, idx) => {
-              const budget = budgets.find(b => b.categoryId === cat.id && b.yearMonth === yearMonth); const spent = getSpent(cat.id)
-              return (
-                <div key={cat.id} className="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-2.5">
-                  {budgetEditingId === cat.id ? (
-                    <div className="space-y-1.5">
-                      <div className="flex items-center gap-1"><CategoryBadge cat={cat} idx={idx} /><span className="text-[11px] font-medium truncate">{cat.name}</span></div>
-                      <input type="number" value={budgetAmount} onChange={e => setBudgetAmount(e.target.value)} placeholder="金额" autoFocus onKeyDown={e => e.key === 'Enter' && handleSaveBudget(cat.id)} className="w-full px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs" />
-                      <div className="flex gap-1"><button onClick={() => handleSaveBudget(cat.id)} className="flex-1 py-1 rounded-lg bg-violet-500 text-white text-[10px] font-medium flex items-center justify-center gap-0.5"><Check size={12}/>保存</button><button onClick={() => { setBudgetEditingId(null); setBudgetAmount('') }} className="flex-1 py-1 rounded-lg bg-gray-200 dark:bg-gray-700 text-[10px] text-gray-500 flex items-center justify-center gap-0.5"><X size={12}/>取消</button></div>
-                    </div>
-                  ) : (
-                    <div>
-                      <div className="flex items-center justify-between mb-1.5">
-                        <div className="flex items-center gap-1 min-w-0"><CategoryBadge cat={cat} idx={idx} /><span className="text-[11px] font-semibold truncate">{cat.name}</span></div>
-                        <button onClick={() => { setBudgetEditingId(cat.id); setBudgetAmount(budget ? String(budget.amount) : '') }} className="flex-shrink-0 w-5 h-5 rounded-md bg-gray-200 dark:bg-gray-700 flex items-center justify-center hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors"><Edit3 size={11} className="text-gray-400 hover:text-violet-500" /></button>
-                      </div>
-                      {budget ? (
-                        <>
-                          <div className="h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mb-1"><div className={`h-full rounded-full ${spent > budget.amount ? 'bg-red-400' : (spent / budget.amount) > 0.8 ? 'bg-amber-400' : 'bg-emerald-400'}`} style={{ width: `${Math.min((spent / budget.amount) * 100, 100)}%` }} /></div>
-                          <div className="flex justify-between text-[10px]"><span className="text-gray-400">{formatAmount(spent)}</span><span className="text-gray-500 font-medium">{formatAmount(budget.amount)}</span></div>
-                        </>
-                      ) : (
-                        <p className="text-[10px] text-gray-400">已花 {formatAmount(spent)}</p>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )
-            })}
-          </div>
         </div>
       </div>
 
