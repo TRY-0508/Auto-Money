@@ -1,102 +1,86 @@
 # 心情收支簿 — 系统设计
 
-## 1. 技术栈
+## 1. 页面架构
 
-React 18 + TypeScript · Vite · Tailwind CSS · Dexie.js (IndexedDB) · Zustand · Recharts · Lucide React · OpenAI SDK
+3 路由 + 1 弹窗 + 1 封面：
 
-## 2. 页面架构
+| 路由 | 页面 | 功能 |
+|---|---|---|
+| `/` | Dashboard | Bento 网格布局，心情 Banner + 统计 + 饼图 + 预算 + 时间线 + 月历 + 交易列表 |
+| `/ai` | AI 助手 | 3 Tab：财务报告 / 心理分析 / 对话 |
+| `/settings` | 设置 | API · 分类 · 预算 · 分账单 · 数据 |
+| `[Modal]` | 记账弹窗 | 文字 AI / 语音按住 / 手动表单 + 心情 + 模板 |
+| `[Splash]` | 封面页 | 首次/会话打开展示，浮动图标动画 |
 
-3 个路由 + 1 个全局弹窗：
+## 2. 数据模型
 
-```
-/                Dashboard（首页）
-/ai              AI 助手（心理分析 + 对话）
-/settings        设置（API + 分类 + 预算 + 分账单 + 数据）
-[全局 Modal]     记账弹窗（文字/语音/手动）
-```
+8 种心情（Lucide 图标 + 颜色）：开心 · 平静 · 一般 · 难过 · 焦虑 · 愤怒 · 兴奋 · 疲惫
 
-### 导航
+11+6 预设分类（Lucide 图标 + 自动着色）：餐饮 交通 购物 游戏 娱乐 住房 医疗 教育 通讯 日用 其他 / 工资 兼职 理财 红包 报销 其他
 
-| 平台 | 方式 |
-|---|---|
-| 桌面端 | 侧边栏（LayoutDashboard / Brain / Settings） |
-| 移动端 | 底部标签栏（首页 / [+] / AI / 设置） |
+## 3. 设计系统
 
-## 3. 数据模型
+### 色彩体系（CSS 自定义属性）
 
-### Transaction
-
-```typescript
-{
-  id: string; type: 'expense'|'income'; amount: number
-  categoryId: string; description: string; date: string
-  createdAt: number; updatedAt: number
-  mood?: string       // mood value: happy|calm|neutral|sad|anxious|angry|excited|tired
-  projectId?: string  // optional project tag
-}
-```
-
-### Category · Project · Budget · Settings · ChatMessage
-
-标准 CRUD 模型。Category 的 `icon` 字段存储 Lucide 图标 key。Budget 绑定 `yearMonth` 实现按月独立。
-
-## 4. 心情常量
-
-```typescript
-MOOD_LIST = [
-  { value:'happy',   label:'开心', Icon:Smile,      color:'#f59e0b' },
-  { value:'calm',    label:'平静', Icon:Heart,       color:'#0ea5e9' },
-  { value:'neutral', label:'一般', Icon:Meh,         color:'#6b7280' },
-  { value:'sad',     label:'难过', Icon:Frown,       color:'#6366f1' },
-  { value:'anxious', label:'焦虑', Icon:AlertTriangle,color:'#f97316' },
-  { value:'angry',   label:'愤怒', Icon:Angry,       color:'#ef4444' },
-  { value:'excited', label:'兴奋', Icon:Star,        color:'#a855f7' },
-  { value:'tired',   label:'疲惫', Icon:Moon,        color:'#8b5cf6' },
-]
-```
-
-## 5. 设计系统
-
-### 色彩体系
-
-| Token | 用途 |
-|---|---|
-| `--c-primary` (#8b5cf6) | 品牌色、按钮、选中态 |
-| `--c-income` (#10b981) | 收入 |
-| `--c-expense` (#f43f5e) | 支出 |
-| `--c-balance` (#6366f1) | 结余 |
-| `--c-warning` (#f59e0b) | 预算紧张 |
-| `--c-danger` (#ef4444) | 删除/错误 |
+| Token | 色值 | 用途 |
+|---|---|---|
+| `--c-primary` | `#8b5cf6` | 品牌色 |
+| `--c-income` | `#10b981` | 收入 |
+| `--c-expense` | `#f43f5e` | 支出 |
+| `--c-balance` | `#6366f1` | 结余 |
+| `--t-heading` | `#1e293b` | 标题 |
+| `--t-body` | `#334155` | 正文 |
+| `--t-secondary` | `#64748b` | 次要文字 |
 
 ### 组件层级
 
-- `.card` — 统一毛玻璃卡片（1.5rem 圆角 + blur + 阴影）
-- `.btn` / `.btn-primary` / `.btn-secondary` / `.btn-danger`
-- `.btn-icon` — 20px 纯图标操作按钮
-- `.input` — 统一输入框样式
+| 类名 | 用途 |
+|---|---|
+| `.card` | 统一毛玻璃卡片（blur 24px） |
+| `.card-hover` | 悬浮上浮 + 阴影 |
+| `.tilt` | 3D 透视倾斜（perspective 800px） |
+| `.bento` | Apple 风格网格布局（4 列） |
+| `.stagger` | 子元素交错入场延迟 |
+| `.btn` / `.btn-primary` / `.btn-icon` | 按钮三级体系 |
+| `.input` / `.input-lg` | 输入框 |
+| `.aurora-bg` | 三色渐变光晕背景（呼吸动画） |
 
-### 心情响应
+### 特效系统
 
-页面背景色和 Banner 渐变色根据主导心情自动切换（8 套配色）。默认（无心情数据时）为暖紫白色调。
+| 组件 | 技术 |
+|---|---|
+| ParticleNetwork | Canvas 粒子网络（80 颗，连线距离 120px） |
+| ParticleEffect | 点击爆炸粒子（6 色，8 颗/次） |
+| SplashScreen | 35 个浮动图标（心情 + 分类） |
 
-## 6. Dashboard 布局
+## 4. Dashboard 布局（Bento Grid）
 
 ```
-┌──────────────────────────┐
-│ 月份选择 + 分账单切换     │
-├──────────────────────────┤
-│ 心情 Banner（渐变+数据）  │
-├────────────┬─────────────┤
-│ 心情统计    │ 支出分类    │
-│ 彩虹条+胶囊 │ 饼图+列表   │
-├────────────┴─────────────┤
-│ 分类预算（可选）          │
-│ 心情时间线（14天）        │
-│ 月历热力图（可折叠）      │
-│ 筛选 + 交易列表           │
-└──────────────────────────┘
+┌──────────────────────────────┐
+│      Banner (full width)     │
+├──────────────┬───────────────┤
+│ 心情统计      │ 支出分类      │
+│ (span 2)     │ (span 2)     │
+├──────────────┴───────────────┤
+│ 分类预算 + 时间线 + 月历     │
+│ (full width cards)           │
+├──────────────────────────────┤
+│ 筛选 + 交易列表              │
+│ (full width)                 │
+└──────────────────────────────┘
 ```
 
-## 7. 部署
+## 5. 图标系统
 
-GitHub Pages + GitHub Actions 自动部署。HashRouter 解决 SPA 路由问题。
+全部使用 Lucide React SVG（无 emoji）：
+- 心情 8 种：Smile / Heart / Meh / Frown / AlertTriangle / Angry / Star / Moon
+- 分类 27 种可选
+- 导航 3 种：LayoutDashboard / Brain / Settings
+- 操作 20+ 种
+
+## 6. 性能
+
+- React.lazy 代码分割（Dashboard / AI / Settings 独立 chunk）
+- Suspense 加载骨架
+- Canvas 粒子网络使用 requestAnimationFrame
+- Ctrl+K 快捷记账
