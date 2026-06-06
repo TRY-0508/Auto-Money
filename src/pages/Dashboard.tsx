@@ -112,24 +112,17 @@ export default function Dashboard() {
   const dominantMood = moodStats[0]
   const moodKey = dominantMood?.value || 'neutral'
 
-  // ── Budget × Mood ──
-  const budgetWithMood = useMemo(() => {
-    const result: { cat: any; budget: any; spent: number; dominantMood: string | null; moodEmoji: string }[] = []
-    const ec = categories.filter(c => c.type === 'expense')
-    for (const c of ec) {
+  // ── Budget ──
+  const budgetItems = useMemo(() => {
+    const result: { cat: any; budget: any; spent: number; pct: number }[] = []
+    for (const c of categories.filter(c => c.type === 'expense')) {
       const b = budgets.find(x => x.categoryId === c.id && x.yearMonth === yearMonth)
       if (!b) continue
-      const catTxs = transactions.filter(t => t.categoryId === c.id && t.type === 'expense')
-      const spent = catTxs.reduce((s, t) => s + t.amount, 0)
-      const moodMap: Record<string, number> = {}
-      for (const t of catTxs) { if (t.mood) moodMap[t.mood] = (moodMap[t.mood] || 0) + 1 }
-      let dm: string | null = null; let maxC = 0
-      for (const [k, v] of Object.entries(moodMap)) { if (v > maxC) { maxC = v; dm = k } }
-      const emoji = dm ? MOODS.find(m2 => m2.value === dm)?.emoji || '' : ''
-      result.push({ cat: c, budget: b, spent, dominantMood: dm, moodEmoji: emoji })
+      const spent = transactions.filter(t => t.categoryId === c.id && t.type === 'expense').reduce((s, t) => s + t.amount, 0)
+      result.push({ cat: c, budget: b, spent, pct: Math.round((spent / b.amount) * 100) })
     }
     return result
-  }, [categories, budgets, yearMonth, transactions, MOODS])
+  }, [categories, budgets, yearMonth, transactions])
 
   // ── Mood Timeline ──
   const moodTimeline = useMemo(() => {
@@ -247,7 +240,7 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Mood Wheel */}
             <div className="glass rounded-3xl p-5 card-hover">
-              <h3 className="text-sm font-semibold mb-3 flex items-center gap-1.5"><span>🎭</span> 心情色彩</h3>
+              <h3 className="text-sm font-semibold mb-3 flex items-center gap-1.5"><span>🎭</span> 心情统计</h3>
               {moodStats.length > 0 ? (
                 <div className="space-y-2">
                   {moodStats.map(m => (
@@ -284,15 +277,12 @@ export default function Dashboard() {
           </div>
 
           {/* ── Budget × Mood ── */}
-          {budgetWithMood.length > 0 && (
+          {budgetItems.length > 0 && (
             <div className="glass rounded-3xl p-5 card-hover">
-              <h3 className="text-sm font-semibold mb-3 flex items-center gap-1.5"><span>🎯</span> 预算心情</h3>
-              <p className="text-xs text-gray-400 mb-3">每个分类的预算执行情况 × 你的主要心情</p>
+              <h3 className="text-sm font-semibold mb-3 flex items-center gap-1.5"><span>🎯</span> 分类预算</h3>
+              <p className="text-xs text-gray-400 mb-3">每类支出进度</p>
               <div className="space-y-3">
-                {budgetWithMood.map(({ cat, budget, spent, moodEmoji }) => {
-                  const pct = Math.round((spent / budget.amount) * 100)
-                  const over = pct > 100
-                  return (
+                {budgetItems.map(({ cat, budget, spent, pct }) => (
                     <div key={cat.id} className="flex items-center gap-3">
                       <span className="text-lg">{cat.icon}</span>
                       <div className="flex-1 min-w-0">
@@ -301,20 +291,13 @@ export default function Dashboard() {
                           <span className="text-xs text-gray-400">{formatAmount(spent)} / {formatAmount(budget.amount)}</span>
                         </div>
                         <div className="w-full h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                          <div className={`h-full rounded-full transition-all duration-500 ${over ? 'bg-red-400' : pct > 80 ? 'bg-amber-400' : 'bg-emerald-400'}`} style={{ width: `${Math.min(pct, 100)}%` }} />
+                          <div className={`h-full rounded-full transition-all duration-500 ${pct > 100 ? 'bg-red-400' : pct > 80 ? 'bg-amber-400' : 'bg-emerald-400'}`} style={{ width: `${Math.min(pct, 100)}%` }} />
                         </div>
                       </div>
-                      <div className="text-right flex-shrink-0">
-                        {moodEmoji ? <span className="text-base">{moodEmoji}</span> : <span className="text-xs text-gray-300">—</span>}
-                        <p className="text-[10px] text-gray-400">{over ? '超预算' : pct > 80 ? '注意' : '健康'}</p>
-                      </div>
+                      <span className="text-xs text-gray-400 w-10 text-right flex-shrink-0">{pct}%</span>
                     </div>
-                  )
-                })}
+                ))}
               </div>
-              <p className="text-[11px] text-gray-400 mt-3 italic">
-                💡 {budgetWithMood.some(b => b.dominantMood === 'anxious') ? '焦虑时容易冲动消费，试试设置预算来觉察这个模式' : '预算是一面镜子，帮你看见消费与情绪的关系'}
-              </p>
             </div>
           )}
 

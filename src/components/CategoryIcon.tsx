@@ -7,22 +7,36 @@ interface CategoryIconProps {
   size?: number
 }
 
+// Check if a string is a single emoji (for backward compat with old data)
+function isEmoji(str: string): boolean {
+  const regex = /^(\p{Emoji_Presentation}|\p{Emoji}\uFE0F)$/u
+  return regex.test(str)
+}
+
 export default function CategoryIcon({ categoryId, size = 18 }: CategoryIconProps) {
   const { categories } = useCategories()
   const cat = categories.find((c) => c.id === categoryId)
-  const iconKey = cat?.icon || ''
-  const Icon = ICON_MAP[iconKey] || MoreHorizontal
+  const icon = cat?.icon || ''
+  const color = cat?.color || '#6b7280'
+  const Icon = ICON_MAP[icon] || MoreHorizontal
+
+  // If it's an old emoji icon, render as text; otherwise render Lucide SVG
+  const renderEmoji = isEmoji(icon)
 
   return (
     <div
       className="rounded-xl flex items-center justify-center flex-shrink-0"
       style={{
-        backgroundColor: (cat?.color || '#6b7280') + '18',
+        backgroundColor: color + '18',
         width: size + 14,
         height: size + 14,
       }}
     >
-      <Icon size={size} color={cat?.color || '#6b7280'} strokeWidth={1.8} />
+      {renderEmoji ? (
+        <span style={{ fontSize: size }}>{icon}</span>
+      ) : (
+        <Icon size={size} color={color} strokeWidth={1.8} />
+      )}
     </div>
   )
 }
