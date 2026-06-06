@@ -5,7 +5,7 @@ import { exportAllData, importAllData, exportCSV, downloadFile } from '@/service
 import { db } from '@/db'
 import { getCurrentYearMonth, formatAmount } from '@/lib/utils'
 import { getMonthlyStats, getCategoryBreakdown } from '@/lib/stats'
-import { CAT_ICON_OPTIONS, CATEGORY_ICON_MAP, PROJECT_ICON_MAP, PROJECT_ICONS as PROJ_ICONS_LIST, MoreHorizontal, Settings as SettingsIcon, Tag, Target, FolderOpen, Database, Download, Upload, Trash2 } from '@/lib/icons'
+import { CAT_ICON_OPTIONS, CATEGORY_ICON_MAP, PROJECT_ICON_MAP, PROJECT_ICONS as PROJ_ICONS_LIST, MoreHorizontal, Settings as SettingsIcon, Tag, Target, FolderOpen, Database, Download, Upload, Trash2, Edit3, Check, X } from '@/lib/icons'
 
 const ALL_COLORS = ['#3b82f6', '#22c55e', '#ef4444', '#eab308', '#a855f7', '#f97316', '#ec4899', '#06b6d4', '#6366f1', '#14b8a6', '#84cc16', '#f59e0b', '#78716c']
 
@@ -109,29 +109,31 @@ export default function Settings() {
       <div className="glow-card overflow-hidden p-0">
         <h3 className="text-sm font-bold tracking-tight px-5 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2"><Target size={18} strokeWidth={1.8} className="text-violet-500" />分类预算</h3>
         <div className="p-4">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-2">
             {expenseCats.map(cat => {
               const budget = budgets.find(b => b.categoryId === cat.id && b.yearMonth === yearMonth); const spent = getSpent(cat.id)
               return (
-                <div key={cat.id} className="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-3">
+                <div key={cat.id} className="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-2.5">
                   {budgetEditingId === cat.id ? (
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-1.5"><CategoryBadge cat={cat} /><span className="text-xs font-medium">{cat.name}</span></div>
-                      <input type="number" value={budgetAmount} onChange={e => setBudgetAmount(e.target.value)} placeholder="金额" autoFocus onKeyDown={e => e.key === 'Enter' && handleSaveBudget(cat.id)} className="w-full px-2 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm" />
-                      <div className="flex gap-1"><button onClick={() => handleSaveBudget(cat.id)} className="flex-1 py-1 rounded-lg bg-violet-500 text-white text-xs font-medium">保存</button><button onClick={() => { setBudgetEditingId(null); setBudgetAmount('') }} className="px-2 py-1 rounded-lg text-xs text-gray-400">取消</button></div>
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-1"><CategoryBadge cat={cat} /><span className="text-[11px] font-medium truncate">{cat.name}</span></div>
+                      <input type="number" value={budgetAmount} onChange={e => setBudgetAmount(e.target.value)} placeholder="金额" autoFocus onKeyDown={e => e.key === 'Enter' && handleSaveBudget(cat.id)} className="w-full px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs" />
+                      <div className="flex gap-1"><button onClick={() => handleSaveBudget(cat.id)} className="flex-1 py-1 rounded-lg bg-violet-500 text-white text-[10px] font-medium flex items-center justify-center gap-0.5"><Check size={12}/>保存</button><button onClick={() => { setBudgetEditingId(null); setBudgetAmount('') }} className="flex-1 py-1 rounded-lg bg-gray-200 dark:bg-gray-700 text-[10px] text-gray-500 flex items-center justify-center gap-0.5"><X size={12}/>取消</button></div>
                     </div>
                   ) : (
                     <div>
-                      <div className="flex items-center gap-1.5 mb-2"><CategoryBadge cat={cat} /><span className="text-xs font-semibold">{cat.name}</span></div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <div className="flex items-center gap-1 min-w-0"><CategoryBadge cat={cat} /><span className="text-[11px] font-semibold truncate">{cat.name}</span></div>
+                        <button onClick={() => { setBudgetEditingId(cat.id); setBudgetAmount(budget ? String(budget.amount) : '') }} className="flex-shrink-0 w-5 h-5 rounded-md bg-gray-200 dark:bg-gray-700 flex items-center justify-center hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors"><Edit3 size={11} className="text-gray-400 hover:text-violet-500" /></button>
+                      </div>
                       {budget ? (
                         <>
-                          <div className="flex justify-between text-[10px] text-gray-400 mb-1"><span>已花 {formatAmount(spent)}</span><span>{formatAmount(budget.amount)}</span></div>
-                          <div className="h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mb-1.5"><div className={`h-full rounded-full ${spent > budget.amount ? 'bg-red-400' : (spent / budget.amount) > 0.8 ? 'bg-amber-400' : 'bg-emerald-400'}`} style={{ width: `${Math.min((spent / budget.amount) * 100, 100)}%` }} /></div>
+                          <div className="h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mb-1"><div className={`h-full rounded-full ${spent > budget.amount ? 'bg-red-400' : (spent / budget.amount) > 0.8 ? 'bg-amber-400' : 'bg-emerald-400'}`} style={{ width: `${Math.min((spent / budget.amount) * 100, 100)}%` }} /></div>
+                          <div className="flex justify-between text-[10px]"><span className="text-gray-400">{formatAmount(spent)}</span><span className="text-gray-500 font-medium">{formatAmount(budget.amount)}</span></div>
                         </>
                       ) : (
-                        <p className="text-[10px] text-gray-400 mb-1.5">已花 {formatAmount(spent)}</p>
+                        <p className="text-[10px] text-gray-400">已花 {formatAmount(spent)}</p>
                       )}
-                      <button onClick={() => { setBudgetEditingId(cat.id); setBudgetAmount(budget ? String(budget.amount) : '') }} className="text-[10px] text-violet-500 hover:text-violet-600 font-semibold">{budget ? '修改' : '设置预算'}</button>
                     </div>
                   )}
                 </div>
