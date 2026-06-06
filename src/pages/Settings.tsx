@@ -23,7 +23,7 @@ function LucideIconPicker({ value, onChange }: { value: string; onChange: (k: st
 
 function CategoryBadge({ cat }: { cat: any }) {
   const Icon = CATEGORY_ICON_MAP[cat.icon] || MoreHorizontal
-  return <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: cat.color + '18' }}><Icon size={15} strokeWidth={1.8} color={cat.color} /></div>
+  return <div className="w-6 h-6 rounded-md flex items-center justify-center bg-gray-100 dark:bg-gray-800"><Icon size={14} strokeWidth={1.8} className="text-gray-500" /></div>
 }
 
 export default function Settings() {
@@ -36,7 +36,7 @@ export default function Settings() {
   const yearMonth = getCurrentYearMonth(); const stats = getMonthlyStats(transactions, yearMonth); const breakdown = getCategoryBreakdown(transactions, categories, 'expense', yearMonth)
 
   const [apiKey, setApiKey] = useState(''); const [baseUrl, setBaseUrl] = useState('https://api.deepseek.com/v1'); const [model, setModel] = useState('deepseek-chat'); const [saved, setSaved] = useState(false); const [testResult, setTestResult] = useState('')
-  const [showAddCat, setShowAddCat] = useState(false); const [newCatName, setNewCatName] = useState(''); const [newCatType, setNewCatType] = useState<'expense' | 'income'>('expense'); const [newCatIcon, setNewCatIcon] = useState('more-horizontal'); const [newCatColor, setNewCatColor] = useState('#3b82f6')
+  const [showAddCat, setShowAddCat] = useState(false); const [newCatName, setNewCatName] = useState(''); const [newCatType, setNewCatType] = useState<'expense' | 'income'>('expense'); const [newCatIcon, setNewCatIcon] = useState('more-horizontal')
   const [showAddProject, setShowAddProject] = useState(false); const [newProjectName, setNewProjectName] = useState(''); const [newProjectIcon, setNewProjectIcon] = useState('package'); const [newProjectColor, setNewProjectColor] = useState('#3b82f6')
   const [budgetEditingId, setBudgetEditingId] = useState<string | null>(null); const [budgetAmount, setBudgetAmount] = useState('')
   const [showClearConfirm, setShowClearConfirm] = useState(false)
@@ -46,7 +46,7 @@ export default function Settings() {
 
   const handleSaveApiKey = async () => { if (!updateSettings) return; await updateSettings({ apiKey: apiKey ? await encryptApiKey(apiKey) : settings?.apiKey || '', apiBaseUrl: baseUrl, model }); setSaved(true); setTimeout(() => setSaved(false), 2000); setApiKey('') }
   const handleTestConnection = async () => { setTestResult('测试中...'); try { const key = apiKey || (settings?.apiKey ? await decryptApiKey(settings.apiKey) : ''); if (!key) { setTestResult('请先填入 API Key'); return }; const r = await fetch(`${baseUrl}/models`, { headers: { Authorization: `Bearer ${key}` } }); setTestResult(r.ok ? '连接成功' : `失败 (${r.status})`) } catch { setTestResult('网络错误') } }
-  const handleAddCategory = async () => { if (!newCatName.trim()) return; await addCategory({ name: newCatName.trim(), type: newCatType, icon: newCatIcon, color: newCatColor, isSystem: false }); setNewCatName(''); setShowAddCat(false) }
+  const handleAddCategory = async () => { if (!newCatName.trim()) return; await addCategory({ name: newCatName.trim(), type: newCatType, icon: newCatIcon, color: '#6b7280', isSystem: false }); setNewCatName(''); setShowAddCat(false) }
   const handleAddProject = async () => { if (!newProjectName.trim()) return; await addProject({ name: newProjectName.trim(), icon: newProjectIcon, color: newProjectColor }); setNewProjectName(''); setShowAddProject(false) }
   const handleSaveBudget = async (categoryId: string | null) => { const a = parseFloat(budgetAmount); if (!a || a <= 0) return; const exist = budgets.find(b => b.categoryId === categoryId && b.yearMonth === yearMonth); if (exist) await updateBudget(exist.id, { amount: a }); else await addBudget({ categoryId, amount: a, period: 'monthly', yearMonth }); setBudgetEditingId(null); setBudgetAmount('') }
   const handleClearAllData = async () => { await db.transactions.clear(); await db.chatMessages.clear(); await db.budgets.clear(); await db.projects.clear(); setShowClearConfirm(false); window.location.reload() }
@@ -81,14 +81,13 @@ export default function Settings() {
           <div className="p-4 border-b border-gray-100 dark:border-gray-800 space-y-3 bg-gray-50 dark:bg-gray-800/50">
             <div className="flex gap-2"><button onClick={() => setNewCatType('expense')} className={`flex-1 py-1.5 rounded-lg text-xs font-semibold ${newCatType === 'expense' ? 'bg-red-100 text-red-600 dark:bg-red-900/30' : 'bg-white dark:bg-gray-800 text-gray-500'}`}>支出</button><button onClick={() => setNewCatType('income')} className={`flex-1 py-1.5 rounded-lg text-xs font-semibold ${newCatType === 'income' ? 'bg-green-100 text-green-600 dark:bg-green-900/30' : 'bg-white dark:bg-gray-800 text-gray-500'}`}>收入</button></div>
             <div><label className="text-xs text-gray-400 mb-1 block">图标</label><LucideIconPicker value={newCatIcon} onChange={setNewCatIcon} /></div>
-            <div><label className="text-xs text-gray-400 mb-1 block">颜色</label><div className="flex flex-wrap gap-1.5">{ALL_COLORS.map(c => <button key={c} onClick={() => setNewCatColor(c)} className="w-7 h-7 rounded-full border-2 transition-all" style={{ backgroundColor: c, borderColor: newCatColor === c ? '#1f2937' : 'transparent' }} />)}</div></div>
             <div className="flex gap-2"><input type="text" value={newCatName} onChange={e => setNewCatName(e.target.value)} placeholder="分类名称" className="flex-1 px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm" onKeyDown={e => e.key === 'Enter' && handleAddCategory()} /><button onClick={handleAddCategory} disabled={!newCatName.trim()} className="px-4 py-2 rounded-xl bg-violet-500 text-white text-sm font-semibold disabled:opacity-50">添加</button></div>
           </div>
         )}
         <div className="px-5 py-3"><p className="text-xs text-muted font-medium mb-2">支出分类</p>
           <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">{expenseCats.map(cat => { const Icon = CATEGORY_ICON_MAP[cat.icon] || MoreHorizontal; return (
             <div key={cat.id} className="flex flex-col items-center gap-1 p-2 rounded-xl bg-gray-50 dark:bg-gray-800/50 group relative">
-              <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: cat.color + '18' }}><Icon size={18} strokeWidth={1.8} color={cat.color}/></div>
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-gray-100 dark:bg-gray-800"><Icon size={18} strokeWidth={1.8} className="text-gray-500"/></div>
               <span className="text-[11px] font-medium text-center leading-tight">{cat.name}</span>
               {!cat.isSystem && <button onClick={() => deleteCategory(cat.id)} className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-400 text-white text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">×</button>}
             </div>
@@ -97,7 +96,7 @@ export default function Settings() {
         <div className="px-5 py-3 border-t border-gray-50 dark:border-gray-800/50"><p className="text-xs text-muted font-medium mb-2">收入分类</p>
           <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">{incomeCats.map(cat => { const Icon = CATEGORY_ICON_MAP[cat.icon] || MoreHorizontal; return (
             <div key={cat.id} className="flex flex-col items-center gap-1 p-2 rounded-xl bg-gray-50 dark:bg-gray-800/50 group relative">
-              <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: cat.color + '18' }}><Icon size={18} strokeWidth={1.8} color={cat.color}/></div>
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-gray-100 dark:bg-gray-800"><Icon size={18} strokeWidth={1.8} className="text-gray-500"/></div>
               <span className="text-[11px] font-medium text-center leading-tight">{cat.name}</span>
               {!cat.isSystem && <button onClick={() => deleteCategory(cat.id)} className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-400 text-white text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">×</button>}
             </div>

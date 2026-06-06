@@ -5,8 +5,6 @@ import { startRecognition, isSpeechSupported, stopRecognition } from '@/services
 import { MOOD_LIST, MOOD_COLOR_MAP, CATEGORY_ICON_MAP, CAT_ICON_OPTIONS, MoreHorizontal, AlertTriangle, Check } from '@/lib/icons'
 import type { ParsedTransaction } from '@/types'
 
-const NEW_COLORS = ['#3b82f6', '#22c55e', '#ef4444', '#eab308', '#a855f7', '#f97316', '#ec4899', '#06b6d4']
-
 interface Props { open: boolean; onClose: () => void }
 
 type Step = 'input' | 'parsed' | 'manual'
@@ -36,7 +34,6 @@ export default function AddModal({ open, onClose }: Props) {
   const [showNewCat, setShowNewCat] = useState(false)
   const [newCatName, setNewCatName] = useState('')
   const [newCatIcon, setNewCatIcon] = useState('more-horizontal')
-  const [newCatColor, setNewCatColor] = useState('#3b82f6')
 
   const templates = useMemo(() => {
     const map = new Map<string, { desc: string; catName: string; type: string; count: number }>()
@@ -89,7 +86,7 @@ export default function AddModal({ open, onClose }: Props) {
     if (!parsed) return
     let cat = categories.find(c => c.name === parsed.category && c.type === parsed.type)
     if (!cat) {
-      const catId = await addCategory({ name: parsed.category, type: parsed.type, icon: CAT_ICON_OPTIONS[Math.floor(Math.random() * CAT_ICON_OPTIONS.length)].key, color: NEW_COLORS[Math.floor(Math.random() * NEW_COLORS.length)], isSystem: false })
+      const catId = await addCategory({ name: parsed.category, type: parsed.type, icon: CAT_ICON_OPTIONS[Math.floor(Math.random() * CAT_ICON_OPTIONS.length)].key, color: '#6b7280', isSystem: false })
       setManualCategoryId(catId)
     } else setManualCategoryId(cat.id)
     setManualType(parsed.type); setManualAmount(String(parsed.amount)); setManualDate(parsed.date); setManualDesc(parsed.description); setStep('manual')
@@ -97,7 +94,7 @@ export default function AddModal({ open, onClose }: Props) {
 
   const handleQuickAddCat = async () => {
     if (!newCatName.trim()) return
-    const catId = await addCategory({ name: newCatName.trim(), type: manualType, icon: newCatIcon, color: newCatColor, isSystem: false })
+    const catId = await addCategory({ name: newCatName.trim(), type: manualType, icon: newCatIcon, color: '#6b7280', isSystem: false })
     setManualCategoryId(catId); setShowNewCat(false); setNewCatName('')
   }
 
@@ -243,7 +240,6 @@ export default function AddModal({ open, onClose }: Props) {
                       </button>
                     ))}
                   </div>
-                  <div className="flex gap-1">{NEW_COLORS.map(c => <button key={c} onClick={() => setNewCatColor(c)} className="w-6 h-6 rounded-full border-2" style={{ backgroundColor: c, borderColor: newCatColor === c ? '#374151' : 'transparent' }} />)}</div>
                 </div>
               )}
 
