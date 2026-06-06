@@ -42,8 +42,8 @@ export default function ParticleNetwork() {
           const d = Math.sqrt(dx * dx + dy * dy)
           if (d < DIST) {
             ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y)
-            ctx.strokeStyle = `rgba(139,92,246,${(1 - d / DIST) * 0.2})`
-            ctx.lineWidth = 0.8; ctx.stroke()
+            ctx.strokeStyle = `rgba(139,92,246,${(1 - d / DIST) * 0.3})`
+            ctx.lineWidth = 1; ctx.stroke()
           }
         }
       }

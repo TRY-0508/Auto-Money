@@ -32,10 +32,15 @@ export default function SplashScreen({ onEnter }: Props) {
           const x = 5 + (i * 7.3) % 90
           const y = 3 + (i * 8.7) % 88
           const delay = i * 0.35
-          const sz = 18 + (i % 4) * 12
+          const sz = 20 + (i % 4) * 14
+          const dur = 6 + (i % 3) * 3
           return (
-            <div key={item.key + i} className="absolute opacity-12"
-              style={{ left: `${x}%`, top: `${y}%`, animation: `float ${5 + (i % 4)}s ease-in-out ${delay}s infinite` }}>
+            <div key={item.key + i} className="absolute"
+              style={{
+                left: `${x}%`, top: `${y}%`,
+                animation: `floatSplash ${dur}s ease-in-out ${delay}s infinite`,
+                opacity: 0.08,
+              }}>
               <Icon size={sz} strokeWidth={1.5} color="#fff" />
             </div>
           )
