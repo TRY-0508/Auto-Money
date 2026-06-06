@@ -13,8 +13,8 @@ export default function ParticleNetwork() {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    let particles: { x: number; y: number; vx: number; vy: number; s: number; o: number }[] = []
-    let w = 0, h = 0, id = 0
+    let particles: { x: number; y: number; vx: number; vy: number; s: number; o: number; phase: number }[] = []
+    let w = 0, h = 0, id = 0, tick = 0
 
     const resize = () => { w = window.innerWidth; h = window.innerHeight; canvas.width = w; canvas.height = h }
     resize()
@@ -23,16 +23,19 @@ export default function ParticleNetwork() {
       x: Math.random() * w, y: Math.random() * h,
       vx: (Math.random() - 0.5) * SPEED, vy: (Math.random() - 0.5) * SPEED,
       s: 2.5 + Math.random() * 3, o: 0.3 + Math.random() * 0.4,
+      phase: Math.random() * Math.PI * 2,
     }))
 
     const draw = () => {
+      tick++
       ctx.clearRect(0, 0, w, h)
 
       for (const p of particles) {
         p.x += p.vx; p.y += p.vy
         if (p.x < 0) p.x = w; if (p.x > w) p.x = 0
         if (p.y < 0) p.y = h; if (p.y > h) p.y = 0
-        ctx.beginPath(); ctx.arc(p.x, p.y, p.s, 0, Math.PI * 2)
+        const sz = p.s + Math.sin(tick * 0.03 + p.phase) * 1.2
+        ctx.beginPath(); ctx.arc(p.x, p.y, sz, 0, Math.PI * 2)
         ctx.fillStyle = `rgba(139,92,246,${p.o})`; ctx.fill()
       }
 
