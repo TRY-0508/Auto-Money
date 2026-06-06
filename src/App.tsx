@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom'
 import AppLayout from '@/components/layout/AppLayout'
 import SplashScreen from '@/components/SplashScreen'
 import ParticleEffect from '@/components/ParticleEffect'
+import ParticleNetwork from '@/components/ParticleNetwork'
 import { seedDatabase } from '@/db/seed'
 
 const Dashboard = lazy(() => import('@/pages/Dashboard'))
@@ -56,6 +57,7 @@ function App() {
 
   return (
     <>
+      <ParticleNetwork />
       <ParticleEffect />
       <Suspense fallback={<PageLoader />}>
         <Routes>

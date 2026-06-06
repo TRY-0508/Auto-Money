@@ -88,21 +88,21 @@ export default function Settings() {
           </div>
         )}
         <div className="px-5 py-3"><p className="text-xs text-muted font-medium mb-2">支出分类</p>
-          <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">{expenseCats.map((cat, idx) => { const Icon = CATEGORY_ICON_MAP[cat.icon] || MoreHorizontal; const bg = ICON_COLORS_SM[idx % ICON_COLORS_SM.length]; return (
-            <div key={cat.id} className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 group relative">
-              <div className="w-11 h-11 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: bg }}><Icon size={22} strokeWidth={2} color="#fff"/></div>
-              <span className="text-[11px] font-semibold text-center leading-tight">{cat.name}</span>
-              {!cat.isSystem && <button onClick={() => deleteCategory(cat.id)} className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-400 text-white text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">×</button>}
-            </div>
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">{expenseCats.map((cat, idx) => { const Icon = CATEGORY_ICON_MAP[cat.icon] || MoreHorizontal; const bg = ICON_COLORS_SM[idx % ICON_COLORS_SM.length]; return (
+            <button key={cat.id} className="flex flex-col items-center gap-1 p-2 sm:p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 group relative active:scale-95 transition-transform">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: bg }}><Icon size={20} strokeWidth={2} color="#fff"/></div>
+              <span className="text-[10px] sm:text-[11px] font-semibold text-center leading-tight truncate w-full">{cat.name}</span>
+              {!cat.isSystem && <button onClick={(e) => { e.stopPropagation(); deleteCategory(cat.id) }} className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-400 text-white text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">×</button>}
+            </button>
           )})}</div>
         </div>
         <div className="px-5 py-3 border-t border-gray-50 dark:border-gray-800/50"><p className="text-xs text-muted font-medium mb-2">收入分类</p>
-          <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">{incomeCats.map((cat, idx) => { const Icon = CATEGORY_ICON_MAP[cat.icon] || MoreHorizontal; const bg = ICON_COLORS_SM[(idx + expenseCats.length) % ICON_COLORS_SM.length]; return (
-            <div key={cat.id} className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 group relative">
-              <div className="w-11 h-11 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: bg }}><Icon size={22} strokeWidth={2} color="#fff"/></div>
-              <span className="text-[11px] font-semibold text-center leading-tight">{cat.name}</span>
-              {!cat.isSystem && <button onClick={() => deleteCategory(cat.id)} className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-400 text-white text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">×</button>}
-            </div>
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">{incomeCats.map((cat, idx) => { const Icon = CATEGORY_ICON_MAP[cat.icon] || MoreHorizontal; const bg = ICON_COLORS_SM[(idx + expenseCats.length) % ICON_COLORS_SM.length]; return (
+            <button key={cat.id} className="flex flex-col items-center gap-1 p-2 sm:p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 group relative active:scale-95 transition-transform">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: bg }}><Icon size={20} strokeWidth={2} color="#fff"/></div>
+              <span className="text-[10px] sm:text-[11px] font-semibold text-center leading-tight truncate w-full">{cat.name}</span>
+              {!cat.isSystem && <button onClick={(e) => { e.stopPropagation(); deleteCategory(cat.id) }} className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-400 text-white text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">×</button>}
+            </button>
           )})}</div>
         </div>
       </div>
@@ -111,7 +111,7 @@ export default function Settings() {
       <div className="glow-card overflow-hidden p-0">
         <h3 className="text-sm font-bold tracking-tight px-5 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2"><Target size={18} strokeWidth={1.8} className="text-violet-500" />分类预算</h3>
         <div className="p-4">
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {expenseCats.map((cat, idx) => {
               const budget = budgets.find(b => b.categoryId === cat.id && b.yearMonth === yearMonth); const spent = getSpent(cat.id)
               return (
