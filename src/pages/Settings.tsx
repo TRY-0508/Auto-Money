@@ -21,9 +21,12 @@ function LucideIconPicker({ value, onChange }: { value: string; onChange: (k: st
   )
 }
 
-function CategoryBadge({ cat }: { cat: any }) {
+const ICON_COLORS_SM = ['#f59e0b','#3b82f6','#ec4899','#8b5cf6','#10b981','#f43f5e','#06b6d4','#84cc16','#f97316','#6366f1','#14b8a6','#eab308']
+
+function CategoryBadge({ cat, idx }: { cat: any; idx: number }) {
   const Icon = CATEGORY_ICON_MAP[cat.icon] || MoreHorizontal
-  return <div className="w-6 h-6 rounded-md flex items-center justify-center bg-gray-100 dark:bg-gray-800"><Icon size={14} strokeWidth={1.8} className="text-gray-500" /></div>
+  const bg = ICON_COLORS_SM[idx % ICON_COLORS_SM.length]
+  return <div className="w-9 h-9 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: bg }}><Icon size={18} strokeWidth={2} color="#fff" /></div>
 }
 
 export default function Settings() {
@@ -85,19 +88,19 @@ export default function Settings() {
           </div>
         )}
         <div className="px-5 py-3"><p className="text-xs text-muted font-medium mb-2">支出分类</p>
-          <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">{expenseCats.map(cat => { const Icon = CATEGORY_ICON_MAP[cat.icon] || MoreHorizontal; return (
+          <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">{expenseCats.map((cat, idx) => { const Icon = CATEGORY_ICON_MAP[cat.icon] || MoreHorizontal; const bg = ICON_COLORS_SM[idx % ICON_COLORS_SM.length]; return (
             <div key={cat.id} className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 group relative">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-gray-100 dark:bg-gray-700"><Icon size={20} strokeWidth={1.8} className="text-gray-500"/></div>
-              <span className="text-[11px] font-medium text-center leading-tight">{cat.name}</span>
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: bg }}><Icon size={22} strokeWidth={2} color="#fff"/></div>
+              <span className="text-[11px] font-semibold text-center leading-tight">{cat.name}</span>
               {!cat.isSystem && <button onClick={() => deleteCategory(cat.id)} className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-400 text-white text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">×</button>}
             </div>
           )})}</div>
         </div>
         <div className="px-5 py-3 border-t border-gray-50 dark:border-gray-800/50"><p className="text-xs text-muted font-medium mb-2">收入分类</p>
-          <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">{incomeCats.map(cat => { const Icon = CATEGORY_ICON_MAP[cat.icon] || MoreHorizontal; return (
+          <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">{incomeCats.map((cat, idx) => { const Icon = CATEGORY_ICON_MAP[cat.icon] || MoreHorizontal; const bg = ICON_COLORS_SM[(idx + expenseCats.length) % ICON_COLORS_SM.length]; return (
             <div key={cat.id} className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 group relative">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-gray-100 dark:bg-gray-700"><Icon size={20} strokeWidth={1.8} className="text-gray-500"/></div>
-              <span className="text-[11px] font-medium text-center leading-tight">{cat.name}</span>
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: bg }}><Icon size={22} strokeWidth={2} color="#fff"/></div>
+              <span className="text-[11px] font-semibold text-center leading-tight">{cat.name}</span>
               {!cat.isSystem && <button onClick={() => deleteCategory(cat.id)} className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-400 text-white text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">×</button>}
             </div>
           )})}</div>
@@ -109,20 +112,20 @@ export default function Settings() {
         <h3 className="text-sm font-bold tracking-tight px-5 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2"><Target size={18} strokeWidth={1.8} className="text-violet-500" />分类预算</h3>
         <div className="p-4">
           <div className="grid grid-cols-3 gap-2">
-            {expenseCats.map(cat => {
+            {expenseCats.map((cat, idx) => {
               const budget = budgets.find(b => b.categoryId === cat.id && b.yearMonth === yearMonth); const spent = getSpent(cat.id)
               return (
                 <div key={cat.id} className="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-2.5">
                   {budgetEditingId === cat.id ? (
                     <div className="space-y-1.5">
-                      <div className="flex items-center gap-1"><CategoryBadge cat={cat} /><span className="text-[11px] font-medium truncate">{cat.name}</span></div>
+                      <div className="flex items-center gap-1"><CategoryBadge cat={cat} idx={idx} /><span className="text-[11px] font-medium truncate">{cat.name}</span></div>
                       <input type="number" value={budgetAmount} onChange={e => setBudgetAmount(e.target.value)} placeholder="金额" autoFocus onKeyDown={e => e.key === 'Enter' && handleSaveBudget(cat.id)} className="w-full px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-xs" />
                       <div className="flex gap-1"><button onClick={() => handleSaveBudget(cat.id)} className="flex-1 py-1 rounded-lg bg-violet-500 text-white text-[10px] font-medium flex items-center justify-center gap-0.5"><Check size={12}/>保存</button><button onClick={() => { setBudgetEditingId(null); setBudgetAmount('') }} className="flex-1 py-1 rounded-lg bg-gray-200 dark:bg-gray-700 text-[10px] text-gray-500 flex items-center justify-center gap-0.5"><X size={12}/>取消</button></div>
                     </div>
                   ) : (
                     <div>
                       <div className="flex items-center justify-between mb-1.5">
-                        <div className="flex items-center gap-1 min-w-0"><CategoryBadge cat={cat} /><span className="text-[11px] font-semibold truncate">{cat.name}</span></div>
+                        <div className="flex items-center gap-1 min-w-0"><CategoryBadge cat={cat} idx={idx} /><span className="text-[11px] font-semibold truncate">{cat.name}</span></div>
                         <button onClick={() => { setBudgetEditingId(cat.id); setBudgetAmount(budget ? String(budget.amount) : '') }} className="flex-shrink-0 w-5 h-5 rounded-md bg-gray-200 dark:bg-gray-700 flex items-center justify-center hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors"><Edit3 size={11} className="text-gray-400 hover:text-violet-500" /></button>
                       </div>
                       {budget ? (
