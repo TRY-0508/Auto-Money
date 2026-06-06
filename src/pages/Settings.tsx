@@ -1,7 +1,10 @@
 import { useState, useRef, useEffect } from 'react'
-import { useSettings, useCategories, useTransactions, useProjects } from '@/db/hooks'
+import { useSettings, useCategories, useTransactions, useProjects, useBudgets } from '@/db/hooks'
 import { encryptApiKey, decryptApiKey } from '@/lib/crypto'
 import { exportAllData, importAllData, exportCSV, downloadFile } from '@/services/export'
+import { db } from '@/db'
+import { getCurrentYearMonth, formatAmount } from '@/lib/utils'
+import { getMonthlyStats, getCategoryBreakdown } from '@/lib/stats'
 
 const ALL_ICONS = ['🍽️', '🚗', '🛍️', '🎮', '🏠', '💊', '📚', '📱', '🧴', '📦', '💰', '💼', '📈', '🧧', '📋', '🎁', '💡', '✈️', '🐱', '🐶', '☕', '🎬', '🏋️', '🎵', '🌍', '🔧', '👕', '💄', '🍺', '🏥']
 
@@ -12,6 +15,11 @@ export default function Settings() {
   const { categories, addCategory, updateCategory, deleteCategory } = useCategories()
   const { transactions } = useTransactions()
   const { projects, addProject, updateProject, deleteProject } = useProjects()
+  const { budgets, addBudget, updateBudget, deleteBudget } = useBudgets()
+
+  const yearMonth = getCurrentYearMonth()
+  const stats = getMonthlyStats(transactions, yearMonth)
+  const breakdown = getCategoryBreakdown(transactions, categories, 'expense', yearMonth)
 
   const [apiKey, setApiKey] = useState('')
   const [baseUrl, setBaseUrl] = useState('https://api.deepseek.com/v1')
@@ -37,6 +45,13 @@ export default function Settings() {
   const [newProjectName, setNewProjectName] = useState('')
   const [newProjectIcon, setNewProjectIcon] = useState('📋')
   const [newProjectColor, setNewProjectColor] = useState('#3b82f6')
+
+  // Budget form
+  const [budgetEditingId, setBudgetEditingId] = useState<string | null>(null)
+  const [budgetAmount, setBudgetAmount] = useState('')
+
+  // Clear data
+  const [showClearConfirm, setShowClearConfirm] = useState(false)
 
   // Import
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -92,6 +107,26 @@ export default function Settings() {
     await addProject({ name: newProjectName.trim(), icon: newProjectIcon, color: newProjectColor })
     setNewProjectName(''); setShowAddProject(false)
   }
+
+  const handleSaveBudget = async (categoryId: string | null) => {
+    const a = parseFloat(budgetAmount); if (!a || a <= 0) return
+    const exist = budgets.find(b => b.categoryId === categoryId && b.yearMonth === yearMonth)
+    if (exist) await updateBudget(exist.id, { amount: a })
+    else await addBudget({ categoryId, amount: a, period: 'monthly', yearMonth })
+    setBudgetEditingId(null); setBudgetAmount('')
+  }
+
+  const handleClearAllData = async () => {
+    await db.transactions.clear()
+    await db.chatMessages.clear()
+    await db.budgets.clear()
+    await db.projects.clear()
+    setShowClearConfirm(false)
+    window.location.reload()
+  }
+
+  const getSpent = (catId: string | null) => catId === null ? stats.totalExpense : (breakdown.find(b => b.categoryId === catId)?.amount || 0)
+  const totalBudget = budgets.filter(b => b.categoryId === null && b.yearMonth === yearMonth).reduce((s, b) => s + b.amount, 0)
 
   const handleExportJSON = async () => {
     const data = await exportAllData()
@@ -272,6 +307,30 @@ export default function Settings() {
         )}
       </div>
 
+      {/* Budget Management */}
+      <div className="glass rounded-3xl shadow-sm border border-white/50 dark:border-gray-800/50 overflow-hidden">
+        <h3 className="font-semibold text-sm px-5 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center gap-1.5"><span>🎯</span> 月度预算</h3>
+        <p className="text-[11px] text-gray-400 px-5 py-2 border-b border-gray-50 dark:border-gray-800/30">设定预算帮助觉察消费模式，观察预算压力与心情变化的关联</p>
+        {/* Category Budgets */}
+        {expenseCats.map(cat => {
+          const budget = budgets.find(b => b.categoryId === cat.id && b.yearMonth === yearMonth)
+          const spent = getSpent(cat.id)
+          return (
+            <div key={cat.id} className="px-5 py-2.5 border-b border-gray-50 dark:border-gray-800/30 last:border-0">
+              {budgetEditingId === cat.id ? (
+                <div className="flex items-center gap-2"><span>{cat.icon}</span><span className="text-sm flex-1">{cat.name}</span><input type="number" value={budgetAmount} onChange={e => setBudgetAmount(e.target.value)} placeholder="金额" autoFocus onKeyDown={e => e.key === 'Enter' && handleSaveBudget(cat.id)} className="w-24 px-2 py-1 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm" /><button onClick={() => handleSaveBudget(cat.id)} className="text-xs text-violet-500 font-medium">保存</button><button onClick={() => { setBudgetEditingId(null); setBudgetAmount('') }} className="text-xs text-gray-400">取消</button></div>
+              ) : (
+                <div>
+                  <div className="flex items-center justify-between mb-1"><div className="flex items-center gap-2"><span>{cat.icon}</span><span className="text-sm font-medium">{cat.name}</span></div><span className="text-xs text-gray-400">已花 {formatAmount(spent)}{budget ? ` / ${formatAmount(budget.amount)}` : ''}</span></div>
+                  {budget && <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden"><div className={`h-full rounded-full transition-all ${spent > budget.amount ? 'bg-red-400' : spent / budget.amount > 0.8 ? 'bg-amber-400' : 'bg-emerald-400'}`} style={{ width: `${Math.min((spent / budget.amount) * 100, 100)}%` }} /></div>}
+                  <button onClick={() => { setBudgetEditingId(cat.id); setBudgetAmount(budget ? String(budget.amount) : '') }} className="text-xs text-violet-500 hover:text-violet-600 font-medium mt-1">{budget ? '✏️ 修改' : '➕ 设置预算'}</button>
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+
       {/* Data Management */}
       <div className="glass rounded-3xl p-5 shadow-sm border border-white/50 dark:border-gray-800/50">
         <h3 className="font-semibold text-sm mb-3 flex items-center gap-1.5"><span>💾</span> 数据管理</h3>
@@ -284,8 +343,25 @@ export default function Settings() {
             className="w-full py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">📥 导入数据 (JSON)</button>
           <input ref={fileInputRef} type="file" accept=".json" onChange={handleImport} className="hidden" />
           {importMessage && <p className={`text-xs text-center ${importMessage.includes('成功') ? 'text-green-500' : 'text-red-500'}`}>{importMessage}</p>}
+          <hr className="border-gray-100 dark:border-gray-800 my-2" />
+          <button onClick={() => setShowClearConfirm(true)}
+            className="w-full py-2.5 rounded-2xl border border-red-200 dark:border-red-900 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">🗑️ 清除所有数据</button>
         </div>
       </div>
+
+      {/* Clear data confirm */}
+      {showClearConfirm && (
+        <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center p-4 fade-in" onClick={() => setShowClearConfirm(false)}>
+          <div className="bg-white dark:bg-gray-900 rounded-3xl p-5 w-full max-w-sm shadow-xl" onClick={e => e.stopPropagation()}>
+            <p className="text-center font-semibold text-lg mb-1">⚠️ 确认清除</p>
+            <p className="text-center text-sm text-gray-500 mb-5">将删除所有交易记录、对话历史和预算数据。<br/>此操作不可撤销。</p>
+            <div className="flex gap-2">
+              <button onClick={() => setShowClearConfirm(false)} className="flex-1 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 text-sm">取消</button>
+              <button onClick={handleClearAllData} className="flex-1 py-2.5 rounded-2xl bg-red-500 text-white text-sm font-medium">确认清除</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <p className="text-center text-xs text-gray-300 dark:text-gray-600 pb-4">Auto Money v1.0 · 数据存储在浏览器本地</p>
     </div>

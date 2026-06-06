@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
-import { useTransactions, useCategories, useProjects } from '@/db/hooks'
+import { useTransactions, useCategories, useProjects, useBudgets } from '@/db/hooks'
 import { getMonthlyStats, getCategoryBreakdown } from '@/lib/stats'
 import { getCurrentYearMonth, formatAmount, formatDate } from '@/lib/utils'
 import { MOODS } from '@/lib/constants'
@@ -95,7 +95,7 @@ export default function Dashboard() {
   const [yearMonth, setYearMonth] = useState(getCurrentYearMonth())
   const [year, month] = yearMonth.split('-').map(Number)
   const { transactions: allTransactions, updateTransaction, deleteTransaction } = useTransactions({ month: yearMonth })
-  const { categories } = useCategories(); const { projects } = useProjects()
+  const { categories } = useCategories(); const { projects } = useProjects(); const { budgets } = useBudgets()
   const transactions = useMemo(() => projectId ? allTransactions.filter(t => t.projectId === projectId) : allTransactions, [allTransactions, projectId])
   const stats = useMemo(() => getMonthlyStats(transactions, yearMonth), [transactions, yearMonth])
   const expenseBreakdown = useMemo(() => getCategoryBreakdown(transactions, categories, 'expense', yearMonth), [transactions, categories, yearMonth])
@@ -109,6 +109,41 @@ export default function Dashboard() {
   }, [transactions])
   const dominantMood = moodStats[0]
   const moodKey = dominantMood?.value || 'neutral'
+
+  // ── Budget × Mood ──
+  const budgetWithMood = useMemo(() => {
+    const result: { cat: any; budget: any; spent: number; dominantMood: string | null; moodEmoji: string }[] = []
+    const ec = categories.filter(c => c.type === 'expense')
+    for (const c of ec) {
+      const b = budgets.find(x => x.categoryId === c.id && x.yearMonth === yearMonth)
+      if (!b) continue
+      const catTxs = transactions.filter(t => t.categoryId === c.id && t.type === 'expense')
+      const spent = catTxs.reduce((s, t) => s + t.amount, 0)
+      const moodMap: Record<string, number> = {}
+      for (const t of catTxs) { if (t.mood) moodMap[t.mood] = (moodMap[t.mood] || 0) + 1 }
+      let dm: string | null = null; let maxC = 0
+      for (const [k, v] of Object.entries(moodMap)) { if (v > maxC) { maxC = v; dm = k } }
+      const emoji = dm ? MOODS.find(m2 => m2.value === dm)?.emoji || '' : ''
+      result.push({ cat: c, budget: b, spent, dominantMood: dm, moodEmoji: emoji })
+    }
+    return result
+  }, [categories, budgets, yearMonth, transactions, MOODS])
+
+  // ── Mood Timeline ──
+  const moodTimeline = useMemo(() => {
+    const today = new Date()
+    const days: { date: string; day: number; label: string; mood: string | null; spent: number }[] = []
+    for (let i = 13; i >= 0; i--) {
+      const d = new Date(today); d.setDate(d.getDate() - i)
+      const ds = d.toISOString().slice(0, 10)
+      const dayTxs = transactions.filter(t => t.date === ds)
+      const lastMood = dayTxs.filter(t => t.mood).pop()
+      const spent = dayTxs.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0)
+      const label = i === 0 ? '今天' : i === 1 ? '昨天' : `${d.getMonth() + 1}/${d.getDate()}`
+      days.push({ date: ds, day: d.getDay(), label, mood: lastMood?.mood || null, spent })
+    }
+    return days
+  }, [transactions])
   const pageMoodClass = PAGE_CLASS[moodKey] || PAGE_CLASS.neutral
   const bannerClass = BANNER_CLASS[moodKey] || BANNER_CLASS.neutral
 
@@ -243,6 +278,57 @@ export default function Dashboard() {
               ) : (
                 <p className="text-sm text-gray-400 text-center py-4">暂无支出记录</p>
               )}
+            </div>
+          </div>
+
+          {/* ── Budget × Mood ── */}
+          {budgetWithMood.length > 0 && (
+            <div className="glass rounded-3xl p-5 card-hover">
+              <h3 className="text-sm font-semibold mb-3 flex items-center gap-1.5"><span>🎯</span> 预算心情</h3>
+              <p className="text-xs text-gray-400 mb-3">每个分类的预算执行情况 × 你的主要心情</p>
+              <div className="space-y-3">
+                {budgetWithMood.map(({ cat, budget, spent, moodEmoji }) => {
+                  const pct = Math.round((spent / budget.amount) * 100)
+                  const over = pct > 100
+                  return (
+                    <div key={cat.id} className="flex items-center gap-3">
+                      <span className="text-lg">{cat.icon}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between text-sm mb-1">
+                          <span className="font-medium">{cat.name}</span>
+                          <span className="text-xs text-gray-400">{formatAmount(spent)} / {formatAmount(budget.amount)}</span>
+                        </div>
+                        <div className="w-full h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                          <div className={`h-full rounded-full transition-all duration-500 ${over ? 'bg-red-400' : pct > 80 ? 'bg-amber-400' : 'bg-emerald-400'}`} style={{ width: `${Math.min(pct, 100)}%` }} />
+                        </div>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        {moodEmoji ? <span className="text-base">{moodEmoji}</span> : <span className="text-xs text-gray-300">—</span>}
+                        <p className="text-[10px] text-gray-400">{over ? '超预算' : pct > 80 ? '注意' : '健康'}</p>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+              <p className="text-[11px] text-gray-400 mt-3 italic">
+                💡 {budgetWithMood.some(b => b.dominantMood === 'anxious') ? '焦虑时容易冲动消费，试试设置预算来觉察这个模式' : '预算是一面镜子，帮你看见消费与情绪的关系'}
+              </p>
+            </div>
+          )}
+
+          {/* ── Mood Timeline ── */}
+          <div className="glass rounded-3xl p-4 card-hover overflow-hidden">
+            <h3 className="text-sm font-semibold mb-3 flex items-center gap-1.5"><span>📅</span> 心情时间线</h3>
+            <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1">
+              {moodTimeline.map(d => (
+                <div key={d.date} className="flex flex-col items-center gap-1 flex-shrink-0 w-10">
+                  <span className="text-[10px] text-gray-400">{d.label}</span>
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg transition-all ${d.mood ? 'bg-violet-50 dark:bg-violet-900/30 scale-100' : 'bg-gray-50 dark:bg-gray-800 scale-90'} ${d.mood ? 'bounce-in' : ''}`}>
+                    {d.mood || '·'}
+                  </div>
+                  {d.spent > 0 && <span className="text-[9px] text-gray-400">¥{Math.round(d.spent)}</span>}
+                </div>
+              ))}
             </div>
           </div>
 
