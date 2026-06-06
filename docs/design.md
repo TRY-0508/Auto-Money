@@ -1,230 +1,102 @@
 # 心情收支簿 — 系统设计
 
-## 1. 技术选型（不变）
+## 1. 技术栈
 
-React 18 + TypeScript · Vite · Tailwind CSS · Dexie.js (IndexedDB) · Zustand · Recharts · OpenAI SDK
+React 18 + TypeScript · Vite · Tailwind CSS · Dexie.js (IndexedDB) · Zustand · Recharts · Lucide React · OpenAI SDK
 
-## 2. 页面架构：3+1
+## 2. 页面架构
+
+3 个路由 + 1 个全局弹窗：
 
 ```
-设置 ───── 辅助页（低频操作）
-  │
-  ├── API Key
-  ├── 分类管理
-  ├── 分账单管理
-  └── 数据导入导出
-
-
-首页(Dashboard) ───── 主视图
-  │
-  ├── 心情×消费概览（Banner + 心情饼图 + 情绪消费柱状图）
-  ├── 日历热力图（可折叠）
-  └── 交易流水（筛选：类型/日期范围/分类/心情/搜索）
-
-
-记账(Modal) ───── 全局弹窗
-  │
-  ├── AI 文字/语音解析
-  ├── 手动表单（分类网格 + 心情选择器 + 快捷模板）
-  └── 归属分账单
-
-
-AI 助手 ───── 分析视图
-  │
-  ├── Tab 1: 心理分析报告
-  └── Tab 2: 对话助手
+/                Dashboard（首页）
+/ai              AI 助手（心理分析 + 对话）
+/settings        设置（API + 分类 + 预算 + 分账单 + 数据）
+[全局 Modal]     记账弹窗（文字/语音/手动）
 ```
 
-**路由**：`/`（首页） + `/ai`（AI 助手） + `/settings`（设置），共 3 个路由。
+### 导航
+
+| 平台 | 方式 |
+|---|---|
+| 桌面端 | 侧边栏（LayoutDashboard / Brain / Settings） |
+| 移动端 | 底部标签栏（首页 / [+] / AI / 设置） |
 
 ## 3. 数据模型
 
+### Transaction
+
 ```typescript
-Transaction {
-  id, type, amount, categoryId, description, date,
-  createdAt, updatedAt, aiParsed?,
-  mood?,        // "happy"|"calm"|... 心情 emoji key
-  projectId?,   // 归属分账单
-}
-
-Category {
-  id, name, type, icon, color, isSystem
-}
-
-Project {
-  id, name, icon, color, createdAt
-}
-
-Budget {
-  id, categoryId, amount, period, yearMonth
-}
-
-Settings {
-  id, apiKey, apiBaseUrl, model, language, currency, theme
-}
-
-ChatMessage {
-  id, role, content, timestamp
+{
+  id: string; type: 'expense'|'income'; amount: number
+  categoryId: string; description: string; date: string
+  createdAt: number; updatedAt: number
+  mood?: string       // mood value: happy|calm|neutral|sad|anxious|angry|excited|tired
+  projectId?: string  // optional project tag
 }
 ```
 
-### 心情常量
+### Category · Project · Budget · Settings · ChatMessage
+
+标准 CRUD 模型。Category 的 `icon` 字段存储 Lucide 图标 key。Budget 绑定 `yearMonth` 实现按月独立。
+
+## 4. 心情常量
 
 ```typescript
-MOODS = [
-  { emoji: '😊', label: '开心', value: 'happy' },
-  { emoji: '😌', label: '平静', value: 'calm' },
-  { emoji: '😐', label: '一般', value: 'neutral' },
-  { emoji: '😢', label: '难过', value: 'sad' },
-  { emoji: '😰', label: '焦虑', value: 'anxious' },
-  { emoji: '😡', label: '愤怒', value: 'angry' },
-  { emoji: '🤩', label: '兴奋', value: 'excited' },
-  { emoji: '😴', label: '疲惫', value: 'tired' },
+MOOD_LIST = [
+  { value:'happy',   label:'开心', Icon:Smile,      color:'#f59e0b' },
+  { value:'calm',    label:'平静', Icon:Heart,       color:'#0ea5e9' },
+  { value:'neutral', label:'一般', Icon:Meh,         color:'#6b7280' },
+  { value:'sad',     label:'难过', Icon:Frown,       color:'#6366f1' },
+  { value:'anxious', label:'焦虑', Icon:AlertTriangle,color:'#f97316' },
+  { value:'angry',   label:'愤怒', Icon:Angry,       color:'#ef4444' },
+  { value:'excited', label:'兴奋', Icon:Star,        color:'#a855f7' },
+  { value:'tired',   label:'疲惫', Icon:Moon,        color:'#8b5cf6' },
 ]
 ```
 
-## 4. 页面详细设计
+## 5. 设计系统
 
-### 4.1 首页 Dashboard (`/`)
+### 色彩体系
 
-```
-┌─────────────────────────────────────┐
-│  [2025年6月]  ← → 月份切换          │
-│                                     │
-│  💜 心情收支簿                       │
-│  ┌───────┬───────┬───────┐          │
-│  │ 收入  │ 支出  │ 结余  │ Banner   │
-│  └───────┴───────┴───────┘          │
-├─────────────────────────────────────┤
-│  💭 心情分布    📊 心情×消费额       │
-│  [饼图] [图例]  [柱状图]            │  Charts
-│  😊开心 8次 ¥1,200                  │
-│  😰焦虑 3次 ¥850                    │
-├─────────────────────────────────────┤
-│  🎨 支出分类（饼图 + 图例）          │  Category
-│  可折叠                             │
-├─────────────────────────────────────┤
-│  📅 月历热力图  ← → 滑动           │  Calendar
-│  可折叠                             │
-├─────────────────────────────────────┤
-│  筛选: [全部|支出|收入] [日期起-止]  │
-│  [分类] [心情] [🔍搜索]             │  Filters
-├─────────────────────────────────────┤
-│  今天          收¥200 支¥150        │
-│  😊 午餐 餐饮 ¥35                   │  Transactions
-│  😰 游戏 娱乐 ¥128                  │
-│  昨天                               │
-│  😐 地铁 交通 ¥6                    │
-└─────────────────────────────────────┘
-         [  +   ]  FAB 记账
-```
+| Token | 用途 |
+|---|---|
+| `--c-primary` (#8b5cf6) | 品牌色、按钮、选中态 |
+| `--c-income` (#10b981) | 收入 |
+| `--c-expense` (#f43f5e) | 支出 |
+| `--c-balance` (#6366f1) | 结余 |
+| `--c-warning` (#f59e0b) | 预算紧张 |
+| `--c-danger` (#ef4444) | 删除/错误 |
 
-**特点**：
-- 心情图表在分类图表上方，突出心理学主题
-- 交易流水直接嵌入首页（不再有独立账本页）
-- 筛选支持按心情过滤
-- 图表和日历可折叠/展开
+### 组件层级
 
-### 4.2 记账弹窗（全局 Modal）
+- `.card` — 统一毛玻璃卡片（1.5rem 圆角 + blur + 阴影）
+- `.btn` / `.btn-primary` / `.btn-secondary` / `.btn-danger`
+- `.btn-icon` — 20px 纯图标操作按钮
+- `.input` — 统一输入框样式
+
+### 心情响应
+
+页面背景色和 Banner 渐变色根据主导心情自动切换（8 套配色）。默认（无心情数据时）为暖紫白色调。
+
+## 6. Dashboard 布局
 
 ```
 ┌──────────────────────────┐
-│  记一笔              ✕   │
+│ 月份选择 + 分账单切换     │
 ├──────────────────────────┤
-│  [📝文字] [🎤语音]        │  Mode 切换
-├──────────────────────────┤
-│  ┌──────────────────┐    │
-│  │ 中午吃面15块...    │    │  Textarea / Voice
-│  └──────────────────┘    │
-│  [手动填写] [✨AI解析]   │
-├──────────────────────────┤
-│  ⚡ 常用： ☕咖啡  🍜午餐  │  Quick templates
-│         🚇地铁  🎮游戏   │
-├──────────────────────────┤
-│  (手动模式)               │
-│  [🔴支出|🟢收入]         │  Type tab
-│  [     0.00     ]        │  Amount
-│  分类: [🍽️][🚗][...]    │  Category grid + new
-│  [📅日期] [💬备注]       │
-│  💭 心情: 😊😐😢😰...   │  Mood picker (prominent)
-│  📁 分账单: [可选]       │  Project selector
-│  [💾保存]                │
+│ 心情 Banner（渐变+数据）  │
+├────────────┬─────────────┤
+│ 心情统计    │ 支出分类    │
+│ 彩虹条+胶囊 │ 饼图+列表   │
+├────────────┴─────────────┤
+│ 分类预算（可选）          │
+│ 心情时间线（14天）        │
+│ 月历热力图（可折叠）      │
+│ 筛选 + 交易列表           │
 └──────────────────────────┘
 ```
 
-**特点**：心情选择器放在金额和分类之后、保存之前，位置显著。
+## 7. 部署
 
-### 4.3 AI 助手 (`/ai`)
-
-```
-┌──────────────────────────┐
-│  [🧠心理分析] [💬对话]    │  Tabs
-├──────────────────────────┤
-│  🧠 消费心理分析          │
-│                          │
-│  本月心情×消费一览：      │
-│  😊开心 8笔 ¥1,200       │  Data preview
-│  😰焦虑 3笔 ¥850         │
-│  ...                     │
-│                          │
-│  [✨ 生成心理分析报告]    │  Generate button
-├──────────────────────────┤
-│  AI 报告内容...           │  Result
-│  - 情绪性消费迹象分析     │
-│  - 消费满意度评估        │
-│  - 改善建议              │
-└──────────────────────────┘
-```
-
-**心理分析 AI 提示词要点**：
-- 分析不同情绪状态下的消费特征
-- 识别情绪性消费模式
-- 哪种消费带来积极情绪
-- 2-3 条基于心理学的改善建议
-
-### 4.4 设置 (`/settings`)
-
-```
-类别：
-  🤖 API 配置
-  🏷️ 收支分类管理（预设+自定义）
-  📁 分账单管理
-  💾 数据导入导出
-```
-
-**移除**：预算模块（与心理学主题弱关联）。
-
-## 5. 预算处理
-
-预算功能降级为可选。不再有独立预算页。如果用户之前在设置中设置了预算数据，Dashboard 会在心情 Banner 下展示一条简要预算状态（如"本月已用 ¥3,200 / 预算 ¥5,000"），不占主要视觉空间。
-
-## 6. 导航
-
-**桌面侧边栏（3 项）**：首页 · AI 助手 · 设置
-
-**移动端底部栏（3 项 + FAB）**：首页 · [+] · AI · 设置
-
-## 7. 视觉风格
-
-- **主色调**：紫色系渐变（from-violet to-purple），传递"温暖、关怀、心理学"的感觉
-- **卡片**：大圆角 rounded-3xl + 毛玻璃 glass 效果
-- **心情 emoji** 在列表中放大显示，作为视觉锚点
-- **空状态**用温和的引导语，如"记下第一笔，开始了解自己"
-
-## 8. 提示词设计
-
-### 心理分析报告 Prompt
-
-```
-你是消费心理学顾问。用户记录了本月的消费数据和对应的心情。
-
-{data_context}
-
-请从消费心理学角度分析：
-1. 情绪状态与消费行为的关联模式
-2. 是否存在"情绪性消费"迹象（焦虑/难过时花费明显增多）
-3. 哪些消费类别与积极情绪相关
-4. 给出 2-3 条温和、实用的改善建议
-
-语气温暖、共情，像心理咨询师与来访者对话。避免说教。
-```
+GitHub Pages + GitHub Actions 自动部署。HashRouter 解决 SPA 路由问题。
