@@ -3,7 +3,7 @@ import { useTransactions, useCategories, useBudgets, useChatMessages } from '@/d
 import { generateReport, chatQuery } from '@/services/llm'
 import { getMonthlyStats, getCategoryBreakdown } from '@/lib/stats'
 import { formatAmount, getCurrentYearMonth } from '@/lib/utils'
-import { MOODS } from '@/lib/constants'
+import { MOOD_LIST } from '@/lib/icons'
 
 const SUGGESTIONS = [
   '我这个月开心的时候花了多少？',
@@ -109,8 +109,8 @@ function PsychTab() {
       const cn = categories.find(c => c.id === t.categoryId)?.name
       if (cn && !map[t.mood].categories.includes(cn)) map[t.mood].categories.push(cn)
     }
-    return MOODS.filter(m => map[m.value]).map(m => ({
-      emoji: m.emoji, label: m.label, ...(map[m.value] || { count: 0, amount: 0, categories: [] })
+    return MOOD_LIST.filter(m => map[m.value]).map(m => ({
+      ...m, ...(map[m.value] || { count: 0, amount: 0, categories: [] })
     }))
   }, [transactions, categories])
 
@@ -123,7 +123,7 @@ function PsychTab() {
 交易笔数: ${stats.count}
 
 心情-消费关联分析：
-${moodData.map(m => `- ${m.emoji}${m.label}: ${m.count}次消费，总金额 ${formatAmount(m.amount)}，涉及分类: ${m.categories.join('、') || '无'}`).join('\n')}
+${moodData.map(m => `- ${m.label}: ${m.count}次消费，总金额 ${formatAmount(m.amount)}，涉及分类: ${m.categories.join('、') || '无'}`).join('\n')}
 
 请你作为心理学顾问，从消费心理学的角度，分析以上数据：
 1. 不同情绪状态下的消费特征
@@ -147,7 +147,7 @@ ${moodData.map(m => `- ${m.emoji}${m.label}: ${m.count}次消费，总金额 ${f
             <p className="text-xs text-gray-500">本月心情×消费一览</p>
             {moodData.map(m => (
               <div key={m.label} className="flex items-center gap-2 text-sm">
-                <span>{m.emoji}</span>
+                <m.Icon size={18} strokeWidth={1.8} />
                 <span className="flex-1">{m.label}</span>
                 <span className="text-gray-400 text-xs">{m.count}笔</span>
                 <span className="font-medium text-purple-600 dark:text-purple-400 text-xs">{formatAmount(m.amount)}</span>
@@ -195,9 +195,9 @@ function ChatTab() {
     const s = getMonthlyStats(transactions, yearMonth)
     const b = getCategoryBreakdown(transactions, categories, 'expense', yearMonth)
     const ib = getCategoryBreakdown(transactions, categories, 'income', yearMonth)
-    const moodInfo = MOODS.filter(m => transactions.some(t => t.mood === m.value)).map(m => {
+    const moodInfo = MOOD_LIST.filter(m => transactions.some(t => t.mood === m.value)).map(m => {
       const count = transactions.filter(t => t.mood === m.value).length
-      return `${m.emoji}${m.label}: ${count}次`
+      return `${m.label}: ${count}次`
     }).join('，')
     const [y, m] = yearMonth.split('-')
     return `${y}年${m}月 收支：收入 ${formatAmount(s.totalIncome)} 支出 ${formatAmount(s.totalExpense)} 结余 ${formatAmount(s.balance)}\n支出: ${b.map(x => `${x.categoryName} ${formatAmount(x.amount)}(${x.percentage}%)`).join('，')}\n心情统计: ${moodInfo || '无'}`

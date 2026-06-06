@@ -1,19 +1,20 @@
+import type { ReactNode } from 'react'
+
 interface EmptyStateProps {
-  icon?: string
+  icon?: ReactNode
   title: string
   description?: string
   action?: { label: string; onClick: () => void }
 }
 
-export default function EmptyState({ icon = '💜', title, description, action }: EmptyStateProps) {
+export default function EmptyState({ icon, title, description, action }: EmptyStateProps) {
   return (
     <div className="text-center py-10 px-4">
-      <div className="text-6xl mb-4 float">{icon}</div>
+      {icon && <div className="mb-4 float flex justify-center">{icon}</div>}
       <p className="text-gray-700 dark:text-gray-200 font-semibold text-lg">{title}</p>
-      {description && <p className="text-gray-400 text-sm mt-1.5 leading-relaxed">{description}</p>}
+      {description && <p className="text-gray-400 text-sm mt-1.5">{description}</p>}
       {action && (
-        <button onClick={action.onClick}
-          className="mt-5 px-6 py-2.5 bg-gradient-to-r from-violet-500 to-purple-500 text-white text-sm font-medium rounded-full hover:from-violet-600 hover:to-purple-600 transition-all shadow-lg hover:shadow-xl scale-pop">
+        <button onClick={action.onClick} className="mt-5 px-6 py-2.5 bg-gradient-to-r from-violet-500 to-purple-500 text-white text-sm font-medium rounded-full hover:from-violet-600 hover:to-purple-600 transition-all shadow-lg">
           {action.label}
         </button>
       )}

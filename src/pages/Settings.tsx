@@ -5,8 +5,7 @@ import { exportAllData, importAllData, exportCSV, downloadFile } from '@/service
 import { db } from '@/db'
 import { getCurrentYearMonth, formatAmount } from '@/lib/utils'
 import { getMonthlyStats, getCategoryBreakdown } from '@/lib/stats'
-import { CUSTOM_ICON_OPTIONS, ICON_MAP } from '@/lib/icons'
-import { MoreHorizontal } from 'lucide-react'
+import { CAT_ICON_OPTIONS, CATEGORY_ICON_MAP, MoreHorizontal } from '@/lib/icons'
 
 const ALL_COLORS = ['#3b82f6', '#22c55e', '#ef4444', '#eab308', '#a855f7', '#f97316', '#ec4899', '#06b6d4', '#6366f1', '#14b8a6', '#84cc16', '#f59e0b', '#78716c']
 const PROJECT_ICONS = ['✈️', '🎮', '🏠', '🎓', '💼', '🎉', '🏥', '🚗', '🎵', '📚', '💻', '🐱', '🎁', '🍔', '⚽', '🎬']
@@ -14,8 +13,8 @@ const PROJECT_ICONS = ['✈️', '🎮', '🏠', '🎓', '💼', '🎉', '🏥',
 function LucideIconPicker({ value, onChange, size }: { value: string; onChange: (k: string) => void; size?: number }) {
   return (
     <div className="flex flex-wrap gap-1 max-h-28 overflow-y-auto">
-      {CUSTOM_ICON_OPTIONS.map(({ key, label }) => {
-        const Icon = ICON_MAP[key] || MoreHorizontal
+      {CAT_ICON_OPTIONS.map(({ key, label }) => {
+        const Icon = CATEGORY_ICON_MAP[key] || MoreHorizontal
         return (
           <button key={key} onClick={() => onChange(key)} title={label}
             className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all ${value === key ? 'bg-violet-100 dark:bg-violet-900/50 ring-2 ring-violet-400' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
@@ -190,7 +189,7 @@ export default function Settings() {
 }
 
 function CategoryBadge({ cat }: { cat: any }) {
-  const Icon = ICON_MAP[cat.icon] || MoreHorizontal
+  const Icon = CATEGORY_ICON_MAP[cat.icon] || MoreHorizontal
   return (
     <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: cat.color + '18' }}>
       <Icon size={15} strokeWidth={1.8} color={cat.color} />
@@ -203,7 +202,7 @@ function CategorySection({ cats, label, onDelete }: { cats: any[]; label: string
     <div className="px-5 py-2 border-t border-gray-50 dark:border-gray-800/50">
       <p className="text-xs text-gray-400 font-medium py-1">{label}</p>
       {cats.map(cat => {
-        const Icon = ICON_MAP[cat.icon] || MoreHorizontal
+        const Icon = CATEGORY_ICON_MAP[cat.icon] || MoreHorizontal
         return (
           <div key={cat.id} className="flex items-center gap-3 py-2 group">
             <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: cat.color + '18' }}>
