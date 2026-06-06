@@ -5,17 +5,15 @@ interface EmptyStateProps {
   action?: { label: string; onClick: () => void }
 }
 
-export default function EmptyState({ icon = '📝', title, description, action }: EmptyStateProps) {
+export default function EmptyState({ icon = '💜', title, description, action }: EmptyStateProps) {
   return (
-    <div className="text-center py-12 px-4">
-      <p className="text-4xl mb-3">{icon}</p>
-      <p className="text-gray-600 dark:text-gray-300 font-medium">{title}</p>
-      {description && <p className="text-sm text-gray-400 mt-1">{description}</p>}
+    <div className="text-center py-10 px-4">
+      <div className="text-6xl mb-4 float">{icon}</div>
+      <p className="text-gray-700 dark:text-gray-200 font-semibold text-lg">{title}</p>
+      {description && <p className="text-gray-400 text-sm mt-1.5 leading-relaxed">{description}</p>}
       {action && (
-        <button
-          onClick={action.onClick}
-          className="mt-4 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
-        >
+        <button onClick={action.onClick}
+          className="mt-5 px-6 py-2.5 bg-gradient-to-r from-violet-500 to-purple-500 text-white text-sm font-medium rounded-full hover:from-violet-600 hover:to-purple-600 transition-all shadow-lg hover:shadow-xl scale-pop">
           {action.label}
         </button>
       )}
