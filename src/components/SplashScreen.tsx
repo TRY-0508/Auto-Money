@@ -2,8 +2,6 @@ import { useState, useEffect, useRef } from 'react'
 import { MOOD_LIST, CAT_ICON_OPTIONS } from '@/lib/icons'
 import { createRoot } from 'react-dom/client'
 
-const ICON_COUNT = 24
-
 interface Props { onEnter: () => void }
 
 export default function SplashScreen({ onEnter }: Props) {
@@ -19,14 +17,19 @@ export default function SplashScreen({ onEnter }: Props) {
     const container = containerRef.current
     if (!container) return
 
-    const icons = [...MOOD_LIST.slice(0, 8).map(m => ({ Icon: m.Icon, key: m.value })), ...CAT_ICON_OPTIONS.slice(0, ICON_COUNT - 8).map(c => ({ Icon: c.Icon, key: c.key }))]
+    const isMobile = window.innerWidth < 640
+    const count = isMobile ? 12 : 24
+    const icons = [
+      ...MOOD_LIST.slice(0, 8).map(m => ({ Icon: m.Icon, key: m.value })),
+      ...CAT_ICON_OPTIONS.slice(0, count).map(c => ({ Icon: c.Icon, key: c.key })),
+    ].slice(0, count)
 
     const items: { el: HTMLDivElement; x: number; y: number; vx: number; vy: number; opacity: number; size: number }[] = []
 
     for (const icon of icons) {
       const el = document.createElement('div')
-      const sz = 32 + Math.random() * 28
-      const op = 0.12 + Math.random() * 0.2
+      const sz = isMobile ? (22 + Math.random() * 20) : (32 + Math.random() * 28)
+      const op = isMobile ? (0.08 + Math.random() * 0.14) : (0.12 + Math.random() * 0.2)
       el.style.cssText = 'position:absolute;pointer-events:none;transition:none;'
       container.appendChild(el)
       const root = createRoot(el)
@@ -35,15 +38,15 @@ export default function SplashScreen({ onEnter }: Props) {
         el,
         x: Math.random() * (container.offsetWidth - 40) + 20,
         y: Math.random() * (container.offsetHeight - 40) + 20,
-        vx: (Math.random() - 0.5) * 0.6,
-        vy: (Math.random() - 0.5) * 0.6,
+        vx: (Math.random() - 0.5) * (isMobile ? 0.4 : 0.6),
+        vy: (Math.random() - 0.5) * (isMobile ? 0.4 : 0.6),
         opacity: op,
         size: sz,
       })
     }
 
     let id: number
-    const MIN_DIST = 70
+    const MIN_DIST = isMobile ? 50 : 70
     const REPEL = 0.3
 
     const animate = () => {
