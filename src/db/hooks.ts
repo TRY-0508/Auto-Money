@@ -3,7 +3,16 @@ import { db } from './index'
 import type { Transaction, Category, Budget, Settings, ChatMessage, Project } from '@/types'
 
 export function useCategories() {
-  const categories = useLiveQuery(() => db.categories.toArray()) ?? []
+  const categories = useLiveQuery(async () => {
+    const cats = await db.categories.toArray()
+    // Sort: system categories first, then custom; "其他" always last
+    return cats.sort((a, b) => {
+      if (a.name === '其他') return 1
+      if (b.name === '其他') return -1
+      if (a.isSystem !== b.isSystem) return a.isSystem ? -1 : 1
+      return 0
+    })
+  }) ?? []
 
   const addCategory = async (cat: Omit<Category, 'id'>) => {
     const id = crypto.randomUUID()
