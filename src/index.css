@@ -141,6 +141,21 @@ body {
 .btn-sm { padding: 0.375rem 0.75rem; font-size: 0.8125rem; border-radius: 0.75rem; }
 .btn-xs { padding: 0.25rem 0.625rem; font-size: 0.75rem; border-radius: 0.625rem; }
 
+/* Icon-only button (20px, for inline mini actions) */
+.btn-icon {
+  width: 1.5rem; height: 1.5rem;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 0.5rem; border: none; cursor: pointer;
+  background: rgba(0,0,0,0.04); color: var(--t-secondary);
+  transition: all 0.15s ease; flex-shrink: 0;
+}
+.btn-icon:hover { background: var(--c-primary-soft); color: var(--c-primary); }
+.dark .btn-icon { background: rgba(255,255,255,0.06); }
+.dark .btn-icon:hover { background: rgba(139,92,246,0.15); }
+
+.btn-icon-danger { color: var(--c-expense); }
+.btn-icon-danger:hover { background: rgba(244,63,94,0.1); color: var(--c-expense); }
+
 /* ── Input ── */
 .input {
   width: 100%; padding: 0.625rem 0.875rem; border-radius: 0.875rem;

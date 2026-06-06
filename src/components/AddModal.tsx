@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react'
 import { useTransactions, useCategories, useProjects } from '@/db/hooks'
 import { parseTransaction } from '@/services/llm'
 import { startRecognition, isSpeechSupported, stopRecognition } from '@/services/speech'
-import { MOOD_LIST, MOOD_COLOR_MAP, CATEGORY_ICON_MAP, CAT_ICON_OPTIONS, MoreHorizontal, AlertTriangle } from '@/lib/icons'
+import { MOOD_LIST, MOOD_COLOR_MAP, CATEGORY_ICON_MAP, CAT_ICON_OPTIONS, MoreHorizontal, AlertTriangle, Check } from '@/lib/icons'
 import type { ParsedTransaction } from '@/types'
 
 const NEW_COLORS = ['#3b82f6', '#22c55e', '#ef4444', '#eab308', '#a855f7', '#f97316', '#ec4899', '#06b6d4']
@@ -272,7 +272,7 @@ export default function AddModal({ open, onClose }: Props) {
 
               <div className="flex gap-2 pt-1">
                 <button onClick={() => { if (parsed) setStep('parsed'); else setStep('input') }} className="flex-1 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 text-sm">返回</button>
-                <button onClick={handleSave} className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-violet-500 to-purple-500 text-white text-sm font-medium">保存</button>
+                <button onClick={handleSave} className="btn btn-primary flex-1"><Check size={16}/>保存</button>
               </div>
             </div>
           )}

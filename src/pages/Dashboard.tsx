@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useRef } from 'react'
 import { useTransactions, useCategories, useProjects, useBudgets } from '@/db/hooks'
 import { getMonthlyStats, getCategoryBreakdown } from '@/lib/stats'
 import { getCurrentYearMonth, formatAmount, formatDate } from '@/lib/utils'
-import { MOOD_LIST, MOOD_ICON_MAP, MOOD_COLOR_MAP, CATEGORY_ICON_MAP, MoreHorizontal, BarChart3, Trash2, PieChart, List, Calendar as CalendarIcon } from '@/lib/icons'
+import { MOOD_LIST, MOOD_ICON_MAP, MOOD_COLOR_MAP, CATEGORY_ICON_MAP, MoreHorizontal, BarChart3, Trash2, PieChart, List, Calendar as CalendarIcon, Check } from '@/lib/icons'
 import CategoryIcon from '@/components/CategoryIcon'
 import EmptyState from '@/components/EmptyState'
 import AddModal from '@/components/AddModal'
@@ -204,7 +204,7 @@ export default function Dashboard() {
                     <div className="flex-1 min-w-0"><p className="text-sm font-semibold truncate">{categories.find(c=>c.id===t.categoryId)?.name||'未分类'}</p>{t.description&&<p className="text-xs text-gray-400 truncate mt-0.5">{t.description}</p>}</div>
                     {MI&&<MI size={16} strokeWidth={1.8} color={color||'#6b7280'}/>}
                     <p className={`text-sm font-bold amount ${t.type==='expense'?'text-red-400':'text-emerald-400'}`}>{t.type==='expense'?'-':'+'}{formatAmount(t.amount)}</p>
-                    <button onClick={e=>{e.stopPropagation();setDeleteId(t.id)}} className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-400 transition-all"><Trash2 size={14}/></button>
+                    <button onClick={e=>{e.stopPropagation();setDeleteId(t.id)}} className="btn-icon opacity-0 group-hover:opacity-100 btn-icon-danger"><Trash2 size={14}/></button>
                   </div>
                 )})}
               </div>
@@ -225,7 +225,7 @@ export default function Dashboard() {
               <input type="text" value={eDesc} onChange={e=>setEDesc(e.target.value)} placeholder="备注" className="input"/>
               <div><p className="label mb-2">心情</p><div className="flex flex-wrap gap-1.5">{MOOD_LIST.map(m=>{const MI=m.Icon;return<button key={m.value} onClick={()=>setEMood(eMood===m.value?'':m.value)} className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-sm font-medium transition-all ${eMood===m.value?'bg-violet-50 dark:bg-violet-900/30 ring-2 ring-violet-400 scale-105 shadow-sm':'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100'}`}><MI size={15} strokeWidth={1.8}/><span>{m.label}</span></button>})}</div></div>
               {projects.length>0&&<select value={eProj} onChange={e=>setEProj(e.target.value)} className="input"><option value="">分账单（可选）</option>{projects.map(p=><option key={p.id} value={p.id}>{p.icon} {p.name}</option>)}</select>}
-              <div className="flex gap-2 pt-1"><button onClick={()=>setEditing(null)} className="btn btn-secondary flex-1">取消</button><button onClick={hSave} className="btn btn-primary flex-1">保存</button></div>
+              <div className="flex gap-2 pt-1"><button onClick={()=>setEditing(null)} className="btn btn-secondary flex-1">取消</button><button onClick={hSave} className="btn btn-primary flex-1"><Check size={16}/>保存</button></div>
             </div>
           </div>
         </div>
@@ -235,7 +235,7 @@ export default function Dashboard() {
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 fade-in backdrop-blur-sm" onClick={()=>setDeleteId(null)}>
           <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 w-full max-w-xs shadow-2xl text-center" onClick={e=>e.stopPropagation()}>
             <p className="font-bold text-lg tracking-tight">确认删除</p><p className="text-gray-400 text-sm mt-1 mb-6">删除后无法恢复</p>
-            <div className="flex gap-2"><button onClick={()=>setDeleteId(null)} className="btn btn-secondary flex-1">取消</button><button onClick={()=>hDel(deleteId)} className="btn btn-danger flex-1">删除</button></div>
+            <div className="flex gap-2"><button onClick={()=>setDeleteId(null)} className="btn btn-secondary flex-1">取消</button><button onClick={()=>hDel(deleteId)} className="btn btn-danger flex-1"><Trash2 size={16}/>删除</button></div>
           </div>
         </div>
       )}
