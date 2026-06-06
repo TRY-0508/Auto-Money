@@ -85,29 +85,60 @@ export default function Settings() {
             <div className="flex gap-2"><input type="text" value={newCatName} onChange={e => setNewCatName(e.target.value)} placeholder="分类名称" className="flex-1 px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm" onKeyDown={e => e.key === 'Enter' && handleAddCategory()} /><button onClick={handleAddCategory} disabled={!newCatName.trim()} className="px-4 py-2 rounded-xl bg-violet-500 text-white text-sm font-semibold disabled:opacity-50">添加</button></div>
           </div>
         )}
-        <div className="px-5 py-2"><p className="text-xs text-gray-400 font-medium py-1">支出分类</p>{expenseCats.map(cat => { const Icon = CATEGORY_ICON_MAP[cat.icon] || MoreHorizontal; return <div key={cat.id} className="flex items-center gap-3 py-2 group"><div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: cat.color + '18' }}><Icon size={15} strokeWidth={1.8} color={cat.color} /></div><span className="flex-1 text-sm font-medium">{cat.name}</span>{!cat.isSystem ? <button onClick={() => deleteCategory(cat.id)} className="text-xs text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100">删除</button> : <span className="text-xs text-gray-300">预设</span>}</div> })}</div>
-        <div className="px-5 py-2 border-t border-gray-50 dark:border-gray-800/50"><p className="text-xs text-gray-400 font-medium py-1">收入分类</p>{incomeCats.map(cat => { const Icon = CATEGORY_ICON_MAP[cat.icon] || MoreHorizontal; return <div key={cat.id} className="flex items-center gap-3 py-2 group"><div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: cat.color + '18' }}><Icon size={15} strokeWidth={1.8} color={cat.color} /></div><span className="flex-1 text-sm font-medium">{cat.name}</span>{!cat.isSystem ? <button onClick={() => deleteCategory(cat.id)} className="text-xs text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100">删除</button> : <span className="text-xs text-gray-300">预设</span>}</div> })}</div>
+        <div className="px-5 py-3"><p className="text-xs text-muted font-medium mb-2">支出分类</p>
+          <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">{expenseCats.map(cat => { const Icon = CATEGORY_ICON_MAP[cat.icon] || MoreHorizontal; return (
+            <div key={cat.id} className="flex flex-col items-center gap-1 p-2 rounded-xl bg-gray-50 dark:bg-gray-800/50 group relative">
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: cat.color + '18' }}><Icon size={18} strokeWidth={1.8} color={cat.color}/></div>
+              <span className="text-[11px] font-medium text-center leading-tight">{cat.name}</span>
+              {!cat.isSystem && <button onClick={() => deleteCategory(cat.id)} className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-400 text-white text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">×</button>}
+            </div>
+          )})}</div>
+        </div>
+        <div className="px-5 py-3 border-t border-gray-50 dark:border-gray-800/50"><p className="text-xs text-muted font-medium mb-2">收入分类</p>
+          <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">{incomeCats.map(cat => { const Icon = CATEGORY_ICON_MAP[cat.icon] || MoreHorizontal; return (
+            <div key={cat.id} className="flex flex-col items-center gap-1 p-2 rounded-xl bg-gray-50 dark:bg-gray-800/50 group relative">
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: cat.color + '18' }}><Icon size={18} strokeWidth={1.8} color={cat.color}/></div>
+              <span className="text-[11px] font-medium text-center leading-tight">{cat.name}</span>
+              {!cat.isSystem && <button onClick={() => deleteCategory(cat.id)} className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-400 text-white text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">×</button>}
+            </div>
+          )})}</div>
+        </div>
       </div>
 
       {/* Budget */}
       <div className="glow-card overflow-hidden p-0">
         <h3 className="text-sm font-bold tracking-tight px-5 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2"><Target size={18} strokeWidth={1.8} className="text-violet-500" />分类预算</h3>
-        {expenseCats.map(cat => {
-          const budget = budgets.find(b => b.categoryId === cat.id && b.yearMonth === yearMonth); const spent = getSpent(cat.id)
-          return (
-            <div key={cat.id} className="px-5 py-2.5 border-b border-gray-50 dark:border-gray-800/30 last:border-0">
-              {budgetEditingId === cat.id ? (
-                <div className="flex items-center gap-2"><CategoryBadge cat={cat} /><span className="text-sm flex-1 font-medium">{cat.name}</span><input type="number" value={budgetAmount} onChange={e => setBudgetAmount(e.target.value)} placeholder="金额" autoFocus onKeyDown={e => e.key === 'Enter' && handleSaveBudget(cat.id)} className="w-24 px-2 py-1 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm" /><button onClick={() => handleSaveBudget(cat.id)} className="text-xs text-violet-500 font-medium">保存</button><button onClick={() => { setBudgetEditingId(null); setBudgetAmount('') }} className="text-xs text-gray-400">取消</button></div>
-              ) : (
-                <div>
-                  <div className="flex items-center justify-between mb-1"><div className="flex items-center gap-2"><CategoryBadge cat={cat} /><span className="text-sm font-semibold">{cat.name}</span></div><span className="text-xs text-gray-400">已花 {formatAmount(spent)}{budget ? ` / ${formatAmount(budget.amount)}` : ''}</span></div>
-                  {budget && <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden"><div className={`h-full rounded-full ${spent > budget.amount ? 'bg-red-400' : (spent / budget.amount) > 0.8 ? 'bg-amber-400' : 'bg-emerald-400'}`} style={{ width: `${Math.min((spent / budget.amount) * 100, 100)}%` }} /></div>}
-                  <button onClick={() => { setBudgetEditingId(cat.id); setBudgetAmount(budget ? String(budget.amount) : '') }} className="text-xs text-violet-500 hover:text-violet-600 font-semibold mt-1">{budget ? '修改' : '设置预算'}</button>
+        <div className="p-4">
+          <div className="grid grid-cols-2 gap-3">
+            {expenseCats.map(cat => {
+              const budget = budgets.find(b => b.categoryId === cat.id && b.yearMonth === yearMonth); const spent = getSpent(cat.id)
+              return (
+                <div key={cat.id} className="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-3">
+                  {budgetEditingId === cat.id ? (
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-1.5"><CategoryBadge cat={cat} /><span className="text-xs font-medium">{cat.name}</span></div>
+                      <input type="number" value={budgetAmount} onChange={e => setBudgetAmount(e.target.value)} placeholder="金额" autoFocus onKeyDown={e => e.key === 'Enter' && handleSaveBudget(cat.id)} className="w-full px-2 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm" />
+                      <div className="flex gap-1"><button onClick={() => handleSaveBudget(cat.id)} className="flex-1 py-1 rounded-lg bg-violet-500 text-white text-xs font-medium">保存</button><button onClick={() => { setBudgetEditingId(null); setBudgetAmount('') }} className="px-2 py-1 rounded-lg text-xs text-gray-400">取消</button></div>
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="flex items-center gap-1.5 mb-2"><CategoryBadge cat={cat} /><span className="text-xs font-semibold">{cat.name}</span></div>
+                      {budget ? (
+                        <>
+                          <div className="flex justify-between text-[10px] text-gray-400 mb-1"><span>已花 {formatAmount(spent)}</span><span>{formatAmount(budget.amount)}</span></div>
+                          <div className="h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mb-1.5"><div className={`h-full rounded-full ${spent > budget.amount ? 'bg-red-400' : (spent / budget.amount) > 0.8 ? 'bg-amber-400' : 'bg-emerald-400'}`} style={{ width: `${Math.min((spent / budget.amount) * 100, 100)}%` }} /></div>
+                        </>
+                      ) : (
+                        <p className="text-[10px] text-gray-400 mb-1.5">已花 {formatAmount(spent)}</p>
+                      )}
+                      <button onClick={() => { setBudgetEditingId(cat.id); setBudgetAmount(budget ? String(budget.amount) : '') }} className="text-[10px] text-violet-500 hover:text-violet-600 font-semibold">{budget ? '修改' : '设置预算'}</button>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          )
-        })}
+              )
+            })}
+          </div>
+        </div>
       </div>
 
       {/* Projects */}
