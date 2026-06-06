@@ -96,7 +96,7 @@ export default function Dashboard() {
           <div className="flex items-start justify-between">
             <div>
               <p className="text-white/70 text-sm font-medium uppercase tracking-wider">{greet}</p>
-              <p className="text-2xl font-bold mt-1 tracking-tight">心情收支簿</p>
+              <p className="text-2xl font-bold mt-1 tracking-tight text-white neon-text">心情收支簿</p>
               <p className="text-white/60 text-xs mt-2 italic">{quotes[moodKey]||quotes.neutral}</p>
             </div>
             {DomIcon&&<div className="bg-white/15 backdrop-blur-sm rounded-2xl p-4 bounce-in"><DomIcon size={44} strokeWidth={1.5} className="text-white drop-shadow-lg"/></div>}
@@ -246,7 +246,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      <button onClick={()=>setShowAdd(true)} className="fixed bottom-20 md:bottom-8 right-6 w-14 h-14 bg-gradient-to-br from-violet-500 to-purple-600 text-white rounded-2xl shadow-2xl shadow-violet-500/30 halo-pulse flex items-center justify-center text-2xl z-40 hover:scale-110 active:scale-95 transition-all duration-200 font-light">+</button>
+      <button onClick={()=>setShowAdd(true)} className="fab fixed bottom-20 md:bottom-8 right-6 rounded-2xl text-white text-2xl z-40 flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-200 font-light shadow-2xl">+</button>
       <AddModal open={showAdd} onClose={()=>setShowAdd(false)}/>
     </div>
   )

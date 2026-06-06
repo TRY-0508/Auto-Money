@@ -212,3 +212,129 @@ body {
 .scrollbar-hide::-webkit-scrollbar { display: none }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none }
 .dot-pattern { background-image: radial-gradient(circle,rgba(139,92,246,0.06) 1px,transparent 1px); background-size: 20px 20px }
+
+/* ── Animated Background Orbs ── */
+.bg-orbs {
+  position: relative;
+  overflow: hidden;
+}
+.bg-orbs::before,
+.bg-orbs::after {
+  content: '';
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.3;
+  z-index: -1;
+  pointer-events: none;
+}
+.bg-orbs::before {
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, #c084fc, #a855f7);
+  top: -100px; right: -100px;
+  animation: orb1 8s ease-in-out infinite;
+}
+.bg-orbs::after {
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, #f472b6, #ec4899);
+  bottom: -50px; left: -50px;
+  animation: orb2 10s ease-in-out infinite;
+}
+@keyframes orb1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(-50px, 30px) scale(1.1); }
+  66% { transform: translate(20px, -20px) scale(0.9); }
+}
+@keyframes orb2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(40px, -20px) scale(1.15); }
+  66% { transform: translate(-30px, 30px) scale(0.85); }
+}
+
+/* ── Neon Card ── */
+.card-neon {
+  position: relative;
+}
+.card-neon::before {
+  content: '';
+  position: absolute; inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, #c084fc, #f472b6, #38bdf8, #c084fc);
+  background-size: 300% 300%;
+  animation: neonBorder 4s linear infinite;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  pointer-events: none;
+}
+@keyframes neonBorder {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ── Gradient Text ── */
+.text-gradient {
+  background: linear-gradient(135deg, #c084fc, #f472b6, #38bdf8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Sparkle Burst (save confetti) ── */
+@keyframes sparklePop {
+  0% { transform: scale(0) rotate(0deg); opacity: 1; }
+  50% { transform: scale(1.3) rotate(180deg); opacity: 0.8; }
+  100% { transform: scale(0) rotate(360deg); opacity: 0; }
+}
+.sparkle-burst {
+  pointer-events: none;
+  position: fixed;
+  z-index: 999;
+  animation: sparklePop 0.6s ease-out forwards;
+}
+
+/* ── FAB Enhance ── */
+.fab {
+  width: 3.5rem; height: 3.5rem;
+  background: linear-gradient(135deg, #c084fc, #8b5cf6, #7c3aed);
+  background-size: 200% 200%;
+  animation: fabShine 3s ease-in-out infinite;
+  box-shadow: 0 4px 24px rgba(139,92,246,0.4), 0 0 0 0 rgba(139,92,246,0.5);
+}
+.fab:hover { animation: fabShine 1s ease-in-out infinite; }
+@keyframes fabShine {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* ── Card Shine on hover ── */
+.shine {
+  position: relative; overflow: hidden;
+}
+.shine::after {
+  content: '';
+  position: absolute; top: 0; left: -100%;
+  width: 50%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.5s;
+}
+.shine:hover::after { left: 150%; }
+
+/* ── Animated dots background ── */
+@keyframes dotFloat {
+  0%, 100% { transform: translateY(0); opacity: 0.3; }
+  50% { transform: translateY(-15px); opacity: 0.6; }
+}
+.floating-dots {
+  position: fixed; inset: 0; pointer-events: none; z-index: -1;
+}
+.floating-dot {
+  position: absolute;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--c-primary);
+  opacity: 0.2;
+  animation: dotFloat 6s ease-in-out infinite;
+}
