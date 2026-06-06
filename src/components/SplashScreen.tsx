@@ -21,23 +21,25 @@ export default function SplashScreen({ onEnter }: Props) {
 
     const icons = [...MOOD_LIST.slice(0, 8).map(m => ({ Icon: m.Icon, key: m.value })), ...CAT_ICON_OPTIONS.slice(0, ICON_COUNT - 8).map(c => ({ Icon: c.Icon, key: c.key }))]
 
-    const items: { el: HTMLDivElement; x: number; y: number; vx: number; vy: number; size: number }[] = []
+    const items: { el: HTMLDivElement; x: number; y: number; vx: number; vy: number; opacity: number; size: number }[] = []
 
-    // Create DOM elements
     for (const icon of icons) {
       const el = document.createElement('div')
+      const sz = 32 + Math.random() * 28
+      const op = 0.12 + Math.random() * 0.2
       el.style.cssText = 'position:absolute;pointer-events:none;transition:none;'
       container.appendChild(el)
       const root = createRoot(el)
-      root.render(<icon.Icon size={28} strokeWidth={1.5} color="rgba(255,255,255,0.2)" />)
+      root.render(<icon.Icon size={sz} strokeWidth={1.5} color={`rgba(255,255,255,${op})`} />)
       items.push({
-        el, root,
+        el,
         x: Math.random() * (container.offsetWidth - 40) + 20,
         y: Math.random() * (container.offsetHeight - 40) + 20,
         vx: (Math.random() - 0.5) * 0.6,
         vy: (Math.random() - 0.5) * 0.6,
-        size: 20 + Math.random() * 20,
-      } as any)
+        opacity: op,
+        size: sz,
+      })
     }
 
     let id: number
@@ -61,7 +63,6 @@ export default function SplashScreen({ onEnter }: Props) {
 
         item.el.style.left = item.x + 'px'
         item.el.style.top = item.y + 'px'
-        item.el.style.opacity = '0.15'
       }
 
       // Collision repulsion
