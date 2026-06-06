@@ -86,10 +86,12 @@ export default function AddModal({ open, onClose }: Props) {
     if (!parsed) return
     let cat = categories.find(c => c.name === parsed.category && c.type === parsed.type)
     if (!cat) {
-      const catId = await addCategory({ name: parsed.category, type: parsed.type, icon: CAT_ICON_OPTIONS[Math.floor(Math.random() * CAT_ICON_OPTIONS.length)].key, color: '#6b7280', isSystem: false })
+      const catId = await addCategory({ name: parsed.category, type: parsed.type, icon: 'more-horizontal', color: '#6b7280', isSystem: false })
       setManualCategoryId(catId)
     } else setManualCategoryId(cat.id)
-    setManualType(parsed.type); setManualAmount(String(parsed.amount)); setManualDate(parsed.date); setManualDesc(parsed.description); setStep('manual')
+    setManualType(parsed.type); setManualAmount(String(parsed.amount)); setManualDate(parsed.date); setManualDesc(parsed.description)
+    if (parsed.mood) setManualMood(parsed.mood)
+    setStep('manual')
   }
 
   const handleQuickAddCat = async () => {
@@ -190,7 +192,7 @@ export default function AddModal({ open, onClose }: Props) {
             <div className="space-y-4">
               <div className="flex items-center justify-between"><span className="text-sm text-gray-400">AI 分析结果</span><span className="text-xs px-2.5 py-1 rounded-full bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400 font-medium">{Math.round(parsed.confidence * 100)}%</span></div>
               <div className="space-y-2 bg-gradient-to-br from-gray-50 to-violet-50/50 dark:from-gray-800 dark:to-violet-900/20 rounded-2xl p-4">
-                {[{ l: '类型', v: parsed.type === 'expense' ? '支出' : '收入' }, { l: '金额', v: `¥${parsed.amount}` }, { l: '分类', v: parsed.category }, { l: '日期', v: parsed.date }, { l: '描述', v: parsed.description }].map(r => <div key={r.l} className="flex justify-between items-center text-sm"><span className="text-gray-400">{r.l}</span><span className="font-medium">{r.v}</span></div>)}
+                {[{ l: '类型', v: parsed.type === 'expense' ? '支出' : '收入' }, { l: '金额', v: `¥${parsed.amount}` }, { l: '分类', v: parsed.category }, { l: '日期', v: parsed.date }, { l: '描述', v: parsed.description }, ...(parsed.mood ? [{ l: '心情', v: parsed.mood }] : [])].map(r => <div key={r.l} className="flex justify-between items-center text-sm"><span className="text-gray-400">{r.l}</span><span className="font-medium">{r.v}</span></div>)}
               </div>
               {!categories.find(c => c.name === parsed.category && c.type === parsed.type) && <div className="p-3 rounded-2xl bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 text-xs text-yellow-700 dark:text-yellow-400">「{parsed.category}」不在现有分类中，确认后将自动创建</div>}
               <div className="flex gap-2">

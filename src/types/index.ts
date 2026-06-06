@@ -62,4 +62,5 @@ export interface ParsedTransaction {
   date: string
   description: string
   confidence: number
+  mood?: string | null
 }

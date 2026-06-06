@@ -2,19 +2,12 @@ import { db } from './index'
 import { generateId } from '@/lib/utils'
 import type { Category, Settings } from '@/types'
 import { DEFAULT_SETTINGS } from '@/lib/constants'
-import { PRESET_CAT_ICONS } from '@/lib/icons'
 
 const EXPENSE_CATEGORIES: Omit<Category, 'id'>[] = [
-  { name: '餐饮', type: 'expense', icon: 'utensils', color: '#f97316', isSystem: true },
-  { name: '交通', type: 'expense', icon: 'car', color: '#3b82f6', isSystem: true },
-  { name: '购物', type: 'expense', icon: 'shopping-bag', color: '#ec4899', isSystem: true },
-  { name: '游戏', type: 'expense', icon: 'gamepad-2', color: '#a855f7', isSystem: true },
-  { name: '娱乐', type: 'expense', icon: 'music', color: '#6366f1', isSystem: true },
-  { name: '住房', type: 'expense', icon: 'home', color: '#14b8a6', isSystem: true },
-  { name: '医疗', type: 'expense', icon: 'stethoscope', color: '#ef4444', isSystem: true },
-  { name: '教育', type: 'expense', icon: 'book-open', color: '#06b6d4', isSystem: true },
-  { name: '通讯', type: 'expense', icon: 'smartphone', color: '#84cc16', isSystem: true },
-  { name: '日用', type: 'expense', icon: 'package', color: '#eab308', isSystem: true },
+  { name: '必要消费', type: 'expense', icon: 'home', color: '#3b82f6', isSystem: true },
+  { name: '价值消费', type: 'expense', icon: 'trending-up', color: '#10b981', isSystem: true },
+  { name: '情绪消费', type: 'expense', icon: 'heart', color: '#f43f5e', isSystem: true },
+  { name: '冲动消费', type: 'expense', icon: 'zap', color: '#f59e0b', isSystem: true },
   { name: '其他', type: 'expense', icon: 'more-horizontal', color: '#6b7280', isSystem: true },
 ]
 
@@ -23,7 +16,6 @@ const INCOME_CATEGORIES: Omit<Category, 'id'>[] = [
   { name: '兼职', type: 'income', icon: 'briefcase', color: '#14b8a6', isSystem: true },
   { name: '理财', type: 'income', icon: 'trending-up', color: '#3b82f6', isSystem: true },
   { name: '红包', type: 'income', icon: 'gift', color: '#ef4444', isSystem: true },
-  { name: '报销', type: 'income', icon: 'file-text', color: '#a855f7', isSystem: true },
   { name: '其他', type: 'income', icon: 'more-horizontal', color: '#6b7280', isSystem: true },
 ]
 
@@ -38,10 +30,7 @@ export async function seedDatabase() {
 
   const settingsCount = await db.settings.count()
   if (settingsCount === 0) {
-    const settings: Settings = {
-      id: 'default',
-      ...DEFAULT_SETTINGS,
-    }
+    const settings: Settings = { id: 'default', ...DEFAULT_SETTINGS }
     await db.settings.add(settings)
   }
 }

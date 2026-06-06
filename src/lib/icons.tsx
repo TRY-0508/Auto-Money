@@ -5,7 +5,7 @@ import {
   Gift, FileText, Coffee, Cat, Plane, Dumbbell, Music, Shirt,
   SprayCan as MakeupIcon, Beer, Stethoscope, Lightbulb, Camera, Wrench, Bus, Train, Pizza,
   // Mood icons
-  Smile, Meh, Frown, Angry, AlertTriangle, Star, Moon, Heart,
+  Smile, Meh, Frown, Angry, AlertTriangle, Star, Moon, Heart, Zap,
   // Nav & UI icons
   LayoutDashboard, Brain, Settings, Plus, Mic, Pencil, Search,
   Calendar, PiggyBank, MessageCircle, BarChart3, PieChart, List,
@@ -26,6 +26,7 @@ export const CATEGORY_ICON_MAP: Record<IconKey, LucideIcon> = {
   dumbbell: Dumbbell, music: Music, shirt: Shirt, makeup: MakeupIcon,
   beer: Beer, stethoscope: Stethoscope, lightbulb: Lightbulb, camera: Camera,
   wrench: Wrench, bus: Bus, train: Train, pizza: Pizza,
+  heart: Heart, zap: Zap,
 }
 
 export const PRESET_CAT_ICONS: Record<string, IconKey> = {
@@ -42,7 +43,8 @@ export const CAT_ICON_OPTIONS: { key: IconKey; label: string; Icon: LucideIcon }
   home: '住房', pill: '医疗', 'book-open': '教育', smartphone: '通讯',
   package: '日用', briefcase: '工作', gift: '礼物', cat: '宠物', camera: '摄影',
   music: '音乐', dumbbell: '健身', shirt: '服饰', makeup: '美妆', beer: '聚会',
-  lightbulb: '灵感', stethoscope: '健康', wrench: '维修', 'more-horizontal': '其他',
+  lightbulb: '灵感', stethoscope: '健康', wrench: '维修', heart: '情绪', zap: '冲动',
+  'more-horizontal': '其他',
 }).map(([key, label]) => ({ key, label, Icon: CATEGORY_ICON_MAP[key] || MoreHorizontal }))
 
 // ── Mood Icons ──
@@ -68,7 +70,7 @@ export const MOOD_COLOR_MAP: Record<string, string> = Object.fromEntries(
 export { LayoutDashboard, Brain, Settings, Plus, Mic, Pencil, Search,
   Calendar, PiggyBank, MessageCircle, BarChart3, PieChart, List,
   Trash2, Edit3, ArrowLeft, ArrowRight, X, Menu, Send, Download, Upload,
-  MoreHorizontal, Package, Copy, Tag, Target, FolderOpen, Database, AlertTriangle, Check }
+  MoreHorizontal, Package, Copy, Tag, Target, FolderOpen, Database, AlertTriangle, Check, Star }
 
 // ── Project Icons (keys mapped to Lucide) ──
 export const PROJECT_ICONS: { key: string; label: string; Icon: LucideIcon }[] = [

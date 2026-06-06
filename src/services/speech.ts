@@ -7,13 +7,16 @@ export function isSpeechSupported(): boolean {
 export function startRecognition(onResult: (text: string) => void, onError: (error: string) => void, onEnd?: () => void): void {
   const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
   if (!SpeechRecognition) {
-    onError('浏览器不支持语音识别，请使用 Chrome 或 Edge')
+    onError('您的浏览器不支持语音识别，请使用 Chrome、Edge 或 Safari')
     return
   }
 
-  if (recognition) {
-    recognition.stop()
+  if (!navigator.onLine) {
+    onError('语音识别需要网络连接，请检查网络后重试')
+    return
   }
+
+  if (recognition) { recognition.stop(); recognition = null }
 
   const rec = new SpeechRecognition()
   rec.lang = 'zh-CN'
@@ -22,52 +25,35 @@ export function startRecognition(onResult: (text: string) => void, onError: (err
   rec.maxAlternatives = 1
 
   rec.onresult = (event: SpeechRecognitionEvent) => {
-    let finalTranscript = ''
-    let interimTranscript = ''
-
+    let final = ''; let interim = ''
     for (let i = event.resultIndex; i < event.results.length; i++) {
-      const result = event.results[i]
-      if (result.isFinal) {
-        finalTranscript += result[0].transcript
-      } else {
-        interimTranscript += result[0].transcript
-      }
+      const r = event.results[i]
+      if (r.isFinal) final += r[0].transcript; else interim += r[0].transcript
     }
-
-    const text = finalTranscript || interimTranscript
-    if (text.trim()) {
-      onResult(text)
-    }
+    const text = final || interim
+    if (text.trim()) onResult(text)
   }
 
   rec.onerror = (event: any) => {
-    if (event.error === 'no-speech') {
-      onError('未检测到语音，请再试一次')
-    } else if (event.error === 'aborted') {
-      // User stopped intentionally, not an error
-    } else if (event.error === 'not-allowed') {
-      onError('麦克风权限被拒绝，请在浏览器设置中允许麦克风访问')
-    } else if (event.error === 'network') {
-      onError('网络错误，语音识别需要网络连接')
-    } else {
-      onError(`语音识别错误: ${event.error}`)
+    const map: Record<string, string> = {
+      'no-speech': '未检测到语音，请靠近麦克风再试一次',
+      'aborted': '',
+      'not-allowed': '麦克风权限被拒绝。请在浏览器设置中允许麦克风访问，或检查是否使用了 HTTPS',
+      'network': '语音识别需要稳定的网络连接。如果您使用了代理/VPN，可能会影响语音服务。请在浏览器中打开并确保网络通畅',
+      'service-not-allowed': '语音服务不可用，请确保使用 HTTPS 并检查网络',
     }
+    const msg = map[event.error] || `语音识别出错: ${event.error}`
+    if (msg) onError(msg)
     recognition = null
     onEnd?.()
   }
 
-  rec.onend = () => {
-    recognition = null
-    onEnd?.()
-  }
+  rec.onend = () => { recognition = null; onEnd?.() }
 
   recognition = rec
   rec.start()
 }
 
 export function stopRecognition() {
-  if (recognition) {
-    recognition.stop()
-    recognition = null
-  }
+  if (recognition) { recognition.stop(); recognition = null }
 }

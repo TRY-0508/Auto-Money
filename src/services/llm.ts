@@ -33,22 +33,32 @@ export async function parseTransaction(text: string): Promise<ParsedTransaction>
     messages: [
       {
         role: 'system',
-        content: `你是记账助手。从用户输入中提取以下字段，以 JSON 格式返回：
+        content: `你是消费心理学记账助手。从用户输入中提取以下字段，以 JSON 格式返回：
+
 - type: "expense" 或 "income"
 - amount: 数字金额（单位：元）
-- category: 分类名称
+- category: 消费心理学四型分类之一
 
-可用支出分类：${expenseCats}
-可用收入分类：${incomeCats}
+消费心理学四型分类（必须从以下选择最匹配的）：
+  * 必要消费 — 维持生存和基本运转（房租、水电、基础饮食、通勤）
+  * 价值消费 — 对齐长期目标和个人成长（课程、健身、书籍、健康体检）
+  * 情绪消费 — 由情绪状态驱动的消费（焦虑时暴食、开心请客、难过买衣服）
+  * 冲动消费 — 无计划即时决策的消费（深夜刷直播下单、凑满减买不需要的东西）
 
-- date: 日期，格式 YYYY-MM-DD，未提及时默认为 ${today}
-- description: 简短描述（5-15字概括）
-- confidence: 0-1 之间的置信度
+- date: 日期 YYYY-MM-DD，未提及时默认 ${today}
+- description: 简短描述（5-15字）
+- mood: 从用户描述中推断心情，可选值：happy/calm/neutral/sad/anxious/angry/excited/tired，无法判断时填 null
+- confidence: 0-1 置信度
 
 判断规则：
-"花了""买了""支付""消费"→ expense
-"收到""赚了""工资""入账"→ income
-金额出现多个时，取总和
+- "花了""买了""支付""消费"→ expense
+- "收到""赚了""工资""入账"→ income
+- 描述中有情绪词（开心、难过、焦虑、累）→ 据此推断 mood
+- "冲动""没忍住""半夜""刷到""直播间"→ 冲动消费
+- "必须""不得不""房租""水电""通勤"→ 必要消费
+- "学习""课程""健身""书""体检"→ 价值消费
+- "心情不好""犒劳""庆祝""安慰自己"→ 情绪消费
+- 金额出现多个时，取总和
 
 只返回 JSON，不要其他内容。`,
       },

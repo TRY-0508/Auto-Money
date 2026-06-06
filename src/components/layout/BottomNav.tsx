@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, Brain, Settings } from '@/lib/icons'
+import { LayoutDashboard, Brain, Settings, Star } from '@/lib/icons'
 
 export default function BottomNav() {
   return (
@@ -9,6 +9,9 @@ export default function BottomNav() {
       </NavLink>
       <NavLink to="/ai" className={({ isActive }) => `flex flex-col items-center gap-0.5 text-xs ${isActive ? 'text-violet-500 font-medium' : 'text-gray-400'}`}>
         <Brain size={22} strokeWidth={1.8} /><span>AI</span>
+      </NavLink>
+      <NavLink to="/jar" className={({ isActive }) => `flex flex-col items-center gap-0.5 text-xs ${isActive ? 'text-violet-500 font-medium' : 'text-gray-400'}`}>
+        <Star size={22} strokeWidth={1.8} /><span>瓶子</span>
       </NavLink>
       <NavLink to="/settings" className={({ isActive }) => `flex flex-col items-center gap-0.5 text-xs ${isActive ? 'text-violet-500 font-medium' : 'text-gray-400'}`}>
         <Settings size={22} strokeWidth={1.8} /><span>设置</span>

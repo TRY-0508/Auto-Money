@@ -6,6 +6,7 @@ import ParticleEffect from '@/components/ParticleEffect'
 import Dashboard from '@/pages/Dashboard'
 import AIAssistant from '@/pages/AIAssistant'
 import Settings from '@/pages/Settings'
+import JarPage from '@/pages/JarPage'
 import { seedDatabase } from '@/db/seed'
 
 const SPLASH_KEY = 'moodmoney_splash_seen'
@@ -49,6 +50,7 @@ function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/ai" element={<AIAssistant />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/jar" element={<JarPage />} />
         </Route>
       </Routes>
     </>

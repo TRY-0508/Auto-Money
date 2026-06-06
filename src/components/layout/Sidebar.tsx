@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import { useUIStore } from '@/stores/uiStore'
-import { LayoutDashboard, Brain, Settings } from '@/lib/icons'
+import { LayoutDashboard, Brain, Settings, Star } from '@/lib/icons'
 
 export default function Sidebar() {
   const { sidebarOpen, setSidebarOpen } = useUIStore()
@@ -16,6 +16,7 @@ export default function Sidebar() {
           {[
             { to: '/', label: '首页', Icon: LayoutDashboard },
             { to: '/ai', label: 'AI 助手', Icon: Brain },
+            { to: '/jar', label: '积攒瓶', Icon: Star },
             { to: '/settings', label: '设置', Icon: Settings },
           ].map(({ to, label, Icon }) => (
             <NavLink key={to} to={to} onClick={() => setSidebarOpen(false)}
