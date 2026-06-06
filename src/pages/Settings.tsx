@@ -86,8 +86,8 @@ export default function Settings() {
         )}
         <div className="px-5 py-3"><p className="text-xs text-muted font-medium mb-2">支出分类</p>
           <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">{expenseCats.map(cat => { const Icon = CATEGORY_ICON_MAP[cat.icon] || MoreHorizontal; return (
-            <div key={cat.id} className="flex flex-col items-center gap-1 p-2 rounded-xl bg-gray-50 dark:bg-gray-800/50 group relative">
-              <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-gray-100 dark:bg-gray-800"><Icon size={18} strokeWidth={1.8} className="text-gray-500"/></div>
+            <div key={cat.id} className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 group relative">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-gray-100 dark:bg-gray-700"><Icon size={20} strokeWidth={1.8} className="text-gray-500"/></div>
               <span className="text-[11px] font-medium text-center leading-tight">{cat.name}</span>
               {!cat.isSystem && <button onClick={() => deleteCategory(cat.id)} className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-400 text-white text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">×</button>}
             </div>
@@ -95,8 +95,8 @@ export default function Settings() {
         </div>
         <div className="px-5 py-3 border-t border-gray-50 dark:border-gray-800/50"><p className="text-xs text-muted font-medium mb-2">收入分类</p>
           <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">{incomeCats.map(cat => { const Icon = CATEGORY_ICON_MAP[cat.icon] || MoreHorizontal; return (
-            <div key={cat.id} className="flex flex-col items-center gap-1 p-2 rounded-xl bg-gray-50 dark:bg-gray-800/50 group relative">
-              <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-gray-100 dark:bg-gray-800"><Icon size={18} strokeWidth={1.8} className="text-gray-500"/></div>
+            <div key={cat.id} className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 group relative">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-gray-100 dark:bg-gray-700"><Icon size={20} strokeWidth={1.8} className="text-gray-500"/></div>
               <span className="text-[11px] font-medium text-center leading-tight">{cat.name}</span>
               {!cat.isSystem && <button onClick={() => deleteCategory(cat.id)} className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-400 text-white text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">×</button>}
             </div>
