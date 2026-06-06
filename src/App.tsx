@@ -57,7 +57,6 @@ function App() {
 
   return (
     <>
-      <ParticleNetwork />
       <ParticleEffect />
       <Suspense fallback={<PageLoader />}>
         <Routes>
