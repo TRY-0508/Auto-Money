@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react'
 import { useTransactions, useCategories, useProjects } from '@/db/hooks'
 import { parseTransaction } from '@/services/llm'
 import { startRecognition, isSpeechSupported, stopRecognition } from '@/services/speech'
-import { MOOD_LIST, MOOD_ICON_MAP, MOOD_COLOR_MAP, CATEGORY_ICON_MAP, CAT_ICON_OPTIONS, MoreHorizontal } from '@/lib/icons'
+import { MOOD_LIST, MOOD_COLOR_MAP, CATEGORY_ICON_MAP, CAT_ICON_OPTIONS, MoreHorizontal, AlertTriangle } from '@/lib/icons'
 import type { ParsedTransaction } from '@/types'
 
 const NEW_COLORS = ['#3b82f6', '#22c55e', '#ef4444', '#eab308', '#a855f7', '#f97316', '#ec4899', '#06b6d4']
@@ -126,7 +126,7 @@ export default function AddModal({ open, onClose }: Props) {
         </div>
 
         <div className="p-5">
-          {error && <div className="mb-4 p-3 rounded-2xl bg-red-50 dark:bg-red-900/20 text-red-500 text-sm flex items-center gap-2">⚠️ {error}<button onClick={() => setError('')} className="ml-auto text-xs underline">关闭</button></div>}
+          {error && <div className="mb-4 p-3 rounded-2xl bg-red-50 dark:bg-red-900/20 text-red-500 text-sm flex items-center gap-2"><AlertTriangle size={14} />{error}<button onClick={() => setError('')} className="ml-auto text-xs underline">关闭</button></div>}
 
           {step === 'input' && (
             <div className="space-y-4">
@@ -140,7 +140,7 @@ export default function AddModal({ open, onClose }: Props) {
                   <textarea value={textInput} onChange={e => setTextInput(e.target.value)} placeholder="中午吃面花了15块..." rows={3} className="w-full px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-violet-300" onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleParse() } }} />
                   <div className="flex gap-2">
                     <button onClick={() => { setStep('manual'); setParsed(null) }} className="flex-1 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 text-sm text-gray-500">手动填写</button>
-                    <button onClick={handleParse} disabled={loading || !textInput.trim()} className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-violet-500 to-purple-500 text-white text-sm font-medium disabled:opacity-50">✨ AI 解析</button>
+                    <button onClick={handleParse} disabled={loading || !textInput.trim()} className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-violet-500 to-purple-500 text-white text-sm font-medium disabled:opacity-50">AI 解析</button>
                   </div>
                 </>
               ) : (

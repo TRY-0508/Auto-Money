@@ -10,6 +10,7 @@ import {
   LayoutDashboard, Brain, Settings, Plus, Mic, Pencil, Search,
   Calendar, PiggyBank, MessageCircle, BarChart3, PieChart, List,
   Trash2, Edit3, ArrowLeft, ArrowRight, X, Menu, Send, Download, Upload,
+  Copy, Tag, Target, FolderOpen, Database,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -67,7 +68,7 @@ export const MOOD_COLOR_MAP: Record<string, string> = Object.fromEntries(
 export { LayoutDashboard, Brain, Settings, Plus, Mic, Pencil, Search,
   Calendar, PiggyBank, MessageCircle, BarChart3, PieChart, List,
   Trash2, Edit3, ArrowLeft, ArrowRight, X, Menu, Send, Download, Upload,
-  MoreHorizontal, Package }
+  MoreHorizontal, Package, Copy, Tag, Target, FolderOpen, Database, AlertTriangle }
 
 // ── Project Icons (keys mapped to Lucide) ──
 export const PROJECT_ICONS: { key: string; label: string; Icon: LucideIcon }[] = [
