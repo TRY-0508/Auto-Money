@@ -6,7 +6,7 @@ import ParticleNetwork from '@/components/ParticleNetwork'
 
 export default function AppLayout() {
   return (
-    <div className="flex h-screen bg-orbs relative">
+    <div className="flex h-screen aurora-bg relative">
       <ParticleNetwork />
       <Sidebar />
       <div className="flex flex-1 flex-col min-w-0 z-10 relative">

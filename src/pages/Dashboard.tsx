@@ -113,8 +113,8 @@ export default function Dashboard() {
         </div>
       ):(
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="card card-hover">
+          <div className="bento stagger">
+            <div className="card card-hover tilt bento-col-2">
               <div className="card-header"><PieChart size={18} strokeWidth={1.8} className="text-violet-500"/>心情统计</div>
               <div className="card-body">
                 {moodStats.length>0?(
@@ -136,7 +136,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="card card-hover">
+            <div className="card card-hover tilt bento-col-2">
               <div className="card-header"><List size={18} strokeWidth={1.8} className="text-violet-500"/>支出分类</div>
               <div className="card-body">
                 {expBrk.length>0?(
