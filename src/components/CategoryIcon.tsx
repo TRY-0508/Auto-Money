@@ -1,30 +1,28 @@
 import { useCategories } from '@/db/hooks'
+import { ICON_MAP } from '@/lib/icons'
+import { MoreHorizontal } from 'lucide-react'
 
 interface CategoryIconProps {
   categoryId: string
-  size?: 'sm' | 'md' | 'lg'
+  size?: number
 }
 
-const SIZE_MAP = { sm: 'w-6 h-6 text-xs', md: 'w-8 h-8 text-sm', lg: 'w-10 h-10 text-base' }
-
-export default function CategoryIcon({ categoryId, size = 'md' }: CategoryIconProps) {
+export default function CategoryIcon({ categoryId, size = 18 }: CategoryIconProps) {
   const { categories } = useCategories()
   const cat = categories.find((c) => c.id === categoryId)
-
-  if (!cat) {
-    return (
-      <div className={`${SIZE_MAP[size]} rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center`}>
-        <span>📦</span>
-      </div>
-    )
-  }
+  const iconKey = cat?.icon || ''
+  const Icon = ICON_MAP[iconKey] || MoreHorizontal
 
   return (
     <div
-      className={`${SIZE_MAP[size]} rounded-full flex items-center justify-center`}
-      style={{ backgroundColor: cat.color + '20' }}
+      className="rounded-xl flex items-center justify-center flex-shrink-0"
+      style={{
+        backgroundColor: (cat?.color || '#6b7280') + '18',
+        width: size + 14,
+        height: size + 14,
+      }}
     >
-      <span>{cat.icon}</span>
+      <Icon size={size} color={cat?.color || '#6b7280'} strokeWidth={1.8} />
     </div>
   )
 }

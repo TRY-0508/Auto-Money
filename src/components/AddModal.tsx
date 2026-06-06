@@ -3,9 +3,10 @@ import { useTransactions, useCategories, useProjects } from '@/db/hooks'
 import { parseTransaction } from '@/services/llm'
 import { startRecognition, isSpeechSupported, stopRecognition } from '@/services/speech'
 import { MOODS } from '@/lib/constants'
+import { CUSTOM_ICON_OPTIONS, ICON_MAP } from '@/lib/icons'
+import { MoreHorizontal } from 'lucide-react'
 import type { ParsedTransaction } from '@/types'
 
-const NEW_ICONS = ['📦', '☕', '🐱', '🎁', '💡', '✈️', '🏋️', '🎵', '👕', '💄', '🍺', '🏥']
 const NEW_COLORS = ['#3b82f6', '#22c55e', '#ef4444', '#eab308', '#a855f7', '#f97316', '#ec4899', '#06b6d4']
 
 interface Props { open: boolean; onClose: () => void }
@@ -37,7 +38,7 @@ export default function AddModal({ open, onClose }: Props) {
   // Inline new category
   const [showNewCat, setShowNewCat] = useState(false)
   const [newCatName, setNewCatName] = useState('')
-  const [newCatIcon, setNewCatIcon] = useState('📦')
+  const [newCatIcon, setNewCatIcon] = useState('more-horizontal')
   const [newCatColor, setNewCatColor] = useState('#3b82f6')
 
   // Quick templates
@@ -92,7 +93,7 @@ export default function AddModal({ open, onClose }: Props) {
     if (!parsed) return
     let cat = categories.find(c => c.name === parsed.category && c.type === parsed.type)
     if (!cat) {
-      const catId = await addCategory({ name: parsed.category, type: parsed.type, icon: NEW_ICONS[Math.floor(Math.random() * NEW_ICONS.length)], color: NEW_COLORS[Math.floor(Math.random() * NEW_COLORS.length)], isSystem: false })
+      const catId = await addCategory({ name: parsed.category, type: parsed.type, icon: CUSTOM_ICON_OPTIONS[Math.floor(Math.random() * CUSTOM_ICON_OPTIONS.length)].key, color: NEW_COLORS[Math.floor(Math.random() * NEW_COLORS.length)], isSystem: false })
       setManualCategoryId(catId)
     } else setManualCategoryId(cat.id)
     setManualType(parsed.type); setManualAmount(String(parsed.amount)); setManualDate(parsed.date); setManualDesc(parsed.description); setStep('manual')
@@ -230,12 +231,16 @@ export default function AddModal({ open, onClose }: Props) {
 
               <p className="text-xs text-gray-400 -mt-2 text-center">选择分类</p>
               <div className="grid grid-cols-5 gap-2">
-                {currentCats.map(cat => (
-                  <button key={cat.id} onClick={() => setManualCategoryId(cat.id)}
-                    className={`flex flex-col items-center gap-1 p-2.5 rounded-2xl text-xs transition-all ${manualCategoryId === cat.id ? 'bg-violet-50 dark:bg-violet-900/30 ring-2 ring-violet-400 scale-105' : 'bg-gray-50 dark:bg-gray-800'}`}>
-                    <span className="text-xl">{cat.icon}</span><span className="text-[10px]">{cat.name}</span>
-                  </button>
-                ))}
+                {currentCats.map(cat => {
+                  const Icon = ICON_MAP[cat.icon] || MoreHorizontal
+                  return (
+                    <button key={cat.id} onClick={() => setManualCategoryId(cat.id)}
+                      className={`flex flex-col items-center gap-1 p-2.5 rounded-2xl text-xs transition-all ${manualCategoryId === cat.id ? 'bg-violet-50 dark:bg-violet-900/30 ring-2 ring-violet-400 scale-105' : 'bg-gray-50 dark:bg-gray-800'}`}>
+                      <Icon size={22} strokeWidth={1.8} color={manualCategoryId === cat.id ? '#8b5cf6' : '#6b7280'} />
+                      <span className="text-[10px]">{cat.name}</span>
+                    </button>
+                  )
+                })}
                 <button onClick={() => setShowNewCat(!showNewCat)} className={`flex flex-col items-center justify-center gap-1 p-2.5 rounded-2xl border-2 border-dashed text-xs transition-all ${showNewCat ? 'border-violet-400 text-violet-400' : 'border-gray-300 dark:border-gray-600 text-gray-400'}`}>
                   <span className="text-lg">{showNewCat ? '✕' : '+'}</span><span className="text-[10px]">新建</span>
                 </button>
@@ -248,7 +253,10 @@ export default function AddModal({ open, onClose }: Props) {
                       className="flex-1 px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 text-sm" />
                     <button onClick={handleQuickAddCat} disabled={!newCatName.trim()} className="px-4 py-2 rounded-xl bg-violet-500 text-white text-sm font-medium disabled:opacity-50">添加</button>
                   </div>
-                  <div className="flex gap-1">{NEW_ICONS.map(icon => <button key={icon} onClick={() => setNewCatIcon(icon)} className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm ${newCatIcon === icon ? 'bg-violet-100 dark:bg-violet-900/50 ring-1 ring-violet-400' : ''}`}>{icon}</button>)}</div>
+                  <div className="flex gap-1">{CUSTOM_ICON_OPTIONS.slice(0, 12).map(({ key, label }) => {
+                    const Icon = ICON_MAP[key] || MoreHorizontal
+                    return <button key={key} onClick={() => setNewCatIcon(key)} title={label} className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all ${newCatIcon === key ? 'bg-violet-100 dark:bg-violet-900/50 ring-1 ring-violet-400' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}><Icon size={16} strokeWidth={1.8} className="text-gray-600 dark:text-gray-400" /></button>
+                  })}</div>
                   <div className="flex gap-1">{NEW_COLORS.map(c => <button key={c} onClick={() => setNewCatColor(c)} className="w-6 h-6 rounded-full border-2" style={{ backgroundColor: c, borderColor: newCatColor === c ? '#374151' : 'transparent' }} />)}</div>
                 </div>
               )}

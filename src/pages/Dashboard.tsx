@@ -3,6 +3,8 @@ import { useTransactions, useCategories, useProjects, useBudgets } from '@/db/ho
 import { getMonthlyStats, getCategoryBreakdown } from '@/lib/stats'
 import { getCurrentYearMonth, formatAmount, formatDate } from '@/lib/utils'
 import { MOODS } from '@/lib/constants'
+import { ICON_MAP } from '@/lib/icons'
+import { MoreHorizontal } from 'lucide-react'
 import CategoryIcon from '@/components/CategoryIcon'
 import EmptyState from '@/components/EmptyState'
 import AddModal from '@/components/AddModal'
@@ -361,7 +363,7 @@ export default function Dashboard() {
                 </div>
                 {items.map(t => (
                   <div key={t.id} className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50/30 dark:hover:bg-gray-800/20 transition-colors cursor-pointer group border-b border-gray-50/30 dark:border-gray-800/20 last:border-0" onClick={() => handleEdit(t)}>
-                    <CategoryIcon categoryId={t.categoryId} size="sm" />
+                    <CategoryIcon categoryId={t.categoryId} size={16} />
                     <div className="flex-1 min-w-0"><p className="text-sm font-medium truncate">{categories.find(c => c.id === t.categoryId)?.name || '未分类'}</p>{t.description && <p className="text-xs text-gray-400 truncate">{t.description}</p>}</div>
                     {t.mood && <span className="text-base">{t.mood}</span>}
                     <p className={`text-sm font-semibold ${t.type === 'expense' ? 'text-red-400' : 'text-green-400'}`}>{t.type === 'expense' ? '-' : '+'}{formatAmount(t.amount)}</p>
@@ -382,7 +384,7 @@ export default function Dashboard() {
             <div className="space-y-3">
               <div className="flex gap-2">{['expense','income'].map(t => <button key={t} onClick={() => setEditType(t as any)} className={`flex-1 py-2 rounded-2xl text-sm font-medium ${editType === t ? (t === 'expense' ? 'bg-red-400 text-white' : 'bg-green-400 text-white') : 'bg-gray-100 dark:bg-gray-800 text-gray-500'}`}>{t === 'expense' ? '支出' : '收入'}</button>)}</div>
               <input type="number" value={editAmount} onChange={e => setEditAmount(e.target.value)} placeholder="金额" className="w-full px-3 py-2 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300" />
-              <div className="grid grid-cols-4 gap-2">{currentCats.map(c => <button key={c.id} onClick={() => setEditCatId(c.id)} className={`flex flex-col items-center gap-1 p-2 rounded-2xl text-xs transition-all ${editCatId === c.id ? 'bg-violet-50 dark:bg-violet-900/30 ring-2 ring-violet-400 scale-105' : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'}`}><span className="text-lg">{c.icon}</span><span>{c.name}</span></button>)}</div>
+              <div className="grid grid-cols-4 gap-2">{currentCats.map(c => { const Icon = ICON_MAP[c.icon] || MoreHorizontal; return <button key={c.id} onClick={() => setEditCatId(c.id)} className={`flex flex-col items-center gap-1 p-2 rounded-2xl text-xs transition-all ${editCatId === c.id ? 'bg-violet-50 dark:bg-violet-900/30 ring-2 ring-violet-400 scale-105' : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'}`}><Icon size={20} strokeWidth={1.8} className={editCatId === c.id ? 'text-violet-500' : 'text-gray-500'} /><span>{c.name}</span></button> })}</div>
               <input type="date" value={editDate} onChange={e => setEditDate(e.target.value)} className="w-full px-3 py-2 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300" />
               <input type="text" value={editDesc} onChange={e => setEditDesc(e.target.value)} placeholder="描述" className="w-full px-3 py-2 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300" />
               <div><p className="text-xs text-gray-400 mb-1.5">💭 心情</p><div className="flex flex-wrap gap-1">{MOODS.map(m => <button key={m.value} onClick={() => setEditMood(editMood === m.value ? '' : m.value)} className={`px-2 py-1 rounded-xl text-sm transition-all ${editMood === m.value ? 'bg-violet-50 dark:bg-violet-900/30 ring-1 ring-violet-400 scale-105' : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>{m.emoji} {m.label}</button>)}</div></div>
