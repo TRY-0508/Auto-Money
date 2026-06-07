@@ -10,18 +10,16 @@ import {
   Hourglass, BarChart3, AlertTriangle, Zap,
 } from '@/lib/icons'
 
-const COOLDOWN_PRESETS = [1, 6, 24, 48, 72, 168] as const
-
 const GOAL_COLORS = ['#f59e0b', '#8b5cf6', '#10b981', '#f43f5e', '#3b82f6', '#ec4899', '#14b8a6']
 
 function cooldownLabel(h: number): string {
-  const map: Record<number, string> = { 1: '1 小时', 6: '6 小时', 24: '1 天', 48: '2 天', 72: '3 天', 168: '7 天' }
-  return map[h] || `${h} 小时`
+  const m: Record<number, string> = { 1: '1 小时', 6: '6 小时', 24: '1 天', 48: '2 天', 72: '3 天', 168: '7 天' }
+  return m[h] || `${h} 小时`
 }
 
 function getRemaining(endsAt: number): { text: string; expired: boolean } {
   const ms = endsAt - Date.now()
-  if (ms <= 0) return { text: '已到期', expired: true }
+  if (ms <= 0) return { text: '时间到', expired: true }
   const h = Math.floor(ms / 3600000)
   const m = Math.floor((ms % 3600000) / 60000)
   const s = Math.floor((ms % 60000) / 1000)
@@ -30,7 +28,7 @@ function getRemaining(endsAt: number): { text: string; expired: boolean } {
   return { text: `${s}秒`, expired: false }
 }
 
-function formatDateStr(ts: number): string {
+function fmtDate(ts: number): string {
   const d = new Date(ts)
   return `${d.getMonth() + 1}月${d.getDate()}日 ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
 }
@@ -43,6 +41,9 @@ export default function JarPage() {
 
   const [tab, setTab] = useState<Tab>('goals')
   const [tick, setTick] = useState(0)
+  const [tabKey, setTabKey] = useState(0) // for transition animation
+
+  const switchTab = (t: Tab) => { setTabKey(k => k + 1); setTab(t) }
 
   // New goal
   const [showNewGoal, setShowNewGoal] = useState(false)
@@ -50,7 +51,7 @@ export default function JarPage() {
   const [goalTarget, setGoalTarget] = useState('')
   const [goalDesc, setGoalDesc] = useState('')
 
-  // New event form
+  // New event
   const [showNewEvent, setShowNewEvent] = useState(false)
   const [evtDesc, setEvtDesc] = useState('')
   const [evtAmount, setEvtAmount] = useState('')
@@ -95,8 +96,7 @@ export default function JarPage() {
     await addGoal({
       name: goalName.trim(),
       targetAmount: parseFloat(goalTarget) || 1000,
-      currentAmount: 0,
-      starCount: 0,
+      currentAmount: 0, starCount: 0,
       description: goalDesc.trim(),
       color: GOAL_COLORS[Math.floor(Math.random() * GOAL_COLORS.length)],
     })
@@ -107,7 +107,7 @@ export default function JarPage() {
   const handleDeleteGoal = async (id: string) => {
     const goalEvents = events.filter(e => e.goalId === id && (e.status === 'cooling' || e.status === 'pending_review'))
     if (goalEvents.length > 0) {
-      if (!window.confirm(`该目标下还有 ${goalEvents.length} 个未完成的冷静事件，确定删除吗？`)) return
+      if (!window.confirm(`该心愿下还有 ${goalEvents.length} 个未完成的冷却事件，确定删除吗？`)) return
     }
     await deleteGoal(id)
   }
@@ -171,8 +171,6 @@ export default function JarPage() {
     setReviewEvent(null); setReviewNote(''); setShowPurchaseOptions(false)
   }
 
-  const handleFailed = () => setShowPurchaseOptions(true)
-
   const handlePurchase = async () => {
     if (!reviewEvent) return
     await updateEvent(reviewEvent.id, {
@@ -196,7 +194,7 @@ export default function JarPage() {
   }
 
   const handleDeleteEvent = async (id: string) => {
-    if (!window.confirm('确定删除这个冷静事件吗？')) return
+    if (!window.confirm('确定删除这个冷却事件吗？')) return
     await deleteEvent(id)
   }
 
@@ -211,11 +209,11 @@ export default function JarPage() {
 
   const statusBadge = (s: CoolDownEvent['status']) => {
     const map: Record<string, { cls: string; label: string }> = {
-      cooling: { cls: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400', label: '冷却中' },
-      pending_review: { cls: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400', label: '待评估' },
-      resisted: { cls: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400', label: '已克制' },
-      failed: { cls: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400', label: '未克制' },
-      purchased: { cls: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400', label: '已购买' },
+      cooling:     { cls: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',   label: '冷却中' },
+      pending_review: { cls: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400', label: '等待确认' },
+      resisted:    { cls: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400', label: '已守住' },
+      failed:      { cls: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',       label: '已释怀' },
+      purchased:   { cls: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400',       label: '已购买' },
     }
     const m = map[s] || map.cooling
     return <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${m.cls}`}>{m.label}</span>
@@ -226,18 +224,22 @@ export default function JarPage() {
       {/* ── Tab bar ── */}
       <div className="flex bg-white/40 dark:bg-gray-800/30 rounded-2xl p-1 gap-1">
         {([
-          { key: 'goals', label: '积攒目标', Icon: Target },
-          { key: 'events', label: '冷静事件', Icon: ShieldCheck },
-          { key: 'history', label: '历史统计', Icon: BarChart3 },
-        ] as const).map(t => (
-          <button key={t.key} onClick={() => setTab(t.key)}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-medium transition-all ${
-              tab === t.key ? 'bg-white dark:bg-gray-700 shadow-sm text-violet-600 dark:text-violet-400' : 'text-gray-500 hover:text-gray-700'
+          { key: 'goals' as Tab, label: '心愿目标', Icon: Target },
+          { key: 'events' as Tab, label: '欲望冷却', Icon: ShieldCheck },
+          { key: 'history' as Tab, label: '成长轨迹', Icon: BarChart3 },
+        ]).map(t => (
+          <button key={t.key} onClick={() => switchTab(t.key)}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 ${
+              tab === t.key ? 'bg-white dark:bg-gray-700 shadow-sm text-violet-600 dark:text-violet-400 scale-[1.02]' : 'text-gray-500 hover:text-gray-700'
             }`}>
             <t.Icon size={16} strokeWidth={1.8} />{t.label}
           </button>
         ))}
       </div>
+
+      {/* ── Tab content with fade transition ── */}
+      <div key={tabKey} className="animate-[fadeSlide_0.25s_ease-out]">
+      <style>{`@keyframes fadeSlide { from { opacity:0; transform:translateY(6px) } to { opacity:1; transform:translateY(0) } }`}</style>
 
       {/* ═══════════ TAB 1: GOALS ═══════════ */}
       {tab === 'goals' && (
@@ -245,29 +247,29 @@ export default function JarPage() {
           {!showNewGoal ? (
             <button onClick={() => setShowNewGoal(true)}
               className="w-full border-2 border-dashed border-violet-300 dark:border-violet-700 rounded-2xl p-4 text-violet-400 hover:border-violet-400 hover:text-violet-500 transition-all flex items-center justify-center gap-2">
-              <Plus size={18} />创建新目标
+              <Plus size={18} />创建心愿
             </button>
           ) : (
             <div className="card p-4 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="h3">新积攒目标</span>
+                <span className="h3">新心愿</span>
                 <button onClick={() => setShowNewGoal(false)} className="btn-icon"><X size={14} /></button>
               </div>
               <input type="text" value={goalName} onChange={e => setGoalName(e.target.value)}
-                placeholder="目标名称" className="input" autoFocus />
+                placeholder="心愿名称" className="input" autoFocus />
               <input type="number" value={goalTarget} onChange={e => setGoalTarget(e.target.value)}
                 placeholder="目标金额" className="input" />
               <textarea value={goalDesc} onChange={e => setGoalDesc(e.target.value)}
-                placeholder="为什么想攒这个目标？（可选）" className="input resize-none h-16" />
+                placeholder="为什么想实现它？（可选）" className="input resize-none h-16" />
               <button onClick={handleAddGoal} disabled={!goalName.trim() || !goalTarget}
-                className="btn btn-primary w-full">创建目标</button>
+                className="btn btn-primary w-full">创建心愿</button>
             </div>
           )}
 
           {goals.length === 0 ? (
             <div className="card p-10 text-center">
-              <Target size={48} strokeWidth={1} className="text-violet-400 mx-auto mb-4" />
-              <p className="text-muted text-sm">设定一个积攒目标，用冷静克制来填满它</p>
+              <Target size={48} strokeWidth={1} className="text-violet-400 mx-auto mb-4 animate-[float_3s_ease-in-out_infinite]" />
+              <p className="text-muted text-sm">设定一个心愿，用每次守住的光来填满它</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -327,7 +329,6 @@ export default function JarPage() {
                 const timerColor = elapsedPct > 80 ? '#ef4444' : elapsedPct > 50 ? '#f59e0b' : '#3b82f6'
                 return (
                   <div key={evt.id} className="card p-4 flex items-center gap-3">
-                    {/* Circular countdown ring */}
                     <div className="relative w-10 h-10 flex-shrink-0 flex items-center justify-center">
                       <svg viewBox="0 0 38 38" className="w-full h-full -rotate-90">
                         <circle cx="19" cy="19" r={ringR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="3" />
@@ -359,7 +360,7 @@ export default function JarPage() {
           {pendingReviewEvents.length > 0 && (
             <div className="space-y-3">
               <div className="flex items-center gap-2 text-sm font-medium text-amber-600 dark:text-amber-400">
-                <AlertTriangle size={16} />待评估 ({pendingReviewEvents.length})
+                <AlertTriangle size={16} />等待确认 ({pendingReviewEvents.length})
               </div>
               {pendingReviewEvents.map(evt => (
                 <div key={evt.id} className="card p-4 flex items-center gap-3 breathe border-amber-300/60 dark:border-amber-700/40">
@@ -375,7 +376,7 @@ export default function JarPage() {
                     </p>
                   </div>
                   <button onClick={() => { setReviewEvent(evt); setReviewDesire(evt.desireLevel); setReviewNote(''); setShowPurchaseOptions(false) }}
-                    className="btn btn-primary btn-sm flex-shrink-0">去评估</button>
+                    className="btn btn-primary btn-sm flex-shrink-0">去看看</button>
                   <button onClick={() => handleDeleteEvent(evt.id)} className="btn-icon btn-icon-danger flex-shrink-0"><X size={12} /></button>
                 </div>
               ))}
@@ -384,15 +385,15 @@ export default function JarPage() {
 
           {coolingEvents.length === 0 && pendingReviewEvents.length === 0 && (
             <div className="card p-10 text-center">
-              <ShieldCheck size={48} strokeWidth={1} className="text-violet-400 mx-auto mb-4" />
-              <p className="text-muted text-sm">遇到犹豫的消费？来创建一个冷静事件</p>
+              <ShieldCheck size={48} strokeWidth={1} className="text-violet-400 mx-auto mb-4 animate-[float_3s_ease-in-out_infinite]" />
+              <p className="text-muted text-sm">遇到犹豫的消费？先冷却一下</p>
             </div>
           )}
 
           {!showNewEvent ? (
             <button onClick={() => setShowNewEvent(true)}
               className="btn btn-primary w-full flex items-center justify-center gap-2">
-              <Plus size={18} />新建冷静事件
+              <Plus size={18} />记录冲动
             </button>
           ) : (
             <div className="card p-4 space-y-3">
@@ -401,44 +402,40 @@ export default function JarPage() {
                 <button onClick={() => { setShowNewEvent(false); setEvtAIResult(null); setEvtAIError('') }} className="btn-icon"><X size={14} /></button>
               </div>
 
-              {/* Main input: free text description */}
               <textarea value={evtDesc} onChange={e => setEvtDesc(e.target.value)}
                 placeholder="描述你想买的东西和原因" className="input resize-none h-20" autoFocus />
               <input type="number" value={evtAmount} onChange={e => setEvtAmount(e.target.value)}
                 placeholder="价格（可选）" className="input" />
 
-              {/* AI analysis button */}
               {!evtAIResult ? (
                 <button onClick={handleAIAnalyze} disabled={!evtDesc.trim() || evtAILoading}
                   className={`w-full py-3 rounded-2xl text-sm font-medium transition-all flex items-center justify-center gap-2 ${
                     evtAILoading ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-400' : 'bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 hover:bg-violet-100 dark:hover:bg-violet-900/40'
                   } disabled:opacity-50`}>
-                  <Zap size={16} />{evtAILoading ? 'AI 分析中...' : 'AI 心理分析'}
+                  <Zap size={16} className={evtAILoading ? 'animate-pulse' : ''} />
+                  {evtAILoading ? '分析中...' : 'AI 心理分析'}
                 </button>
               ) : (
-                /* AI result card */
                 <div className="bg-violet-50/50 dark:bg-violet-900/10 rounded-2xl p-3.5 space-y-3 text-sm">
                   <div className="flex items-center gap-2">
                     <Zap size={14} className="text-violet-500" />
-                    <span className="text-xs text-violet-500 font-medium">AI 分析结果</span>
-                    <span className="text-xs text-muted ml-auto">{Math.round(evtAIResult.confidence * 100)}% 置信</span>
+                    <span className="text-xs text-violet-500 font-medium">AI 分析</span>
+                    <span className="text-xs text-muted ml-auto">{Math.round(evtAIResult.confidence * 100)}%</span>
                   </div>
-
                   <p className="text-muted leading-relaxed">{evtAIResult.summary}</p>
-
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div className="bg-white/60 dark:bg-gray-800/60 rounded-xl p-2">
-                      <span className="text-muted">消费类型</span>
+                      <span className="text-muted">类型</span>
                       <p className="font-bold text-violet-600 dark:text-violet-400">
                         {evtAIResult.impulseType === 'emotional' ? '情绪消费' : evtAIResult.impulseType === 'impulsive' ? '冲动消费' : '不确定'}
                       </p>
                     </div>
                     <div className="bg-white/60 dark:bg-gray-800/60 rounded-xl p-2">
-                      <span className="text-muted">建议冷静</span>
+                      <span className="text-muted">建议冷却</span>
                       <p className="font-bold text-violet-600 dark:text-violet-400">{cooldownLabel(evtAIResult.suggestedCooldown)}</p>
                     </div>
                     <div className="bg-white/60 dark:bg-gray-800/60 rounded-xl p-2">
-                      <span className="text-muted">渴望程度</span>
+                      <span className="text-muted">渴望度</span>
                       <p className="font-bold text-amber-500">{evtAIResult.suggestedDesire}/5</p>
                     </div>
                     <div className="bg-white/60 dark:bg-gray-800/60 rounded-xl p-2">
@@ -446,7 +443,6 @@ export default function JarPage() {
                       <p className="font-bold text-blue-500">{evtAIResult.suggestedNecessity}/5</p>
                     </div>
                   </div>
-
                   {evtAIResult.riskFactors.length > 0 && (
                     <div>
                       <span className="text-xs text-muted">风险因素</span>
@@ -457,18 +453,14 @@ export default function JarPage() {
                       </div>
                     </div>
                   )}
-
                   {evtAIResult.reflectionQuestions.length > 0 && (
-                    <div>
-                      <span className="text-xs text-muted">反思问题</span>
-                      <ul className="mt-1 space-y-1">
-                        {evtAIResult.reflectionQuestions.map((q, i) => (
-                          <li key={i} className="text-xs text-muted italic">"{q}"</li>
-                        ))}
-                      </ul>
+                    <div className="text-xs">
+                      <span className="text-muted">冷静时想想</span>
+                      {evtAIResult.reflectionQuestions.map((q, i) => (
+                        <p key={i} className="mt-1 text-muted italic leading-relaxed">&ldquo;{q}&rdquo;</p>
+                      ))}
                     </div>
                   )}
-
                   <button onClick={() => { setEvtAIResult(null); setEvtAIError('') }}
                     className="text-xs text-violet-500 hover:text-violet-600">重新分析</button>
                 </div>
@@ -483,14 +475,14 @@ export default function JarPage() {
 
               {goals.length > 0 && (
                 <select value={evtGoalId} onChange={e => setEvtGoalId(e.target.value)} className="input">
-                  <option value="">不关联目标</option>
+                  <option value="">不关联心愿</option>
                   {goals.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
                 </select>
               )}
 
               <button onClick={handleAddEvent} disabled={!evtDesc.trim()}
                 className="btn btn-primary w-full">
-                <Timer size={16} />开始冷静
+                <Timer size={16} />开始冷却
               </button>
             </div>
           )}
@@ -503,24 +495,24 @@ export default function JarPage() {
           <div className="grid grid-cols-3 gap-3">
             <div className="card p-3 text-center">
               <p className="text-2xl font-bold text-green-500">{successRate}%</p>
-              <p className="text-xs text-muted mt-1">克制成功率</p>
+              <p className="text-xs text-muted mt-1">守住率</p>
             </div>
             <div className="card p-3 text-center">
               <p className="text-2xl font-bold text-violet-500">{formatAmount(totalResistedAmount)}</p>
-              <p className="text-xs text-muted mt-1">克制金额</p>
+              <p className="text-xs text-muted mt-1">守住金额</p>
             </div>
             <div className="card p-3 text-center">
-              <p className="text-2xl font-bold text-amber-500">{totalStars}★</p>
-              <p className="text-xs text-muted mt-1">总星星数</p>
+              <p className="text-2xl font-bold text-amber-500">{totalStars}</p>
+              <p className="text-xs text-muted mt-1">星光总数</p>
             </div>
           </div>
 
           <div className="flex gap-2">
             {([
-              { key: 'all', label: '全部' },
-              { key: 'resisted', label: '已克制' },
-              { key: 'failed', label: '未克制/已购买' },
-            ] as const).map(f => (
+              { key: 'all' as const, label: '全部' },
+              { key: 'resisted' as const, label: '已守住' },
+              { key: 'failed' as const, label: '已释怀' },
+            ]).map(f => (
               <button key={f.key} onClick={() => setHistoryFilter(f.key)}
                 className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
                   historyFilter === f.key ? 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400 font-medium' : 'bg-gray-50 text-gray-500 dark:bg-gray-800'
@@ -530,15 +522,16 @@ export default function JarPage() {
 
           {filteredHistory.length === 0 ? (
             <div className="card p-8 text-center">
-              <BarChart3 size={36} strokeWidth={1} className="text-muted mx-auto mb-3" />
+              <BarChart3 size={36} strokeWidth={1} className="text-muted mx-auto mb-3 animate-[float_3s_ease-in-out_infinite]" />
               <p className="text-muted text-sm">暂无记录</p>
             </div>
           ) : (
             <div className="space-y-2">
-              {filteredHistory.map(evt => {
+              {filteredHistory.map((evt, idx) => {
                 const goal = evt.goalId ? goals.find(g => g.id === evt.goalId) : null
                 return (
-                  <div key={evt.id} className="card p-3.5 flex items-center gap-3">
+                  <div key={evt.id} className="card p-3.5 flex items-center gap-3"
+                    style={{ animationDelay: `${idx * 30}ms` }}>
                     <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${
                       evt.status === 'resisted' ? 'bg-green-100 dark:bg-green-900/30' :
                       evt.status === 'purchased' ? 'bg-gray-100 dark:bg-gray-800' :
@@ -555,12 +548,12 @@ export default function JarPage() {
                       </div>
                       <p className="text-xs text-muted mt-0.5">
                         {evt.amount > 0 && formatAmount(evt.amount) + ' · '}
-                        渴望 {evt.desireLevel}→{evt.reEvaluationDesire ?? '?'} · 必要 {evt.necessityLevel}/5
+                        渴望 {evt.desireLevel}→{evt.reEvaluationDesire ?? '?'}
                         {goal && <span className="ml-1" style={{ color: goal.color }}>· {goal.name}</span>}
                       </p>
-                      {evt.reEvaluationNote && <p className="text-xs text-muted mt-0.5 italic">"{evt.reEvaluationNote}"</p>}
+                      {evt.reEvaluationNote && <p className="text-xs text-muted mt-0.5 italic">&ldquo;{evt.reEvaluationNote}&rdquo;</p>}
                     </div>
-                    <span className="text-xs text-muted flex-shrink-0">{formatDateStr(evt.createdAt)}</span>
+                    <span className="text-xs text-muted flex-shrink-0">{fmtDate(evt.createdAt)}</span>
                   </div>
                 )
               })}
@@ -568,39 +561,36 @@ export default function JarPage() {
           )}
         </div>
       )}
+      </div>{/* end fade transition wrapper */}
 
       {/* ═══════════ RE-EVALUATION MODAL ═══════════ */}
       {reviewEvent && (
         <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/40 backdrop-blur-sm"
           onClick={() => { setReviewEvent(null); setShowPurchaseOptions(false) }}>
-          <div className="bg-white dark:bg-gray-900 rounded-t-3xl md:rounded-3xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6 space-y-4 shadow-2xl slide-up"
+          <div className="bg-white dark:bg-gray-900 rounded-t-3xl md:rounded-3xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6 space-y-4 shadow-2xl animate-[popIn_0.25s_cubic-bezier(0.34,1.56,0.64,1)]"
             onClick={e => e.stopPropagation()}>
+            <style>{`@keyframes popIn { from{transform:scale(0.9);opacity:0} to{transform:scale(1);opacity:1} }`}</style>
             {!showPurchaseOptions ? (
               <>
                 <div className="text-center">
                   <div className="w-16 h-16 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center mx-auto mb-3">
                     <ShieldCheck size={32} className="text-violet-500" />
                   </div>
-                  <h2 className="h2">冷静之后，你还想要吗？</h2>
-                  <p className="text-sm text-muted mt-1">冷静期已过，回顾你的感受</p>
+                  <h2 className="h2">冷静之后，你的决定是？</h2>
                 </div>
 
                 <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-4 space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-muted">想买</span>
+                    <span className="text-muted">想要</span>
                     <span className="font-bold">{reviewEvent.description}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted">价格</span>
-                    <span className="font-medium">{reviewEvent.amount > 0 ? formatAmount(reviewEvent.amount) : '未填写'}</span>
+                    <span className="font-medium">{reviewEvent.amount > 0 ? formatAmount(reviewEvent.amount) : '—'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted">原始渴望</span>
+                    <span className="text-muted">冷却前渴望</span>
                     <span className="font-bold text-amber-500">{'★'.repeat(reviewEvent.desireLevel)}{'☆'.repeat(5 - reviewEvent.desireLevel)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted">原始必要性</span>
-                    <span className="font-bold text-blue-500">{'★'.repeat(reviewEvent.necessityLevel)}{'☆'.repeat(5 - reviewEvent.necessityLevel)}</span>
                   </div>
                   {reviewEvent.aiAnalysis?.summary && (
                     <p className="text-xs text-muted italic mt-2 border-t border-gray-200 dark:border-gray-700 pt-2">{reviewEvent.aiAnalysis.summary}</p>
@@ -617,14 +607,14 @@ export default function JarPage() {
                 </div>
 
                 <textarea value={reviewNote} onChange={e => setReviewNote(e.target.value)}
-                  placeholder="冷静后的感受或反思" className="input resize-none h-20" />
+                  placeholder="说说现在的感受" className="input resize-none h-20" />
 
                 <div className="space-y-2">
                   <button onClick={handleResist} className="btn btn-primary w-full text-base py-3">
-                    <ShieldCheck size={18} />克制成功
+                    <ShieldCheck size={18} />守住它
                   </button>
-                  <button onClick={handleFailed} className="btn btn-secondary w-full text-base py-3">
-                    <Flame size={18} />我还是想买
+                  <button onClick={() => setShowPurchaseOptions(true)} className="btn btn-secondary w-full text-base py-3">
+                    <Flame size={18} />还是想要
                   </button>
                   <button onClick={handleRetryCooldown} className="w-full text-sm text-muted hover:text-violet-500 py-2 transition-colors">
                     再冷静一下
@@ -637,8 +627,8 @@ export default function JarPage() {
                   <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-3">
                     <Flame size={32} className="text-red-400" />
                   </div>
-                  <h2 className="h2">冷静后依然想要</h2>
-                  <p className="text-sm text-muted mt-1">这可能说明这笔消费有一定的合理性</p>
+                  <h2 className="h2">还想要也没关系</h2>
+                  <p className="text-sm text-muted mt-1">冷静后仍然想要的，也许真的值得</p>
                 </div>
 
                 <div className="space-y-2">

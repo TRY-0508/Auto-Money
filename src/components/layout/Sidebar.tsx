@@ -16,7 +16,7 @@ export default function Sidebar() {
           {[
             { to: '/', label: '首页', Icon: LayoutDashboard },
             { to: '/ai', label: 'AI 助手', Icon: Brain },
-            { to: '/jar', label: '积攒瓶', Icon: Star },
+            { to: '/jar', label: '心愿', Icon: Star },
             { to: '/settings', label: '设置', Icon: Settings },
           ].map(({ to, label, Icon }) => (
             <NavLink key={to} to={to} onClick={() => setSidebarOpen(false)}

@@ -73,7 +73,7 @@ export default function StarJar({ starCount, targetAmount, currentAmount, color,
             <span className="text-[10px] text-muted mt-0.5">/ ¥{Math.round(targetAmount)}</span>
             <div className="flex items-center gap-1 mt-1">
               <span className="text-xs font-bold text-amber-500">{starCount}</span>
-              <span className="text-[10px] text-muted">次克制</span>
+              <span className="text-[10px] text-muted">次守住</span>
             </div>
           </div>
 
@@ -143,7 +143,7 @@ export default function StarJar({ starCount, targetAmount, currentAmount, color,
                 </defs>
                 <polygon points="12,1.5 15.3,8.8 23,9.5 17.5,14.8 19,22 12,18 5,22 6.5,14.8 1,9.5 8.7,8.8" fill="url(#psg)" />
               </svg>
-              <span className="text-sm font-bold text-amber-600 dark:text-amber-400">克制记录</span>
+              <span className="text-sm font-bold text-amber-600 dark:text-amber-400">守住记录</span>
             </div>
 
             <div className="bg-gray-50/80 dark:bg-gray-800/80 rounded-xl p-3 space-y-2 text-sm">

@@ -4,7 +4,7 @@ import { useUIStore } from '@/stores/uiStore'
 import { LayoutDashboard, Brain, Settings, Menu, Plus } from '@/lib/icons'
 import AddModal from '@/components/AddModal'
 
-const TITLES: Record<string, string> = { '/': '心情收支簿', '/ai': 'AI 助手', '/jar': '积攒瓶', '/settings': '设置' }
+const TITLES: Record<string, string> = { '/': '心情收支簿', '/ai': 'AI 助手', '/jar': '心愿', '/settings': '设置' }
 
 export default function Header() {
   const location = useLocation()
