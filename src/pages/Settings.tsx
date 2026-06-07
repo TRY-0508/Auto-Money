@@ -5,7 +5,7 @@ import { exportAllData, importAllData, exportCSV, downloadFile } from '@/service
 import { db } from '@/db'
 import { getCurrentYearMonth, formatAmount } from '@/lib/utils'
 import { getMonthlyStats, getCategoryBreakdown } from '@/lib/stats'
-import { CAT_ICON_OPTIONS, CATEGORY_ICON_MAP, PROJECT_ICON_MAP, PROJECT_ICONS as PROJ_ICONS_LIST, MoreHorizontal, Settings as SettingsIcon, Tag, FolderOpen, Database, Download, Upload, Trash2, Edit3, Check, X } from '@/lib/icons'
+import { CAT_ICON_OPTIONS, CATEGORY_ICON_MAP, PROJECT_ICON_MAP, PROJECT_ICONS as PROJ_ICONS_LIST, MoreHorizontal, Settings as SettingsIcon, Tag, FolderOpen, Database, Download, Upload, Trash2, Edit3, Check, X, Mic } from '@/lib/icons'
 
 const ALL_COLORS = ['#3b82f6', '#22c55e', '#ef4444', '#eab308', '#a855f7', '#f97316', '#ec4899', '#06b6d4', '#6366f1', '#14b8a6', '#84cc16', '#f59e0b', '#78716c']
 
@@ -36,6 +36,7 @@ export default function Settings() {
   const { projects, addProject, deleteProject } = useProjects()
 
   const [apiKey, setApiKey] = useState(''); const [baseUrl, setBaseUrl] = useState('https://api.deepseek.com/v1'); const [model, setModel] = useState('deepseek-chat'); const [saved, setSaved] = useState(false); const [testResult, setTestResult] = useState('')
+  const [speechApiKey, setSpeechApiKey] = useState(''); const [speechSecretKey, setSpeechSecretKey] = useState(''); const [speechSaved, setSpeechSaved] = useState(false)
   const [showAddCat, setShowAddCat] = useState(false); const [newCatName, setNewCatName] = useState(''); const [newCatType, setNewCatType] = useState<'expense' | 'income'>('expense'); const [newCatIcon, setNewCatIcon] = useState('more-horizontal')
   const [showAddProject, setShowAddProject] = useState(false); const [newProjectName, setNewProjectName] = useState(''); const [newProjectIcon, setNewProjectIcon] = useState('package'); const [newProjectColor, setNewProjectColor] = useState('#3b82f6')
   const [showClearConfirm, setShowClearConfirm] = useState(false)
@@ -44,6 +45,7 @@ export default function Settings() {
   useEffect(() => { if (settings) { setBaseUrl(settings.apiBaseUrl || 'https://api.deepseek.com/v1'); setModel(settings.model || 'deepseek-chat') } }, [settings])
 
   const handleSaveApiKey = async () => { if (!updateSettings) return; await updateSettings({ apiKey: apiKey ? await encryptApiKey(apiKey) : settings?.apiKey || '', apiBaseUrl: baseUrl, model }); setSaved(true); setTimeout(() => setSaved(false), 2000); setApiKey('') }
+  const handleSaveSpeech = async () => { if (!updateSettings) return; await updateSettings({ speechApiKey: speechApiKey || settings?.speechApiKey || '', speechSecretKey: speechSecretKey || settings?.speechSecretKey || '' }); setSpeechSaved(true); setTimeout(() => setSpeechSaved(false), 2000); setSpeechApiKey(''); setSpeechSecretKey('') }
   const handleTestConnection = async () => { setTestResult('测试中...'); try { const key = apiKey || (settings?.apiKey ? await decryptApiKey(settings.apiKey) : ''); if (!key) { setTestResult('请先填入 API Key'); return }; const r = await fetch(`${baseUrl}/models`, { headers: { Authorization: `Bearer ${key}` } }); setTestResult(r.ok ? '连接成功' : `失败 (${r.status})`) } catch { setTestResult('网络错误') } }
   const handleAddCategory = async () => { if (!newCatName.trim()) return; await addCategory({ name: newCatName.trim(), type: newCatType, icon: newCatIcon, color: '#6b7280', isSystem: false }); setNewCatName(''); setShowAddCat(false) }
   const handleAddProject = async () => { if (!newProjectName.trim()) return; await addProject({ name: newProjectName.trim(), icon: newProjectIcon, color: newProjectColor }); setNewProjectName(''); setShowAddProject(false) }
@@ -65,6 +67,25 @@ export default function Settings() {
           <div><label className="text-xs text-gray-400 mb-1 block">模型</label><input type="text" value={model} onChange={e => setModel(e.target.value)} className="w-full px-3 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300" /></div>
           {testResult && <p className={`text-xs font-medium ${testResult.includes('成功') ? 'text-green-500' : 'text-red-500'}`}>{testResult}</p>}
           <div className="flex gap-2"><button onClick={handleTestConnection} className="flex-1 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 text-sm font-medium">测试连接</button><button onClick={handleSaveApiKey} className="flex-1 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold shadow-lg shadow-amber-500/20">{saved ? '已保存' : '保存'}</button></div>
+        </div>
+      </div>
+
+      {/* Speech */}
+      <div className="glow-card p-5">
+        <h3 className="text-sm font-bold tracking-tight mb-4 flex items-center gap-2"><Mic size={18} strokeWidth={1.8} className="text-amber-500" />语音识别</h3>
+        <div className="space-y-3">
+          <div className="flex gap-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-2xl">
+            <button onClick={() => updateSettings?.({ speechProvider: 'baidu' })} className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${settings?.speechProvider === 'baidu' ? 'bg-white dark:bg-gray-700 shadow-sm text-amber-600' : 'text-gray-500'}`}>百度语音</button>
+            <button onClick={() => updateSettings?.({ speechProvider: 'none' })} className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${!settings?.speechProvider || settings?.speechProvider === 'none' ? 'bg-white dark:bg-gray-700 shadow-sm text-amber-600' : 'text-gray-500'}`}>不使用</button>
+          </div>
+          {settings?.speechProvider === 'baidu' && (
+            <>
+              <div><label className="text-xs text-gray-400 mb-1 block">API Key</label><input type="password" value={speechApiKey} onChange={e => setSpeechApiKey(e.target.value)} placeholder={settings.speechApiKey ? '已配置' : ''} className="w-full px-3 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300" /></div>
+              <div><label className="text-xs text-gray-400 mb-1 block">Secret Key</label><input type="password" value={speechSecretKey} onChange={e => setSpeechSecretKey(e.target.value)} placeholder={settings.speechSecretKey ? '已配置' : ''} className="w-full px-3 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300" /></div>
+              <p className="text-xs text-muted">前往 <a href="https://console.bce.baidu.com/ai/#/ai/speech/overview/index" target="_blank" className="text-amber-500 underline">百度智能云</a> 创建应用获取密钥，免费额度 5 万次/年</p>
+              <button onClick={handleSaveSpeech} className="w-full py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold shadow-lg shadow-amber-500/20">{speechSaved ? '已保存' : '保存语音配置'}</button>
+            </>
+          )}
         </div>
       </div>
 

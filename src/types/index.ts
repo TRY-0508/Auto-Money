@@ -46,6 +46,9 @@ export interface Settings {
   language: 'zh' | 'en'
   currency: string
   theme: 'light' | 'dark' | 'system'
+  speechApiKey: string
+  speechSecretKey: string
+  speechProvider: 'baidu' | 'none'
 }
 
 export interface ChatMessage {

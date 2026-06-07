@@ -33,4 +33,7 @@ export const DEFAULT_SETTINGS: Settings = {
   language: 'zh',
   currency: 'CNY',
   theme: 'system',
+  speechApiKey: '',
+  speechSecretKey: '',
+  speechProvider: 'none',
 }
