@@ -30,18 +30,6 @@ function load<T>(key: string, fallback: T): T {
 }
 function save(key: string, data: any) { localStorage.setItem(key, JSON.stringify(data)) }
 
-const GOAL_ICONS = [
-  { icon: 'gamepad-2', label: '游戏' },
-  { icon: 'plane', label: '旅行' },
-  { icon: 'briefcase', label: '工作' },
-  { icon: 'shopping-bag', label: '购物' },
-  { icon: 'home', label: '住房' },
-  { icon: 'car', label: '汽车' },
-  { icon: 'gift', label: '礼物' },
-  { icon: 'book-open', label: '学习' },
-]
-const GOAL_COLORS = ['#f59e0b','#8b5cf6','#10b981','#f43f5e','#3b82f6','#ec4899']
-
 export default function JarPage() {
   const [goals, setGoals] = useState<JarGoal[]>(() => load(GOALS_KEY, []))
   const [ideas, setIdeas] = useState<JarIdea[]>(() => load(IDEAS_KEY, []))
@@ -50,8 +38,6 @@ export default function JarPage() {
   const [showNewIdea, setShowNewIdea] = useState(false)
   const [goalName, setGoalName] = useState('')
   const [goalTarget, setGoalTarget] = useState('')
-  const [goalIcon, setGoalIcon] = useState('gamepad-2')
-  const [goalColor, setGoalColor] = useState('#f59e0b')
   const [ideaDesc, setIdeaDesc] = useState('')
   const [ideaAmount, setIdeaAmount] = useState('')
 
@@ -60,7 +46,8 @@ export default function JarPage() {
 
   const handleAddGoal = () => {
     if (!goalName.trim()) return
-    const g: JarGoal = { id: crypto.randomUUID(), name: goalName.trim(), target: parseInt(goalTarget) || 10, icon: goalIcon, color: goalColor, stars: 0, createdAt: Date.now() }
+    const colors = ['#f59e0b','#8b5cf6','#10b981','#f43f5e','#3b82f6']
+    const g: JarGoal = { id: crypto.randomUUID(), name: goalName.trim(), target: parseInt(goalTarget) || 10, icon: 'more-horizontal', color: colors[Math.floor(Math.random() * colors.length)], stars: 0, createdAt: Date.now() }
     const updated = [...goals, g]
     setGoals(updated); save(GOALS_KEY, updated)
     setActiveGoal(g.id); setShowNewGoal(false)
@@ -119,9 +106,7 @@ export default function JarPage() {
       {showNewGoal && (
         <div className="card p-4 space-y-3">
           <input type="text" value={goalName} onChange={e => setGoalName(e.target.value)} placeholder="目标名称，如：买Switch" className="input" autoFocus />
-          <input type="number" value={goalTarget} onChange={e => setGoalTarget(e.target.value)} placeholder="目标星星数，如：20" className="input" />
-          <div className="flex gap-1 flex-wrap">{GOAL_ICONS.map(g => <button key={g.icon} onClick={() => setGoalIcon(g.icon)} className={`w-8 h-8 rounded-lg flex items-center justify-center ${goalIcon === g.icon ? 'bg-violet-100 ring-1 ring-violet-400' : 'hover:bg-gray-100'} text-lg`}>{g.label[0]}</button>)}</div>
-          <div className="flex gap-1.5">{GOAL_COLORS.map(c => <button key={c} onClick={() => setGoalColor(c)} className="w-6 h-6 rounded-full border-2" style={{ backgroundColor: c, borderColor: goalColor === c ? '#374151' : 'transparent' }} />)}</div>
+          <input type="number" value={goalTarget} onChange={e => setGoalTarget(e.target.value)} placeholder="目标星星数，默认10颗" className="input" />
           <button onClick={handleAddGoal} disabled={!goalName.trim()} className="btn btn-primary w-full">创建目标</button>
         </div>
       )}
@@ -129,7 +114,8 @@ export default function JarPage() {
       {!active ? (
         <div className="card p-10 text-center">
           <Target size={48} strokeWidth={1} className="text-violet-400 mx-auto mb-4" />
-          <p className="text-muted text-sm">创建一个积攒目标开始吧</p>
+          <p className="text-muted text-sm mb-4">设定一个积攒目标，记录每次克制</p>
+          <button onClick={() => setShowNewGoal(true)} className="btn btn-primary">创建第一个目标</button>
         </div>
       ) : (
         <>
