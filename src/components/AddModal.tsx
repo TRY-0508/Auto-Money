@@ -169,6 +169,7 @@ export default function AddModal({ open, onClose }: Props) {
                   )}
                   {!voiceText ? (
                     <button
+                      type="button"
                       onMouseDown={handleVoiceStart}
                       onMouseUp={handleVoiceEnd}
                       onTouchStart={handleVoiceStart}
