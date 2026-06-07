@@ -23,6 +23,7 @@ export default function AddModal({ open, onClose }: Props) {
   const [voiceText, setVoiceText] = useState('')
   const [voiceListening, setVoiceListening] = useState(false)
   const voiceStartRef = useRef(0)
+  const voiceActiveRef = useRef(false)
 
   const [manualType, setManualType] = useState<'expense' | 'income'>('expense')
   const [manualAmount, setManualAmount] = useState('')
@@ -69,17 +70,22 @@ export default function AddModal({ open, onClose }: Props) {
     finally { setLoading(false) }
   }
 
-  const handleVoiceStart = () => {
+  const handleVoiceStart = (e: React.MouseEvent | React.TouchEvent) => {
+    // Prevent touch→mouse event duplication
+    e.preventDefault()
+    if (voiceActiveRef.current) return
     if (!isSpeechSupported()) { setError('请使用 Chrome 或 Edge'); return }
+    voiceActiveRef.current = true
     voiceStartRef.current = Date.now()
     setVoiceListening(true); setVoiceText(''); setError('')
-    startRecognition(t => setVoiceText(t), e => { setVoiceListening(false); setError(e) }, () => setVoiceListening(false))
+    startRecognition(t => setVoiceText(t), e => { setVoiceListening(false); voiceActiveRef.current = false; setError(e) }, () => { setVoiceListening(false); voiceActiveRef.current = false })
   }
 
-  const handleVoiceEnd = () => {
-    // Require minimum hold of 300ms to avoid premature stop
+  const handleVoiceEnd = (e?: React.MouseEvent | React.TouchEvent) => {
+    e?.preventDefault()
+    if (!voiceActiveRef.current) return
     if (Date.now() - voiceStartRef.current < 300) return
-    stopRecognition(); setVoiceListening(false)
+    stopRecognition(); voiceActiveRef.current = false; setVoiceListening(false)
     if (voiceText.trim()) {
       setTextInput(voiceText.trim()); setLoading(true)
       parseTransaction(voiceText.trim()).then(r => { setParsed(r); setStep('parsed') }).catch(e => setError(e.message || '失败')).finally(() => setLoading(false))
