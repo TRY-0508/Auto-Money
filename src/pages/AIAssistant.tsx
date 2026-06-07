@@ -59,11 +59,11 @@ function ReportTab() {
     <div className="space-y-4">
       <div className="glow-card p-5">
         <h3 className="text-sm font-bold tracking-tight mb-4">财务概览 · {year}年{month}月</h3>
-        <div className="grid grid-cols-2 gap-3 mb-4 p-4 rounded-2xl bg-gradient-to-br from-gray-50 to-orange-50/50 dark:from-gray-800 dark:to-orange-900/20">
-          <div><p className="text-xs text-gray-400">支出</p><p className="text-sm font-bold text-red-400">{formatAmount(stats.totalExpense)}</p></div>
-          <div><p className="text-xs text-gray-400">收入</p><p className="text-sm font-bold text-green-400">{formatAmount(stats.totalIncome)}</p></div>
-          <div><p className="text-xs text-gray-400">交易笔数</p><p className="text-sm font-semibold">{stats.count} 笔</p></div>
-          <div><p className="text-xs text-gray-400">结余</p><p className={`text-sm font-bold ${stats.balance >= 0 ? 'text-blue-500' : 'text-red-400'}`}>{formatAmount(stats.balance)}</p></div>
+        <div className="grid grid-cols-2 gap-3 mb-4 p-4 rounded-2xl bg-gradient-to-br from-gray-50 to-orange-50/30 dark:from-gray-800 dark:to-orange-900/10">
+          <div><p className="text-xs text-muted">本月支出</p><p className="text-sm font-bold">{formatAmount(stats.totalExpense)}</p></div>
+          <div><p className="text-xs text-muted">本月收入</p><p className="text-sm font-bold">{formatAmount(stats.totalIncome)}</p></div>
+          <div><p className="text-xs text-muted">交易笔数</p><p className="text-sm font-semibold">{stats.count} 笔</p></div>
+          <div><p className="text-xs text-muted">结余</p><p className={`text-sm font-bold ${stats.balance < 0 ? 'text-red-400' : ''}`}>{formatAmount(stats.balance)}</p></div>
         </div>
         {error && <div className="mb-4 p-3 rounded-2xl bg-red-50 dark:bg-red-900/20 text-red-500 text-sm flex items-center gap-2"><AlertTriangle size={14} />{error}</div>}
         <button onClick={handleGenerate} disabled={loading || stats.count === 0}
