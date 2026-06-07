@@ -22,6 +22,7 @@ export default function AddModal({ open, onClose }: Props) {
   const [step, setStep] = useState<Step>('input')
   const [voiceText, setVoiceText] = useState('')
   const [voiceListening, setVoiceListening] = useState(false)
+  const [voiceProcessing, setVoiceProcessing] = useState(false)
   const [voiceSeconds, setVoiceSeconds] = useState(0)
   const voiceTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
@@ -82,15 +83,15 @@ export default function AddModal({ open, onClose }: Props) {
   const handleVoiceToggle = () => {
     if (voiceListening) {
       stopRecognition(); stopVoiceTimer()
-      setVoiceListening(false)
+      setVoiceListening(false); setVoiceProcessing(true)
     } else {
       if (!isSpeechSupported()) { setError('请使用 Chrome 或 Edge'); return }
-      setVoiceListening(true); setVoiceText(''); setError('')
+      setVoiceListening(true); setVoiceText(''); setError(''); setVoiceProcessing(false)
       startVoiceTimer()
       startRecognition(
         t => setVoiceText(t),
-        () => { stopVoiceTimer(); setVoiceListening(false) },
-        e => { stopVoiceTimer(); setVoiceListening(false); setError(e) }
+        () => { stopVoiceTimer(); setVoiceListening(false); setVoiceProcessing(false) },
+        e => { stopVoiceTimer(); setVoiceListening(false); setVoiceProcessing(false); setError(e) }
       )
     }
   }
@@ -165,6 +166,14 @@ export default function AddModal({ open, onClose }: Props) {
                 <div className="space-y-4">
                   {voiceText ? (
                     <div className="p-5 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 text-sm font-medium text-center">{voiceText}</div>
+                  ) : voiceProcessing ? (
+                    <div className="text-center py-10 space-y-3">
+                      <div className="flex items-center justify-center gap-1">
+                        {[0,1,2].map(i => <div key={i} className="w-2.5 h-2.5 bg-amber-400 rounded-full animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />)}
+                      </div>
+                      <p className="text-amber-500 text-sm font-medium">正在识别...</p>
+                      <p className="text-xs text-muted">录音已停止，正在转文字</p>
+                    </div>
                   ) : (
                     <div className="text-center py-8">
                       {voiceListening ? (
@@ -178,15 +187,17 @@ export default function AddModal({ open, onClose }: Props) {
                       )}
                     </div>
                   )}
-                  {!voiceText ? (
+                  {!voiceText && !voiceProcessing ? (
                     <button type="button" onClick={handleVoiceToggle}
                       className={`w-full py-14 rounded-3xl text-sm font-medium text-white transition-all select-none ${voiceListening ? 'bg-red-400 scale-95' : 'bg-gradient-to-r from-amber-400 to-amber-600 active:scale-95'}`}
                       style={{ userSelect: 'none', WebkitUserSelect: 'none' }}>
                       {voiceListening ? '点击停止' : '点击开始录音'}
                     </button>
+                  ) : voiceProcessing ? (
+                    <div className="py-8 text-center text-sm text-muted">请稍候...</div>
                   ) : (
                     <div className="flex gap-2">
-                      <button onClick={() => { setVoiceText(''); setVoiceListening(false) }} className="flex-1 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 text-sm text-gray-500">重新录入</button>
+                      <button onClick={() => { setVoiceText(''); setVoiceListening(false); setVoiceProcessing(false) }} className="flex-1 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 text-sm text-gray-500">重新录入</button>
                       <button onClick={handleVoiceConfirm} className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-600 text-white text-sm font-medium">AI 解析</button>
                     </div>
                   )}
