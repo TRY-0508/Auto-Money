@@ -206,6 +206,7 @@ body {
 @keyframes bounceIn { 0%{ transform:scale(0);opacity:0 } 60%{ transform:scale(1.1) } 100%{ transform:scale(1);opacity:1 } }
 @keyframes haloPulse { 0%,100%{ box-shadow:0 0 0 0 rgba(139,92,246,0.5) } 50%{ box-shadow:0 0 0 16px rgba(139,92,246,0) } }
 @keyframes float { 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-8px) } }
+@keyframes breathe { 0%,100%{ box-shadow:0 0 0 0 rgba(245,158,11,0.4), 0 0 0 0 rgba(245,158,11,0.2) } 50%{ box-shadow:0 0 0 4px rgba(245,158,11,0.2), 0 0 0 8px rgba(245,158,11,0.08) } }
 
 @keyframes floatSplash {
   0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.06; }
@@ -218,6 +219,7 @@ body {
 .bounce-in { animation: bounceIn 0.55s cubic-bezier(0.68,-0.55,0.27,1.55) }
 .halo-pulse { animation: haloPulse 2.5s ease-in-out infinite }
 .float { animation: float 3.5s ease-in-out infinite }
+.breathe { animation: breathe 2.5s ease-in-out infinite; border-radius: 1.5rem }
 
 /* ── Utility ── */
 .scrollbar-hide::-webkit-scrollbar { display: none }

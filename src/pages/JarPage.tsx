@@ -320,10 +320,23 @@ export default function JarPage() {
               </div>
               {coolingEvents.map(evt => {
                 const rm = getRemaining(evt.cooldownEndsAt)
+                const total = evt.cooldownEndsAt - evt.cooldownStartedAt
+                const elapsed = Date.now() - evt.cooldownStartedAt
+                const elapsedPct = total > 0 ? Math.min((elapsed / total) * 100, 99) : 0
+                const ringR = 15; const ringC = 2 * Math.PI * ringR
+                const timerColor = elapsedPct > 80 ? '#ef4444' : elapsedPct > 50 ? '#f59e0b' : '#3b82f6'
                 return (
                   <div key={evt.id} className="card p-4 flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
-                      <Hourglass size={18} className="text-blue-500" />
+                    {/* Circular countdown ring */}
+                    <div className="relative w-10 h-10 flex-shrink-0 flex items-center justify-center">
+                      <svg viewBox="0 0 38 38" className="w-full h-full -rotate-90">
+                        <circle cx="19" cy="19" r={ringR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="3" />
+                        <circle cx="19" cy="19" r={ringR} fill="none" stroke={timerColor} strokeWidth="3" strokeLinecap="round"
+                          strokeDasharray={ringC} strokeDashoffset={ringC - (elapsedPct / 100) * ringC}
+                          className="transition-all duration-1000 ease-linear"
+                          style={{ filter: `drop-shadow(0 0 3px ${timerColor}40)` }} />
+                      </svg>
+                      <Hourglass size={14} className="absolute text-blue-500" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium truncate">{evt.description}</p>
@@ -349,7 +362,7 @@ export default function JarPage() {
                 <AlertTriangle size={16} />待评估 ({pendingReviewEvents.length})
               </div>
               {pendingReviewEvents.map(evt => (
-                <div key={evt.id} className="card p-4 flex items-center gap-3 ring-2 ring-amber-300/60 dark:ring-amber-700/40">
+                <div key={evt.id} className="card p-4 flex items-center gap-3 breathe border-amber-300/60 dark:border-amber-700/40">
                   <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
                     <ShieldCheck size={18} className="text-amber-500" />
                   </div>
