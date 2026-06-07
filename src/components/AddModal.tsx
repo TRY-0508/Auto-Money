@@ -74,12 +74,11 @@ export default function AddModal({ open, onClose }: Props) {
     if (voiceActiveRef.current) return
     if (!isSpeechSupported()) { setError('请使用 Chrome 或 Edge'); return }
     voiceActiveRef.current = true
-    voiceStartRef.current = Date.now()
     setVoiceListening(true); setVoiceText(''); setError('')
     startRecognition(
       t => setVoiceText(t),
-      e => { setVoiceListening(false); voiceActiveRef.current = false; setError(e) },
-      () => { setVoiceListening(false); voiceActiveRef.current = false }
+      e => { voiceActiveRef.current = false; setVoiceListening(false); setError(e) },
+      () => setVoiceListening(false)
     )
   }
 
