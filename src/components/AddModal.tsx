@@ -136,7 +136,7 @@ export default function AddModal({ open, onClose }: Props) {
 
               {mode === 'text' ? (
                 <>
-                  <textarea value={textInput} onChange={e => setTextInput(e.target.value)} placeholder="中午吃面花了15块..." rows={3} className="w-full px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-violet-300" onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleParse() } }} />
+                  <textarea value={textInput} onChange={e => setTextInput(e.target.value)} placeholder="用自然语言描述这笔收支" rows={3} className="w-full px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-violet-300" onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleParse() } }} />
                   <div className="flex gap-2">
                     <button onClick={() => { setStep('manual'); setParsed(null) }} className="flex-1 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 text-sm text-gray-500">手动填写</button>
                     <button onClick={handleParse} disabled={loading || !textInput.trim()} className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-violet-500 to-purple-500 text-white text-sm font-medium disabled:opacity-50">AI 解析</button>

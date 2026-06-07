@@ -97,4 +97,16 @@ export interface CoolDownEvent {
   earnedAt?: number
   boughtAt?: number
   createdAt: number
+  aiAnalysis?: CoolDownAIAnalysis
+}
+
+export interface CoolDownAIAnalysis {
+  impulseType: 'emotional' | 'impulsive' | 'uncertain'
+  confidence: number
+  suggestedDesire: number
+  suggestedNecessity: number
+  riskFactors: string[]
+  suggestedCooldown: number
+  reflectionQuestions: string[]
+  summary: string
 }

@@ -1,29 +1,23 @@
 import { useState, useEffect } from 'react'
 import { useJarGoals, useCoolDownEvents } from '@/db/hooks'
-import type { CoolDownEvent } from '@/types'
+import type { CoolDownEvent, CoolDownAIAnalysis } from '@/types'
 import StarJar from '@/components/StarJar'
+import { analyzeCalmEvent } from '@/services/llm'
 import { formatAmount } from '@/lib/utils'
 import {
-  Target, Plus, X, Trash2, Star,
+  Target, Plus, X, Trash2,
   Timer, Clock, ShieldCheck, ShieldX, Flame,
-  Hourglass, BarChart3, AlertTriangle,
+  Hourglass, BarChart3, AlertTriangle, Zap,
 } from '@/lib/icons'
 
-const COOLDOWN_PRESETS = [
-  { label: '1 小时', hours: 1 },
-  { label: '6 小时', hours: 6 },
-  { label: '24 小时', hours: 24 },
-  { label: '3 天', hours: 72 },
-  { label: '7 天', hours: 168 },
-]
-
-const IMPULSE_TYPES: { value: CoolDownEvent['impulseType']; label: string }[] = [
-  { value: 'emotional', label: '情绪消费' },
-  { value: 'impulsive', label: '冲动消费' },
-  { value: 'uncertain', label: '不确定' },
-]
+const COOLDOWN_PRESETS = [1, 6, 24, 48, 72, 168] as const
 
 const GOAL_COLORS = ['#f59e0b', '#8b5cf6', '#10b981', '#f43f5e', '#3b82f6', '#ec4899', '#14b8a6']
+
+function cooldownLabel(h: number): string {
+  const map: Record<number, string> = { 1: '1 小时', 6: '6 小时', 24: '1 天', 48: '2 天', 72: '3 天', 168: '7 天' }
+  return map[h] || `${h} 小时`
+}
 
 function getRemaining(endsAt: number): { text: string; expired: boolean } {
   const ms = endsAt - Date.now()
@@ -50,25 +44,22 @@ export default function JarPage() {
   const [tab, setTab] = useState<Tab>('goals')
   const [tick, setTick] = useState(0)
 
-  // New goal form
+  // New goal
   const [showNewGoal, setShowNewGoal] = useState(false)
   const [goalName, setGoalName] = useState('')
   const [goalTarget, setGoalTarget] = useState('')
   const [goalDesc, setGoalDesc] = useState('')
 
-  // New cool-down event form
+  // New event form
   const [showNewEvent, setShowNewEvent] = useState(false)
   const [evtDesc, setEvtDesc] = useState('')
   const [evtAmount, setEvtAmount] = useState('')
-  const [evtDesire, setEvtDesire] = useState(3)
-  const [evtNecessity, setEvtNecessity] = useState(2)
-  const [evtEmotion, setEvtEmotion] = useState('')
-  const [evtImpulseType, setEvtImpulseType] = useState<CoolDownEvent['impulseType']>('uncertain')
-  const [evtReason, setEvtReason] = useState('')
+  const [evtAILoading, setEvtAILoading] = useState(false)
+  const [evtAIResult, setEvtAIResult] = useState<CoolDownAIAnalysis | null>(null)
+  const [evtAIError, setEvtAIError] = useState('')
   const [evtGoalId, setEvtGoalId] = useState('')
-  const [evtCooldown, setEvtCooldown] = useState(24)
 
-  // Re-evaluation modal
+  // Re-evaluation
   const [reviewEvent, setReviewEvent] = useState<CoolDownEvent | null>(null)
   const [reviewDesire, setReviewDesire] = useState(3)
   const [reviewNote, setReviewNote] = useState('')
@@ -80,7 +71,6 @@ export default function JarPage() {
     return () => clearInterval(id)
   }, [])
 
-  // Auto-transition expired events
   useEffect(() => {
     const now = Date.now()
     for (const e of events) {
@@ -122,39 +112,50 @@ export default function JarPage() {
     await deleteGoal(id)
   }
 
-  // ── Event handlers ──
+  // ── AI analysis ──
+  const handleAIAnalyze = async () => {
+    if (!evtDesc.trim()) return
+    setEvtAILoading(true); setEvtAIError(''); setEvtAIResult(null)
+    try {
+      const result = await analyzeCalmEvent(evtDesc.trim(), parseFloat(evtAmount) || 0)
+      setEvtAIResult(result)
+    } catch (err: any) {
+      setEvtAIError(err.message || '分析失败，请检查 API 配置')
+    } finally { setEvtAILoading(false) }
+  }
+
   const handleAddEvent = async () => {
     if (!evtDesc.trim()) return
+    const analysis = evtAIResult
     const now = Date.now()
+    const cooldown = analysis?.suggestedCooldown ?? 24
     await addEvent({
       goalId: evtGoalId || undefined,
       description: evtDesc.trim(),
       amount: parseFloat(evtAmount) || 0,
-      desireLevel: evtDesire,
-      necessityLevel: evtNecessity,
-      emotionalState: evtEmotion.trim(),
-      impulseType: evtImpulseType,
-      reason: evtReason.trim(),
-      cooldownHours: evtCooldown,
+      desireLevel: analysis?.suggestedDesire ?? 3,
+      necessityLevel: analysis?.suggestedNecessity ?? 2,
+      emotionalState: '',
+      impulseType: analysis?.impulseType ?? 'uncertain',
+      reason: '',
+      cooldownHours: cooldown,
       cooldownStartedAt: now,
-      cooldownEndsAt: now + evtCooldown * 3600000,
+      cooldownEndsAt: now + cooldown * 3600000,
       status: 'cooling',
+      aiAnalysis: analysis ?? undefined,
     })
     setShowNewEvent(false)
-    setEvtDesc(''); setEvtAmount(''); setEvtDesire(3); setEvtNecessity(2)
-    setEvtEmotion(''); setEvtImpulseType('uncertain'); setEvtReason('')
-    setEvtGoalId(''); setEvtCooldown(24)
+    setEvtDesc(''); setEvtAmount(''); setEvtAIResult(null); setEvtAIError('')
+    setEvtGoalId('')
   }
 
+  // ── Re-evaluation ──
   const handleResist = async () => {
     if (!reviewEvent) return
     const goalId = reviewEvent.goalId || goals[0]?.id
     await updateEvent(reviewEvent.id, {
-      status: 'resisted',
-      earnedStar: true,
-      earnedAt: Date.now(),
-      reEvaluationDesire: reviewDesire,
-      reEvaluationNote: reviewNote.trim(),
+      status: 'resisted', earnedStar: true, earnedAt: Date.now(),
+      reEvaluationDesire: reviewDesire, reEvaluationNote: reviewNote.trim(),
       reEvaluationAt: Date.now(),
       goalId: goalId || reviewEvent.goalId,
     })
@@ -167,44 +168,31 @@ export default function JarPage() {
         })
       }
     }
-    setReviewEvent(null)
-    setReviewNote('')
-    setShowPurchaseOptions(false)
+    setReviewEvent(null); setReviewNote(''); setShowPurchaseOptions(false)
   }
 
-  const handleFailed = async () => {
-    if (!reviewEvent) return
-    setShowPurchaseOptions(true)
-  }
+  const handleFailed = () => setShowPurchaseOptions(true)
 
   const handlePurchase = async () => {
     if (!reviewEvent) return
     await updateEvent(reviewEvent.id, {
-      status: 'purchased',
-      boughtAt: Date.now(),
-      reEvaluationDesire: reviewDesire,
-      reEvaluationNote: reviewNote.trim(),
+      status: 'purchased', boughtAt: Date.now(),
+      reEvaluationDesire: reviewDesire, reEvaluationNote: reviewNote.trim(),
       reEvaluationAt: Date.now(),
     })
-    setReviewEvent(null)
-    setReviewNote('')
-    setShowPurchaseOptions(false)
+    setReviewEvent(null); setReviewNote(''); setShowPurchaseOptions(false)
   }
 
   const handleRetryCooldown = async () => {
     if (!reviewEvent) return
     const now = Date.now()
     await updateEvent(reviewEvent.id, {
-      status: 'cooling',
-      cooldownStartedAt: now,
+      status: 'cooling', cooldownStartedAt: now,
       cooldownEndsAt: now + reviewEvent.cooldownHours * 3600000,
-      reEvaluationDesire: reviewDesire,
-      reEvaluationNote: reviewNote.trim(),
+      reEvaluationDesire: reviewDesire, reEvaluationNote: reviewNote.trim(),
       reEvaluationAt: Date.now(),
     })
-    setReviewEvent(null)
-    setReviewNote('')
-    setShowPurchaseOptions(false)
+    setReviewEvent(null); setReviewNote(''); setShowPurchaseOptions(false)
   }
 
   const handleDeleteEvent = async (id: string) => {
@@ -212,7 +200,7 @@ export default function JarPage() {
     await deleteEvent(id)
   }
 
-  // ── History filter ──
+  // ── History ──
   const [historyFilter, setHistoryFilter] = useState<'all' | 'resisted' | 'failed'>('all')
   const filteredHistory = events.filter(e => {
     if (e.status === 'cooling' || e.status === 'pending_review') return false
@@ -251,7 +239,7 @@ export default function JarPage() {
         ))}
       </div>
 
-      {/* ═══════════════════════ TAB 1: GOALS ═══════════════════════ */}
+      {/* ═══════════ TAB 1: GOALS ═══════════ */}
       {tab === 'goals' && (
         <div className="space-y-4">
           {!showNewGoal ? (
@@ -266,9 +254,9 @@ export default function JarPage() {
                 <button onClick={() => setShowNewGoal(false)} className="btn-icon"><X size={14} /></button>
               </div>
               <input type="text" value={goalName} onChange={e => setGoalName(e.target.value)}
-                placeholder="目标名称，如：买 Nintendo Switch" className="input" autoFocus />
+                placeholder="目标名称" className="input" autoFocus />
               <input type="number" value={goalTarget} onChange={e => setGoalTarget(e.target.value)}
-                placeholder="目标金额，如：2000" className="input" />
+                placeholder="目标金额" className="input" />
               <textarea value={goalDesc} onChange={e => setGoalDesc(e.target.value)}
                 placeholder="为什么想攒这个目标？（可选）" className="input resize-none h-16" />
               <button onClick={handleAddGoal} disabled={!goalName.trim() || !goalTarget}
@@ -279,7 +267,7 @@ export default function JarPage() {
           {goals.length === 0 ? (
             <div className="card p-10 text-center">
               <Target size={48} strokeWidth={1} className="text-violet-400 mx-auto mb-4" />
-              <p className="text-muted text-sm mb-4">设定一个积攒目标，用冷静克制来填满它</p>
+              <p className="text-muted text-sm">设定一个积攒目标，用冷静克制来填满它</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -300,7 +288,6 @@ export default function JarPage() {
 
                     <StarJar starCount={goal.starCount} targetAmount={goal.targetAmount} currentAmount={goal.currentAmount} />
 
-                    {/* Contributing events */}
                     {(() => {
                       const resistEvents = events.filter(e => e.goalId === goal.id && e.status === 'resisted')
                       if (resistEvents.length === 0) return null
@@ -308,7 +295,7 @@ export default function JarPage() {
                         <div className="mt-4 border-t border-gray-100 dark:border-gray-800/30 divide-y divide-gray-50 dark:divide-gray-800/20 max-h-40 overflow-y-auto">
                           {resistEvents.map(evt => (
                             <div key={evt.id} className="flex items-center gap-2 px-1 py-1.5 text-xs">
-                              <Star size={12} className="text-amber-400 flex-shrink-0" fill="#fbbf24" />
+                              <span className="text-amber-400 flex-shrink-0">★</span>
                               <span className="flex-1 truncate">{evt.description}</span>
                               <span className="text-muted">{evt.amount > 0 ? formatAmount(evt.amount) : ''}</span>
                             </div>
@@ -324,7 +311,7 @@ export default function JarPage() {
         </div>
       )}
 
-      {/* ═══════════════════════ TAB 2: COOL-DOWN EVENTS ═══════════════════════ */}
+      {/* ═══════════ TAB 2: EVENTS ═══════════ */}
       {tab === 'events' && (
         <div className="space-y-4">
           {coolingEvents.length > 0 && (
@@ -343,7 +330,7 @@ export default function JarPage() {
                       <p className="font-medium truncate">{evt.description}</p>
                       <p className="text-xs text-muted">
                         {evt.amount > 0 && formatAmount(evt.amount) + ' · '}
-                        渴望 {evt.desireLevel}/5 · 必要 {evt.necessityLevel}/5
+                        {evt.impulseType === 'emotional' ? '情绪消费' : evt.impulseType === 'impulsive' ? '冲动消费' : '不确定'} · 渴望 {evt.desireLevel}/5
                       </p>
                     </div>
                     <div className="text-right flex-shrink-0">
@@ -363,7 +350,7 @@ export default function JarPage() {
                 <AlertTriangle size={16} />待评估 ({pendingReviewEvents.length})
               </div>
               {pendingReviewEvents.map(evt => (
-                <div key={evt.id} className="card p-4 flex items-center gap-3 border-amber-300 dark:border-amber-700">
+                <div key={evt.id} className="card p-4 flex items-center gap-3 ring-2 ring-amber-300/60 dark:ring-amber-700/40">
                   <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
                     <ShieldCheck size={18} className="text-amber-500" />
                   </div>
@@ -372,6 +359,7 @@ export default function JarPage() {
                     <p className="text-xs text-muted">
                       {evt.amount > 0 && formatAmount(evt.amount) + ' · '}
                       渴望 {evt.desireLevel}/5 · 必要 {evt.necessityLevel}/5
+                      {evt.aiAnalysis && <span className="ml-1 text-violet-500">AI 已分析</span>}
                     </p>
                   </div>
                   <button onClick={() => { setReviewEvent(evt); setReviewDesire(evt.desireLevel); setReviewNote(''); setShowPurchaseOptions(false) }}
@@ -385,7 +373,7 @@ export default function JarPage() {
           {coolingEvents.length === 0 && pendingReviewEvents.length === 0 && (
             <div className="card p-10 text-center">
               <ShieldCheck size={48} strokeWidth={1} className="text-violet-400 mx-auto mb-4" />
-              <p className="text-muted text-sm mb-4">遇到犹豫的消费？来创建一个冷静事件</p>
+              <p className="text-muted text-sm">遇到犹豫的消费？来创建一个冷静事件</p>
             </div>
           )}
 
@@ -398,70 +386,98 @@ export default function JarPage() {
             <div className="card p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="h3">记录消费冲动</span>
-                <button onClick={() => setShowNewEvent(false)} className="btn-icon"><X size={14} /></button>
+                <button onClick={() => { setShowNewEvent(false); setEvtAIResult(null); setEvtAIError('') }} className="btn-icon"><X size={14} /></button>
               </div>
 
-              <input type="text" value={evtDesc} onChange={e => setEvtDesc(e.target.value)}
-                placeholder="想买什么？如：一双限量球鞋" className="input" autoFocus />
+              {/* Main input: free text description */}
+              <textarea value={evtDesc} onChange={e => setEvtDesc(e.target.value)}
+                placeholder="描述你想买的东西和原因" className="input resize-none h-20" autoFocus />
               <input type="number" value={evtAmount} onChange={e => setEvtAmount(e.target.value)}
-                placeholder="价格（如：1299）" className="input" />
+                placeholder="价格（可选）" className="input" />
 
-              <div>
-                <div className="flex justify-between text-xs text-muted mb-1">
-                  <span>渴望程度</span><span className="font-bold text-amber-500">{evtDesire}/5</span>
+              {/* AI analysis button */}
+              {!evtAIResult ? (
+                <button onClick={handleAIAnalyze} disabled={!evtDesc.trim() || evtAILoading}
+                  className={`w-full py-3 rounded-2xl text-sm font-medium transition-all flex items-center justify-center gap-2 ${
+                    evtAILoading ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-400' : 'bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 hover:bg-violet-100 dark:hover:bg-violet-900/40'
+                  } disabled:opacity-50`}>
+                  <Zap size={16} />{evtAILoading ? 'AI 分析中...' : 'AI 心理分析'}
+                </button>
+              ) : (
+                /* AI result card */
+                <div className="bg-violet-50/50 dark:bg-violet-900/10 rounded-2xl p-3.5 space-y-3 text-sm">
+                  <div className="flex items-center gap-2">
+                    <Zap size={14} className="text-violet-500" />
+                    <span className="text-xs text-violet-500 font-medium">AI 分析结果</span>
+                    <span className="text-xs text-muted ml-auto">{Math.round(evtAIResult.confidence * 100)}% 置信</span>
+                  </div>
+
+                  <p className="text-muted leading-relaxed">{evtAIResult.summary}</p>
+
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="bg-white/60 dark:bg-gray-800/60 rounded-xl p-2">
+                      <span className="text-muted">消费类型</span>
+                      <p className="font-bold text-violet-600 dark:text-violet-400">
+                        {evtAIResult.impulseType === 'emotional' ? '情绪消费' : evtAIResult.impulseType === 'impulsive' ? '冲动消费' : '不确定'}
+                      </p>
+                    </div>
+                    <div className="bg-white/60 dark:bg-gray-800/60 rounded-xl p-2">
+                      <span className="text-muted">建议冷静</span>
+                      <p className="font-bold text-violet-600 dark:text-violet-400">{cooldownLabel(evtAIResult.suggestedCooldown)}</p>
+                    </div>
+                    <div className="bg-white/60 dark:bg-gray-800/60 rounded-xl p-2">
+                      <span className="text-muted">渴望程度</span>
+                      <p className="font-bold text-amber-500">{evtAIResult.suggestedDesire}/5</p>
+                    </div>
+                    <div className="bg-white/60 dark:bg-gray-800/60 rounded-xl p-2">
+                      <span className="text-muted">必要性</span>
+                      <p className="font-bold text-blue-500">{evtAIResult.suggestedNecessity}/5</p>
+                    </div>
+                  </div>
+
+                  {evtAIResult.riskFactors.length > 0 && (
+                    <div>
+                      <span className="text-xs text-muted">风险因素</span>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {evtAIResult.riskFactors.map(rf => (
+                          <span key={rf} className="text-xs px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400">{rf}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {evtAIResult.reflectionQuestions.length > 0 && (
+                    <div>
+                      <span className="text-xs text-muted">反思问题</span>
+                      <ul className="mt-1 space-y-1">
+                        {evtAIResult.reflectionQuestions.map((q, i) => (
+                          <li key={i} className="text-xs text-muted italic">"{q}"</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  <button onClick={() => { setEvtAIResult(null); setEvtAIError('') }}
+                    className="text-xs text-violet-500 hover:text-violet-600">重新分析</button>
                 </div>
-                <input type="range" min="1" max="5" value={evtDesire} onChange={e => setEvtDesire(parseInt(e.target.value))}
-                  className="w-full accent-amber-500" />
-                <div className="flex justify-between text-xs text-muted"><span>只是看看</span><span>非常想要</span></div>
-              </div>
+              )}
 
-              <div>
-                <div className="flex justify-between text-xs text-muted mb-1">
-                  <span>必要性</span><span className="font-bold text-blue-500">{evtNecessity}/5</span>
+              {evtAIError && (
+                <div className="p-3 rounded-2xl bg-red-50 dark:bg-red-900/20 text-red-500 text-sm flex items-center gap-2">
+                  <AlertTriangle size={14} />{evtAIError}
+                  <button onClick={() => setEvtAIError('')} className="ml-auto text-xs underline">关闭</button>
                 </div>
-                <input type="range" min="1" max="5" value={evtNecessity} onChange={e => setEvtNecessity(parseInt(e.target.value))}
-                  className="w-full accent-blue-500" />
-                <div className="flex justify-between text-xs text-muted"><span>完全不必</span><span>确实需要</span></div>
-              </div>
-
-              <input type="text" value={evtEmotion} onChange={e => setEvtEmotion(e.target.value)}
-                placeholder="当前情绪状态（如：焦虑、无聊、兴奋...）" className="input" />
-
-              <div>
-                <label className="text-xs text-muted block mb-1.5">消费类型</label>
-                <div className="flex gap-2">
-                  {IMPULSE_TYPES.map(t => (
-                    <button key={t.value} onClick={() => setEvtImpulseType(t.value)}
-                      className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${
-                        evtImpulseType === t.value ? 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400' : 'bg-gray-50 text-gray-500 dark:bg-gray-800'
-                      }`}>{t.label}</button>
-                  ))}
-                </div>
-              </div>
-
-              <textarea value={evtReason} onChange={e => setEvtReason(e.target.value)}
-                placeholder="想买的理由（可选）" className="input resize-none h-16" />
+              )}
 
               {goals.length > 0 && (
                 <select value={evtGoalId} onChange={e => setEvtGoalId(e.target.value)} className="input">
-                  <option value="">不关联目标（可后续再选）</option>
+                  <option value="">不关联目标</option>
                   {goals.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
                 </select>
               )}
 
-              <div>
-                <label className="text-xs text-muted block mb-1.5">冷静周期</label>
-                <div className="flex flex-wrap gap-1.5">
-                  {COOLDOWN_PRESETS.map(p => (
-                    <button key={p.hours} onClick={() => setEvtCooldown(p.hours)}
-                      className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
-                        evtCooldown === p.hours ? 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400 font-medium' : 'bg-gray-50 text-gray-500 dark:bg-gray-800 hover:bg-gray-100'
-                      }`}>{p.label}</button>
-                  ))}
-                </div>
-              </div>
-
-              <button onClick={handleAddEvent} disabled={!evtDesc.trim()} className="btn btn-primary w-full">
+              <button onClick={handleAddEvent} disabled={!evtDesc.trim()}
+                className="btn btn-primary w-full">
                 <Timer size={16} />开始冷静
               </button>
             </div>
@@ -469,7 +485,7 @@ export default function JarPage() {
         </div>
       )}
 
-      {/* ═══════════════════════ TAB 3: HISTORY ═══════════════════════ */}
+      {/* ═══════════ TAB 3: HISTORY ═══════════ */}
       {tab === 'history' && (
         <div className="space-y-4">
           <div className="grid grid-cols-3 gap-3">
@@ -482,7 +498,7 @@ export default function JarPage() {
               <p className="text-xs text-muted mt-1">克制金额</p>
             </div>
             <div className="card p-3 text-center">
-              <p className="text-2xl font-bold text-amber-500">{totalStars}⭐</p>
+              <p className="text-2xl font-bold text-amber-500">{totalStars}★</p>
               <p className="text-xs text-muted mt-1">总星星数</p>
             </div>
           </div>
@@ -541,7 +557,7 @@ export default function JarPage() {
         </div>
       )}
 
-      {/* ═══════════════════════ RE-EVALUATION MODAL ═══════════════════════ */}
+      {/* ═══════════ RE-EVALUATION MODAL ═══════════ */}
       {reviewEvent && (
         <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/40 backdrop-blur-sm"
           onClick={() => { setReviewEvent(null); setShowPurchaseOptions(false) }}>
@@ -574,16 +590,8 @@ export default function JarPage() {
                     <span className="text-muted">原始必要性</span>
                     <span className="font-bold text-blue-500">{'★'.repeat(reviewEvent.necessityLevel)}{'☆'.repeat(5 - reviewEvent.necessityLevel)}</span>
                   </div>
-                  {reviewEvent.emotionalState && (
-                    <div className="flex justify-between">
-                      <span className="text-muted">当时情绪</span><span>{reviewEvent.emotionalState}</span>
-                    </div>
-                  )}
-                  {reviewEvent.reason && (
-                    <div className="flex justify-between">
-                      <span className="text-muted">当时理由</span>
-                      <span className="text-right max-w-[60%]">{reviewEvent.reason}</span>
-                    </div>
+                  {reviewEvent.aiAnalysis?.summary && (
+                    <p className="text-xs text-muted italic mt-2 border-t border-gray-200 dark:border-gray-700 pt-2">{reviewEvent.aiAnalysis.summary}</p>
                   )}
                 </div>
 
@@ -597,7 +605,7 @@ export default function JarPage() {
                 </div>
 
                 <textarea value={reviewNote} onChange={e => setReviewNote(e.target.value)}
-                  placeholder="冷静后的感受或反思（可选）" className="input resize-none h-20" />
+                  placeholder="冷静后的感受或反思" className="input resize-none h-20" />
 
                 <div className="space-y-2">
                   <button onClick={handleResist} className="btn btn-primary w-full text-base py-3">
@@ -623,7 +631,7 @@ export default function JarPage() {
 
                 <div className="space-y-2">
                   <button onClick={handlePurchase} className="btn btn-primary w-full text-base py-3">
-                    我会去购买（标记为已购买）
+                    标记为已购买
                   </button>
                   <button onClick={handleRetryCooldown} className="btn btn-secondary w-full text-base py-3">
                     <Timer size={18} />再冷静一下
