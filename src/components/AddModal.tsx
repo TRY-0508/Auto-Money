@@ -70,16 +70,15 @@ export default function AddModal({ open, onClose }: Props) {
 
   const handleVoiceToggle = () => {
     if (voiceListening) {
-      // Stop recording
-      stopRecognition(); setVoiceListening(false)
+      stopRecognition()
+      setVoiceListening(false)
     } else {
-      // Start recording
       if (!isSpeechSupported()) { setError('请使用 Chrome 或 Edge'); return }
       setVoiceListening(true); setVoiceText(''); setError('')
       startRecognition(
         t => setVoiceText(t),
-        e => { setVoiceListening(false); setError(e) },
-        () => setVoiceListening(false)
+        () => setVoiceListening(false),
+        e => { setVoiceListening(false); setError(e) }
       )
     }
   }
