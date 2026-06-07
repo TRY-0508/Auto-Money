@@ -1,4 +1,5 @@
 let rec: any = null
+let _startTime = 0
 
 export function isSpeechSupported(): boolean {
   try {
@@ -26,6 +27,7 @@ export function startRecognition(
   rec.lang = 'zh-CN'
   rec.interimResults = true
   rec.continuous = true
+  _startTime = Date.now()
 
   rec.onresult = (e: any) => {
     let text = ''
@@ -36,11 +38,17 @@ export function startRecognition(
   }
 
   rec.onerror = (e: any) => {
-    if (e.error === 'aborted' || e.error === 'no-speech') return
+    const elapsed = Date.now() - _startTime
+    if (e.error === 'no-speech') return
+    if (e.error === 'aborted') {
+      if (elapsed < 2000) {
+        onError('语音服务连接失败。国内网络可能无法访问 Google 语音服务，请使用代理或切换浏览器')
+      }
+      return
+    }
     const msgs: Record<string, string> = {
       'not-allowed': '麦克风权限被拒绝',
-      'network': '网络连接失败',
-      'audio-capture': '未检测到麦克风',
+      'network': '语音服务连接失败，请检查网络或使用代理',
     }
     onError(msgs[e.error] || `识别出错: ${e.error}`)
   }
