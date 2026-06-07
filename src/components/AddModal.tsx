@@ -150,36 +150,43 @@ export default function AddModal({ open, onClose }: Props) {
                   </div>
                 </>
               ) : (
-                <div className="space-y-4">
-                  {voiceText ? (
-                    <div className="p-5 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 text-sm font-medium text-center">{voiceText}</div>
-                  ) : (
-                    <div className="text-center py-8">
-                      {voiceListening ? (
-                        <div className="space-y-4">
-                          <div className="flex items-center justify-center gap-1.5">{[1,2,3,4,5].map(i => <div key={i} className="w-1.5 bg-gradient-to-t from-amber-300 to-amber-500 rounded-full animate-pulse" style={{ height: `${14+i*8}px`, animationDelay: `${i*0.12}s`, animationDuration: '0.8s' }} />)}</div>
-                          <p className="text-amber-500 font-medium animate-pulse">正在聆听...</p>
-                        </div>
-                      ) : (
-                        <div className="space-y-2"><p className="text-5xl">🎤</p><p className="text-gray-400 text-sm">点击下方按钮开始录音</p></div>
-                      )}
-                    </div>
-                  )}
-                  {!voiceText ? (
-                    <button
-                      type="button"
-                      onClick={handleVoiceToggle}
-                      className={`w-full py-14 rounded-3xl text-sm font-medium text-white transition-all select-none ${voiceListening ? 'bg-red-400 scale-95' : 'bg-gradient-to-r from-amber-400 to-amber-600 active:scale-95'}`}
-                      style={{ userSelect: 'none', WebkitUserSelect: 'none' }}>
-                      {voiceListening ? '点击停止' : '点击开始录音'}
-                    </button>
-                  ) : (
-                    <div className="flex gap-2">
-                      <button onClick={() => { setVoiceText(''); setVoiceListening(false) }} className="flex-1 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 text-sm text-gray-500">重新录入</button>
-                      <button onClick={handleVoiceConfirm} className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-600 text-white text-sm font-medium">AI 解析</button>
-                    </div>
-                  )}
-                </div>
+                isSpeechSupported() ? (
+                  <div className="space-y-4">
+                    {voiceText ? (
+                      <div className="p-5 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 text-sm font-medium text-center">{voiceText}</div>
+                    ) : (
+                      <div className="text-center py-8">
+                        {voiceListening ? (
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-center gap-1.5">{[1,2,3,4,5].map(i => <div key={i} className="w-1.5 bg-gradient-to-t from-amber-300 to-amber-500 rounded-full animate-pulse" style={{ height: `${14+i*8}px`, animationDelay: `${i*0.12}s`, animationDuration: '0.8s' }} />)}</div>
+                            <p className="text-amber-500 font-medium animate-pulse">正在聆听...</p>
+                          </div>
+                        ) : (
+                          <div className="space-y-2"><p className="text-5xl">🎤</p><p className="text-gray-400 text-sm">点击下方按钮开始录音</p></div>
+                        )}
+                      </div>
+                    )}
+                    {!voiceText ? (
+                      <button type="button" onClick={handleVoiceToggle}
+                        className={`w-full py-14 rounded-3xl text-sm font-medium text-white transition-all select-none ${voiceListening ? 'bg-red-400 scale-95' : 'bg-gradient-to-r from-amber-400 to-amber-600 active:scale-95'}`}
+                        style={{ userSelect: 'none', WebkitUserSelect: 'none' }}>
+                        {voiceListening ? '点击停止' : '点击开始录音'}
+                      </button>
+                    ) : (
+                      <div className="flex gap-2">
+                        <button onClick={() => { setVoiceText(''); setVoiceListening(false) }} className="flex-1 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 text-sm text-gray-500">重新录入</button>
+                        <button onClick={handleVoiceConfirm} className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-600 text-white text-sm font-medium">AI 解析</button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-center py-10 space-y-3">
+                    <p className="text-4xl">📝</p>
+                    <p className="text-sm text-muted">当前浏览器不支持语音识别</p>
+                    <p className="text-xs text-muted">请切换到「文字」模式输入，或使用 Chrome 浏览器</p>
+                    <button onClick={() => setMode('text')} className="px-6 py-2.5 rounded-2xl bg-amber-50 dark:bg-amber-900/20 text-amber-600 text-sm font-medium">使用文字输入</button>
+                  </div>
+                )
               )}
 
               {templates.length > 0 && (
