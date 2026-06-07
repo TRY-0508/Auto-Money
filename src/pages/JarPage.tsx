@@ -10,7 +10,7 @@ import {
   Hourglass, BarChart3, AlertTriangle, Zap,
 } from '@/lib/icons'
 
-const GOAL_COLORS = ['#f59e0b', '#8b5cf6', '#10b981', '#f43f5e', '#3b82f6', '#ec4899', '#14b8a6']
+const GOAL_COLORS = ['#f59e0b', '#d97706', '#10b981', '#f43f5e', '#3b82f6', '#ec4899', '#14b8a6', '#eab308', '#fb923c']
 
 function cooldownLabel(h: number): string {
   const m: Record<number, string> = { 1: '1 小时', 6: '6 小时', 24: '1 天', 48: '2 天', 72: '3 天', 168: '7 天' }

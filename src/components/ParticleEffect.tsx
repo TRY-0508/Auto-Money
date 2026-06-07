@@ -1,6 +1,6 @@
 import { useEffect, useCallback } from 'react'
 
-const COLORS = ['#c084fc','#f472b6','#38bdf8','#fbbf24','#10b981','#f43f5e']
+const COLORS = ['#f59e0b','#fb923c','#f472b6','#14b8a6','#10b981','#ef4444','#eab308','#d97706']
 const PARTICLE_COUNT = 8
 
 export default function ParticleEffect() {

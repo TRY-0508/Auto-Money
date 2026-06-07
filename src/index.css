@@ -179,7 +179,7 @@ body {
 .banner-anxious  { background: linear-gradient(135deg, #fb923c, #f97316, #ea580c); }
 .banner-angry    { background: linear-gradient(135deg, #f87171, #ef4444, #dc2626); }
 .banner-excited  { background: linear-gradient(135deg, #fbbf24, #f59e0b, #ea580c); }
-.banner-tired    { background: linear-gradient(135deg, #c4b5fd, #a78bfa, #7c3aed); }
+.banner-tired    { background: linear-gradient(135deg, #c4b5fd, #a8a29e, #78716c); }
 
 /* ── Page Mood Backgrounds (warm) ── */
 .page-happy    { background: linear-gradient(160deg, #fffbeb 0%, #fef3c7 40%, #fef9c3 100%); }
