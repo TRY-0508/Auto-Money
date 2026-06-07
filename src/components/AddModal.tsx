@@ -70,7 +70,9 @@ export default function AddModal({ open, onClose }: Props) {
     finally { setLoading(false) }
   }
 
-  const handleVoiceStart = () => {
+  const handleVoiceStart = (e: React.MouseEvent | React.TouchEvent) => {
+    // Prevent text selection / context menu on touch
+    if ('touches' in e) e.preventDefault()
     if (voiceActiveRef.current) return
     if (!isSpeechSupported()) { setError('请使用 Chrome 或 Edge'); return }
     voiceActiveRef.current = true
@@ -82,7 +84,8 @@ export default function AddModal({ open, onClose }: Props) {
     )
   }
 
-  const handleVoiceEnd = () => {
+  const handleVoiceEnd = (e?: React.MouseEvent | React.TouchEvent) => {
+    if ('touches' in (e || {})) e?.preventDefault()
     if (!voiceActiveRef.current) return
     stopRecognition(); voiceActiveRef.current = false; setVoiceListening(false)
     if (voiceText.trim()) {
@@ -174,7 +177,9 @@ export default function AddModal({ open, onClose }: Props) {
                       onMouseUp={handleVoiceEnd}
                       onTouchStart={handleVoiceStart}
                       onTouchEnd={handleVoiceEnd}
-                      className={`w-full py-14 rounded-3xl text-sm font-medium text-white transition-all select-none ${voiceListening ? 'bg-red-400 scale-95' : 'bg-gradient-to-r from-amber-400 to-amber-600 active:scale-95'}`}>
+                      onContextMenu={e => e.preventDefault()}
+                      className={`w-full py-14 rounded-3xl text-sm font-medium text-white transition-all select-none ${voiceListening ? 'bg-red-400 scale-95' : 'bg-gradient-to-r from-amber-400 to-amber-600 active:scale-95'}`}
+                      style={{ userSelect: 'none', WebkitUserSelect: 'none', touchAction: 'manipulation' }}>
                       {voiceListening ? '松开发送' : '按住 说话'}
                     </button>
                   ) : (
