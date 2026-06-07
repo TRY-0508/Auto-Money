@@ -1,10 +1,13 @@
 import { db } from '@/db'
 
-let mediaRecorder: MediaRecorder | null = null
-let audioChunks: Blob[] = []
+let ws: WebSocket | null = null
 let _onResult: ((text: string) => void) | null = null
 let _onEnd: (() => void) | null = null
 let _onError: ((msg: string) => void) | null = null
+let _stream: MediaStream | null = null
+let _audioCtx: AudioContext | null = null
+let _processor: ScriptProcessorNode | null = null
+let _source: MediaStreamAudioSourceNode | null = null
 
 export function isSpeechSupported(): boolean {
   return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
@@ -22,86 +25,120 @@ export async function startRecognition(
     onError('请先在设置中配置百度语音 API Key 和 Secret Key')
     return
   }
-  if (settings.speechProvider !== 'baidu') {
-    onError('请先在设置中将语音提供商设为「百度语音」')
-    return
-  }
 
   _onResult = onResult; _onEnd = onEnd; _onError = onError
 
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-    mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' })
-    audioChunks = []
+    // 1. Get Baidu token
+    const token = await getBaiduToken(settings.speechApiKey, settings.speechSecretKey)
 
-    mediaRecorder.ondataavailable = (e) => {
-      if (e.data.size > 0) audioChunks.push(e.data)
+    // 2. Open WebSocket
+    ws = new WebSocket('wss://vop.baidu.com/realtime_asr')
+
+    ws.onopen = () => {
+      // Send start frame
+      ws!.send(JSON.stringify({
+        type: 'START',
+        data: {
+          format: 'pcm',
+          rate: 16000,
+          bits: 16,
+          channel: 1,
+          cuid: 'moodmoney',
+          dev_pid: 1537, // Mandarin
+          token,
+        },
+      }))
+
+      // Start capturing audio
+      startAudioCapture()
     }
 
-    mediaRecorder.onstop = async () => {
-      stream.getTracks().forEach(t => t.stop())
-      if (audioChunks.length === 0) { _onEnd?.(); return }
-
+    ws.onmessage = (event) => {
       try {
-        const blob = new Blob(audioChunks, { type: 'audio/webm' })
-        const pcm = await blobToPCM(blob)
-        const text = await baiduRecognize(pcm, settings)
-        if (text) _onResult?.(text)
-      } catch (err: any) {
-        _onError?.(err.message || '识别失败')
-      }
+        const msg = JSON.parse(event.data)
+        if (msg.type === 'FIN_TEXT' || msg.type === 'PARTIAL_TEXT') {
+          const text = msg.result || msg.data?.result?.text || ''
+          if (text.trim()) _onResult?.(text)
+        }
+        if (msg.type === 'FINISHED') {
+          cleanup()
+          _onEnd?.()
+        }
+        if (msg.err_no && msg.err_no !== 0) {
+          cleanup()
+          _onError?.(msg.err_msg || '识别失败')
+        }
+      } catch {}
+    }
+
+    ws.onerror = () => {
+      cleanup()
+      _onError?.('WebSocket 连接失败')
+    }
+
+    ws.onclose = () => {
+      cleanup()
       _onEnd?.()
     }
+  } catch (err: any) {
+    cleanup()
+    _onError?.(err.message || '启动失败')
+    _onEnd?.()
+  }
+}
 
-    mediaRecorder.start()
+async function startAudioCapture() {
+  try {
+    _stream = await navigator.mediaDevices.getUserMedia({ audio: { sampleRate: 16000, channelCount: 1, echoCancellation: true } })
+    _audioCtx = new AudioContext({ sampleRate: 16000 })
+    _source = _audioCtx.createMediaStreamSource(_stream)
+
+    // Use ScriptProcessor for PCM capture
+    _processor = _audioCtx.createScriptProcessor(4096, 1, 1)
+    _processor.onaudioprocess = (e) => {
+      if (!ws || ws.readyState !== WebSocket.OPEN) return
+      const input = e.inputBuffer.getChannelData(0)
+      const pcm = new Int16Array(input.length)
+      for (let i = 0; i < input.length; i++) {
+        const s = Math.max(-1, Math.min(1, input[i]))
+        pcm[i] = s < 0 ? s * 0x8000 : s * 0x7FFF
+      }
+      ws.send(pcm.buffer)
+    }
+    _source.connect(_processor)
+    _processor.connect(_audioCtx.destination)
   } catch (err: any) {
     if (err.name === 'NotAllowedError') {
-      onError('麦克风权限被拒绝')
+      _onError?.('麦克风权限被拒绝')
     } else {
-      onError('无法启动录音: ' + (err.message || ''))
+      _onError?.('无法启动录音')
     }
-    onEnd()
+    cleanup()
+    _onEnd?.()
+  }
+}
+
+function cleanup() {
+  try { _processor?.disconnect() } catch {}
+  try { _source?.disconnect() } catch {}
+  try { _audioCtx?.close() } catch {}
+  _stream?.getTracks().forEach(t => t.stop())
+  _stream = null; _audioCtx = null; _processor = null; _source = null
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    try { ws.send(JSON.stringify({ type: 'FINISH' })) } catch {}
   }
 }
 
 export function stopRecognition() {
-  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-    mediaRecorder.stop()
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    try { ws.send(JSON.stringify({ type: 'FINISH' })) } catch {}
   }
+  cleanup()
+  ws = null
 }
 
-// ── Audio conversion ──
-
-async function blobToPCM(blob: Blob): Promise<ArrayBuffer> {
-  const ctx = new OfflineAudioContext(1, 1, 16000)
-  const arrayBuffer = await blob.arrayBuffer()
-  const audioBuffer = await ctx.decodeAudioData(arrayBuffer)
-
-  const offline = new OfflineAudioContext(1, Math.ceil(audioBuffer.duration * 16000), 16000)
-  const source = offline.createBufferSource()
-  source.buffer = audioBuffer
-  source.connect(offline.destination)
-  source.start()
-  const rendered = await offline.startRendering()
-
-  const channel = rendered.getChannelData(0)
-  const pcm = new Int16Array(channel.length)
-  for (let i = 0; i < channel.length; i++) {
-    const s = Math.max(-1, Math.min(1, channel[i]))
-    pcm[i] = s < 0 ? s * 0x8000 : s * 0x7FFF
-  }
-  return pcm.buffer
-}
-
-function arrayBufferToBase64(buffer: ArrayBuffer): string {
-  const bytes = new Uint8Array(buffer)
-  let binary = ''
-  for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i])
-  return btoa(binary)
-}
-
-// ── Baidu API ──
-
+// ── Baidu Auth ──
 async function getBaiduToken(apiKey: string, secretKey: string): Promise<string> {
   const cacheKey = 'baidu_speech_token'
   const cached = localStorage.getItem(cacheKey)
@@ -112,38 +149,29 @@ async function getBaiduToken(apiKey: string, secretKey: string): Promise<string>
     } catch {}
   }
 
-  const resp = await fetch(
-    `https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=${apiKey}&client_secret=${secretKey}`
-  )
-  const data = await resp.json()
-  if (!data.access_token) throw new Error('百度鉴权失败: ' + (data.error_description || ''))
+  const params = `grant_type=client_credentials&client_id=${apiKey}&client_secret=${secretKey}`
+  const url = `https://aip.baidubce.com/oauth/2.0/token?${params}`
+
+  let resp: Response | null = null
+
+  // Try direct first
+  try { resp = await fetch(url) } catch {}
+
+  // Fallback: CORS proxy
+  if (!resp || !resp.ok) {
+    try {
+      resp = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`)
+    } catch (err: any) {
+      throw new Error('无法连接百度鉴权服务（CORS 限制）')
+    }
+  }
+
+  const data = await resp!.json()
+  if (!data.access_token) throw new Error('鉴权失败: ' + (data.error_description || '请检查 Key'))
 
   localStorage.setItem(cacheKey, JSON.stringify({
     token: data.access_token,
     expires: Date.now() + (data.expires_in - 3600) * 1000,
   }))
   return data.access_token
-}
-
-async function baiduRecognize(pcm: ArrayBuffer, settings: any): Promise<string> {
-  const token = await getBaiduToken(settings.speechApiKey, settings.speechSecretKey)
-  const speech = arrayBufferToBase64(pcm)
-
-  const resp = await fetch('https://vop.baidu.com/server_api', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      format: 'pcm',
-      rate: 16000,
-      channel: 1,
-      cuid: 'moodmoney_app',
-      token,
-      speech,
-      len: pcm.byteLength,
-    }),
-  })
-
-  const data = await resp.json()
-  if (data.err_no !== 0) throw new Error(data.err_msg || '识别失败')
-  return data.result?.[0] || ''
 }
