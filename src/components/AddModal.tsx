@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import { useTransactions, useCategories, useProjects } from '@/db/hooks'
 import { parseTransaction } from '@/services/llm'
 import { startRecognition, isSpeechSupported, stopRecognition } from '@/services/speech'
@@ -22,6 +22,17 @@ export default function AddModal({ open, onClose }: Props) {
   const [step, setStep] = useState<Step>('input')
   const [voiceText, setVoiceText] = useState('')
   const [voiceListening, setVoiceListening] = useState(false)
+  const [voiceSeconds, setVoiceSeconds] = useState(0)
+  const voiceTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const startVoiceTimer = () => {
+    setVoiceSeconds(0)
+    voiceTimerRef.current = setInterval(() => setVoiceSeconds(s => s + 1), 1000)
+  }
+  const stopVoiceTimer = () => {
+    if (voiceTimerRef.current) { clearInterval(voiceTimerRef.current); voiceTimerRef.current = null }
+    setVoiceSeconds(0)
+  }
 
   const [manualType, setManualType] = useState<'expense' | 'income'>('expense')
   const [manualAmount, setManualAmount] = useState('')
@@ -70,15 +81,16 @@ export default function AddModal({ open, onClose }: Props) {
 
   const handleVoiceToggle = () => {
     if (voiceListening) {
-      stopRecognition()
+      stopRecognition(); stopVoiceTimer()
       setVoiceListening(false)
     } else {
       if (!isSpeechSupported()) { setError('请使用 Chrome 或 Edge'); return }
       setVoiceListening(true); setVoiceText(''); setError('')
+      startVoiceTimer()
       startRecognition(
         t => setVoiceText(t),
-        () => setVoiceListening(false),
-        e => { setVoiceListening(false); setError(e) }
+        () => { stopVoiceTimer(); setVoiceListening(false) },
+        e => { stopVoiceTimer(); setVoiceListening(false); setError(e) }
       )
     }
   }
@@ -159,6 +171,7 @@ export default function AddModal({ open, onClose }: Props) {
                         <div className="space-y-4">
                           <div className="flex items-center justify-center gap-1.5">{[1,2,3,4,5].map(i => <div key={i} className="w-1.5 bg-gradient-to-t from-amber-300 to-amber-500 rounded-full animate-pulse" style={{ height: `${14+i*8}px`, animationDelay: `${i*0.12}s`, animationDuration: '0.8s' }} />)}</div>
                           <p className="text-amber-500 font-medium animate-pulse">正在聆听...</p>
+                          <p className="text-xs text-muted font-mono">{voiceSeconds}s</p>
                         </div>
                       ) : (
                         <div className="space-y-2"><p className="text-5xl">🎤</p><p className="text-gray-400 text-sm">点击下方按钮开始录音</p></div>
