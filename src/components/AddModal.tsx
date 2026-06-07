@@ -70,21 +70,21 @@ export default function AddModal({ open, onClose }: Props) {
     finally { setLoading(false) }
   }
 
-  const handleVoiceStart = (e: React.MouseEvent | React.TouchEvent) => {
-    // Prevent touch→mouse event duplication
-    e.preventDefault()
+  const handleVoiceStart = () => {
     if (voiceActiveRef.current) return
     if (!isSpeechSupported()) { setError('请使用 Chrome 或 Edge'); return }
     voiceActiveRef.current = true
     voiceStartRef.current = Date.now()
     setVoiceListening(true); setVoiceText(''); setError('')
-    startRecognition(t => setVoiceText(t), e => { setVoiceListening(false); voiceActiveRef.current = false; setError(e) }, () => { setVoiceListening(false); voiceActiveRef.current = false })
+    startRecognition(
+      t => setVoiceText(t),
+      e => { setVoiceListening(false); voiceActiveRef.current = false; setError(e) },
+      () => { setVoiceListening(false); voiceActiveRef.current = false }
+    )
   }
 
-  const handleVoiceEnd = (e?: React.MouseEvent | React.TouchEvent) => {
-    e?.preventDefault()
+  const handleVoiceEnd = () => {
     if (!voiceActiveRef.current) return
-    if (Date.now() - voiceStartRef.current < 300) return
     stopRecognition(); voiceActiveRef.current = false; setVoiceListening(false)
     if (voiceText.trim()) {
       setTextInput(voiceText.trim()); setLoading(true)
@@ -169,7 +169,11 @@ export default function AddModal({ open, onClose }: Props) {
                     </div>
                   )}
                   {!voiceText ? (
-                    <button onMouseDown={handleVoiceStart} onMouseUp={handleVoiceEnd} onMouseLeave={voiceListening ? handleVoiceEnd : undefined} onTouchStart={handleVoiceStart} onTouchEnd={handleVoiceEnd}
+                    <button
+                      onMouseDown={handleVoiceStart}
+                      onMouseUp={handleVoiceEnd}
+                      onTouchStart={handleVoiceStart}
+                      onTouchEnd={handleVoiceEnd}
                       className={`w-full py-14 rounded-3xl text-sm font-medium text-white transition-all select-none ${voiceListening ? 'bg-red-400 scale-95' : 'bg-gradient-to-r from-amber-400 to-amber-600 active:scale-95'}`}>
                       {voiceListening ? '松开发送' : '按住 说话'}
                     </button>

@@ -37,17 +37,20 @@ export function startRecognition(onResult: (text: string) => void, onError: (err
   }
 
   rec.onerror = (event: any) => {
-    if (_manualStop && event.error === 'aborted') {
+    // Manual stop or browser-initiated abort — don't show error
+    if (_manualStop || event.error === 'aborted') {
       recognition = null
       onEnd?.()
       return
     }
     const map: Record<string, string> = {
       'no-speech': '未检测到语音，请靠近麦克风再试一次',
-      'aborted': '语音识别已取消，请重试',
-      'not-allowed': '麦克风权限被拒绝。请在浏览器设置中允许麦克风访问，或检查是否使用了 HTTPS',
-      'network': '语音识别需要稳定的网络连接。如果您使用了代理/VPN，可能会影响语音服务。请在浏览器中打开并确保网络通畅',
+      'not-allowed': '麦克风权限被拒绝。请在浏览器设置中允许麦克风访问',
+      'network': '语音识别需要网络连接，请检查网络后重试',
       'service-not-allowed': '语音服务不可用，请确保使用 HTTPS 并检查网络',
+      'audio-capture': '未检测到麦克风设备',
+      'bad-grammar': '语音识别语法错误',
+      'language-not-supported': '当前浏览器不支持中文语音识别',
     }
     const msg = map[event.error]
     if (msg) onError(msg)
