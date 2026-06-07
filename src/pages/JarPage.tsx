@@ -286,23 +286,22 @@ export default function JarPage() {
                       <button onClick={() => handleDeleteGoal(goal.id)} className="btn-icon btn-icon-danger"><Trash2 size={14} /></button>
                     </div>
 
-                    <StarJar starCount={goal.starCount} targetAmount={goal.targetAmount} currentAmount={goal.currentAmount} />
-
-                    {(() => {
-                      const resistEvents = events.filter(e => e.goalId === goal.id && e.status === 'resisted')
-                      if (resistEvents.length === 0) return null
-                      return (
-                        <div className="mt-4 border-t border-gray-100 dark:border-gray-800/30 divide-y divide-gray-50 dark:divide-gray-800/20 max-h-40 overflow-y-auto">
-                          {resistEvents.map(evt => (
-                            <div key={evt.id} className="flex items-center gap-2 px-1 py-1.5 text-xs">
-                              <span className="text-amber-400 flex-shrink-0">★</span>
-                              <span className="flex-1 truncate">{evt.description}</span>
-                              <span className="text-muted">{evt.amount > 0 ? formatAmount(evt.amount) : ''}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )
-                    })()}
+                    <StarJar
+                      starCount={goal.starCount}
+                      targetAmount={goal.targetAmount}
+                      currentAmount={goal.currentAmount}
+                      color={goal.color}
+                      resistedEvents={events
+                        .filter(e => e.goalId === goal.id && e.status === 'resisted')
+                        .map(e => ({
+                          id: e.id,
+                          description: e.description,
+                          amount: e.amount,
+                          createdAt: e.createdAt,
+                          note: e.reEvaluationNote,
+                        }))
+                      }
+                    />
                   </div>
                 </div>
               ))}
