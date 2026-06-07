@@ -64,3 +64,36 @@ export interface ParsedTransaction {
   confidence: number
   mood?: string | null
 }
+
+export interface JarGoal {
+  id: string
+  name: string
+  targetStars: number
+  currentStars: number
+  description: string
+  color: string
+  createdAt: number
+}
+
+export interface CoolDownEvent {
+  id: string
+  goalId?: string
+  description: string
+  amount: number
+  desireLevel: number
+  necessityLevel: number
+  emotionalState: string
+  impulseType: 'emotional' | 'impulsive' | 'uncertain'
+  reason: string
+  cooldownHours: number
+  cooldownStartedAt: number
+  cooldownEndsAt: number
+  status: 'cooling' | 'pending_review' | 'resisted' | 'failed' | 'purchased'
+  reEvaluationNote?: string
+  reEvaluationDesire?: number
+  reEvaluationAt?: number
+  earnedStar?: boolean
+  earnedAt?: number
+  boughtAt?: number
+  createdAt: number
+}

@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from './index'
-import type { Transaction, Category, Budget, Settings, ChatMessage, Project } from '@/types'
+import type { Transaction, Category, Budget, Settings, ChatMessage, Project, JarGoal, CoolDownEvent } from '@/types'
 
 export function useCategories() {
   const categories = useLiveQuery(async () => {
@@ -134,4 +134,46 @@ export function useProjects() {
   }
 
   return { projects, addProject, updateProject, deleteProject }
+}
+
+export function useJarGoals() {
+  const goals = useLiveQuery(() => db.jarGoals.toArray()) ?? []
+
+  const addGoal = async (g: Omit<JarGoal, 'id' | 'createdAt'>) => {
+    const id = crypto.randomUUID()
+    const now = Date.now()
+    await db.jarGoals.add({ id, ...g, createdAt: now })
+    return id
+  }
+
+  const updateGoal = async (id: string, updates: Partial<JarGoal>) => {
+    await db.jarGoals.update(id, updates)
+  }
+
+  const deleteGoal = async (id: string) => {
+    await db.jarGoals.delete(id)
+  }
+
+  return { goals, addGoal, updateGoal, deleteGoal }
+}
+
+export function useCoolDownEvents() {
+  const events = useLiveQuery(() => db.coolDownEvents.orderBy('createdAt').reverse().toArray()) ?? []
+
+  const addEvent = async (e: Omit<CoolDownEvent, 'id' | 'createdAt'>) => {
+    const id = crypto.randomUUID()
+    const now = Date.now()
+    await db.coolDownEvents.add({ id, ...e, createdAt: now })
+    return id
+  }
+
+  const updateEvent = async (id: string, updates: Partial<CoolDownEvent>) => {
+    await db.coolDownEvents.update(id, updates)
+  }
+
+  const deleteEvent = async (id: string) => {
+    await db.coolDownEvents.delete(id)
+  }
+
+  return { events, addEvent, updateEvent, deleteEvent }
 }

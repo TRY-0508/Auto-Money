@@ -11,6 +11,8 @@ import {
   Calendar, PiggyBank, MessageCircle, BarChart3, PieChart, List,
   Trash2, Edit3, ArrowLeft, ArrowRight, X, Menu, Send, Download, Upload,
   Copy, Tag, Target, FolderOpen, Database, Check,
+  // Cool-down & Jar icons
+  Timer, Clock, ShieldCheck, ShieldX, Thermometer, Flame, Hourglass,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -70,7 +72,8 @@ export const MOOD_COLOR_MAP: Record<string, string> = Object.fromEntries(
 export { LayoutDashboard, Brain, Settings, Plus, Mic, Pencil, Search,
   Calendar, PiggyBank, MessageCircle, BarChart3, PieChart, List,
   Trash2, Edit3, ArrowLeft, ArrowRight, X, Menu, Send, Download, Upload,
-  MoreHorizontal, Package, Copy, Tag, Target, FolderOpen, Database, AlertTriangle, Check, Star, Lightbulb }
+  MoreHorizontal, Package, Copy, Tag, Target, FolderOpen, Database, AlertTriangle, Check, Star, Lightbulb,
+  Timer, Clock, ShieldCheck, ShieldX, Thermometer, Flame, Hourglass }
 
 // ── Project Icons (keys mapped to Lucide) ──
 export const PROJECT_ICONS: { key: string; label: string; Icon: LucideIcon }[] = [

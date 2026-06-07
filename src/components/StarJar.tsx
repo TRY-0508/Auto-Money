@@ -1,22 +1,20 @@
 import { useEffect, useRef, useState } from 'react'
 
 interface Props {
-  stars: number
-  target?: number
-  current?: number
-  amounts?: number[]
+  starCount: number
+  targetStars: number
 }
 
-export default function StarJar({ stars, target, current = 0, amounts = [] }: Props) {
+export default function StarJar({ starCount, targetStars }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [shake, setShake] = useState(false)
   const animRef = useRef(0)
-  const prevStars = useRef(stars)
+  const prevStars = useRef(starCount)
 
   useEffect(() => {
-    if (stars > prevStars.current) { setShake(true); setTimeout(() => setShake(false), 600) }
-    prevStars.current = stars
-  }, [stars])
+    if (starCount > prevStars.current) { setShake(true); setTimeout(() => setShake(false), 600) }
+    prevStars.current = starCount
+  }, [starCount])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -26,9 +24,6 @@ export default function StarJar({ stars, target, current = 0, amounts = [] }: Pr
     const w = canvas.width, h = canvas.height
     let tick = 0
 
-    const maxAmount = target || Math.max(...amounts, 1)
-    const sorted = [...amounts].sort((a, b) => b - a)
-
     const draw = () => {
       tick++
       ctx.clearRect(0, 0, w, h)
@@ -37,7 +32,7 @@ export default function StarJar({ stars, target, current = 0, amounts = [] }: Pr
       ctx.save()
       ctx.translate(sx, 0)
 
-      const jx = w / 2, jy = h * 0.58, jw = w * 0.38, jh = h * 0.6
+      const jx = w / 2, jy = h * 0.55, jw = w * 0.38, jh = h * 0.6
 
       // Shadow
       ctx.fillStyle = 'rgba(139,92,246,0.06)'
@@ -67,9 +62,8 @@ export default function StarJar({ stars, target, current = 0, amounts = [] }: Pr
       ctx.strokeStyle = 'rgba(139,92,246,0.4)'; ctx.lineWidth = 2.5; ctx.stroke()
 
       // Stars inside jar
-      if (sorted.length > 0) {
+      if (starCount > 0) {
         ctx.save()
-        // Clip to jar
         ctx.beginPath()
         ctx.moveTo(jx - jw * 0.38, jy - jh * 0.48)
         ctx.lineTo(jx + jw * 0.38, jy - jh * 0.48)
@@ -80,7 +74,7 @@ export default function StarJar({ stars, target, current = 0, amounts = [] }: Pr
         ctx.closePath(); ctx.clip()
 
         // Golden glow fill
-        const fillRatio = Math.min(current / (target || 1), 0.85)
+        const fillRatio = Math.min(starCount / (targetStars || 1), 0.85)
         const fillH = fillRatio * jh * 0.45
         if (fillH > 0) {
           const fg = ctx.createLinearGradient(0, jy + jh * 0.45, 0, jy + jh * 0.45 - fillH)
@@ -91,11 +85,15 @@ export default function StarJar({ stars, target, current = 0, amounts = [] }: Pr
           ctx.fillRect(jx - jw * 0.6, jy + jh * 0.48 - fillH, jw * 1.2, fillH + 2)
         }
 
-        // Stars sized by amount
-        const placement = generatePositions(sorted, jx, jy, jw, jh, maxAmount)
-        for (const pos of placement) {
-          const sy = pos.y
-          drawStar(ctx, pos.x, sy, pos.r, '#fbbf24')
+        // Draw stars
+        const displayCount = Math.min(starCount, 50)
+        for (let i = 0; i < displayCount; i++) {
+          const seed = i * 137.508
+          const sx = jx + (Math.sin(seed) * jw * 0.35)
+          const sy = (jy + jh * 0.38) - ((i / displayCount) * jh * 0.38) + (Math.cos(seed * 2.3) * 6)
+          const sr = 5 + (Math.sin(i * 0.7) * 3)
+          const alpha = 0.5 + (i / displayCount) * 0.5
+          drawStar(ctx, sx, sy, sr, `rgba(251,191,36,${alpha})`)
         }
 
         ctx.restore()
@@ -107,38 +105,13 @@ export default function StarJar({ stars, target, current = 0, amounts = [] }: Pr
 
     draw()
     return () => cancelAnimationFrame(animRef.current)
-  }, [stars, target, current, amounts, shake])
+  }, [starCount, targetStars, shake])
 
   return (
     <div className="flex flex-col items-center">
-      <canvas ref={canvasRef} width={260} height={320} className="w-64 h-80" />
+      <canvas ref={canvasRef} width={260} height={320} className="w-64 h-80 mx-auto" />
     </div>
   )
-}
-
-function generatePositions(amounts: number[], jx: number, jy: number, jw: number, jh: number, max: number) {
-  const positions: { x: number; y: number; r: number }[] = []
-  let yBase = jy + jh * 0.42
-  const maxR = 14; const minR = 5
-
-  for (const amt of amounts) {
-    const ratio = Math.max(amt / max, 0.2)
-    const r = minR + ratio * (maxR - minR)
-    // Try to place without too much overlap
-    let placed = false
-    for (let attempt = 0; attempt < 10 && !placed; attempt++) {
-      const x = jx + (Math.random() - 0.5) * jw * 0.7
-      const y = yBase - Math.random() * jh * 0.35
-      let ok = true
-      for (const p of positions) {
-        const dx = x - p.x; const dy = y - p.y
-        if (Math.sqrt(dx * dx + dy * dy) < (r + p.r) * 0.7) { ok = false; break }
-      }
-      if (ok || attempt === 9) { positions.push({ x, y, r }); placed = true }
-    }
-    yBase -= r * 0.4 // stack upward
-  }
-  return positions
 }
 
 function drawStar(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, color: string) {
