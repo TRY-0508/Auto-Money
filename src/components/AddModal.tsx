@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react'
+import { useState, useMemo } from 'react'
 import { useTransactions, useCategories, useProjects } from '@/db/hooks'
 import { parseTransaction } from '@/services/llm'
 import { startRecognition, isSpeechSupported, stopRecognition } from '@/services/speech'
@@ -22,8 +22,6 @@ export default function AddModal({ open, onClose }: Props) {
   const [step, setStep] = useState<Step>('input')
   const [voiceText, setVoiceText] = useState('')
   const [voiceListening, setVoiceListening] = useState(false)
-  const voiceStartRef = useRef(0)
-  const voiceActiveRef = useRef(false)
 
   const [manualType, setManualType] = useState<'expense' | 'income'>('expense')
   const [manualAmount, setManualAmount] = useState('')
@@ -70,28 +68,26 @@ export default function AddModal({ open, onClose }: Props) {
     finally { setLoading(false) }
   }
 
-  const handleVoiceStart = (e: React.MouseEvent | React.TouchEvent) => {
-    // Prevent text selection / context menu on touch
-    if ('touches' in e) e.preventDefault()
-    if (voiceActiveRef.current) return
-    if (!isSpeechSupported()) { setError('请使用 Chrome 或 Edge'); return }
-    voiceActiveRef.current = true
-    setVoiceListening(true); setVoiceText(''); setError('')
-    startRecognition(
-      t => setVoiceText(t),
-      e => { voiceActiveRef.current = false; setVoiceListening(false); setError(e) },
-      () => setVoiceListening(false)
-    )
+  const handleVoiceToggle = () => {
+    if (voiceListening) {
+      // Stop recording
+      stopRecognition(); setVoiceListening(false)
+    } else {
+      // Start recording
+      if (!isSpeechSupported()) { setError('请使用 Chrome 或 Edge'); return }
+      setVoiceListening(true); setVoiceText(''); setError('')
+      startRecognition(
+        t => setVoiceText(t),
+        e => { setVoiceListening(false); setError(e) },
+        () => setVoiceListening(false)
+      )
+    }
   }
 
-  const handleVoiceEnd = (e?: React.MouseEvent | React.TouchEvent) => {
-    if ('touches' in (e || {})) e?.preventDefault()
-    if (!voiceActiveRef.current) return
-    stopRecognition(); voiceActiveRef.current = false; setVoiceListening(false)
-    if (voiceText.trim()) {
-      setTextInput(voiceText.trim()); setLoading(true)
-      parseTransaction(voiceText.trim()).then(r => { setParsed(r); setStep('parsed') }).catch(e => setError(e.message || '失败')).finally(() => setLoading(false))
-    }
+  const handleVoiceConfirm = () => {
+    if (!voiceText.trim()) return
+    setTextInput(voiceText.trim()); setLoading(true)
+    parseTransaction(voiceText.trim()).then(r => { setParsed(r); setStep('parsed') }).catch(e => setError(e.message || '失败')).finally(() => setLoading(false))
   }
 
   const handleConfirmParsed = async () => {
@@ -166,26 +162,22 @@ export default function AddModal({ open, onClose }: Props) {
                           <p className="text-amber-500 font-medium animate-pulse">正在聆听...</p>
                         </div>
                       ) : (
-                        <div className="space-y-2"><p className="text-5xl">🎤</p><p className="text-gray-400 text-sm">按住下方按钮开始说话</p></div>
+                        <div className="space-y-2"><p className="text-5xl">🎤</p><p className="text-gray-400 text-sm">点击下方按钮开始录音</p></div>
                       )}
                     </div>
                   )}
                   {!voiceText ? (
                     <button
                       type="button"
-                      onMouseDown={handleVoiceStart}
-                      onMouseUp={handleVoiceEnd}
-                      onTouchStart={handleVoiceStart}
-                      onTouchEnd={handleVoiceEnd}
-                      onContextMenu={e => e.preventDefault()}
+                      onClick={handleVoiceToggle}
                       className={`w-full py-14 rounded-3xl text-sm font-medium text-white transition-all select-none ${voiceListening ? 'bg-red-400 scale-95' : 'bg-gradient-to-r from-amber-400 to-amber-600 active:scale-95'}`}
-                      style={{ userSelect: 'none', WebkitUserSelect: 'none', touchAction: 'manipulation' }}>
-                      {voiceListening ? '松开发送' : '按住 说话'}
+                      style={{ userSelect: 'none', WebkitUserSelect: 'none' }}>
+                      {voiceListening ? '点击停止' : '点击开始录音'}
                     </button>
                   ) : (
                     <div className="flex gap-2">
-                      <button onClick={() => setVoiceText('')} className="flex-1 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 text-sm text-gray-500">重说</button>
-                      <button onClick={handleVoiceEnd} className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-600 text-white text-sm font-medium">AI 解析</button>
+                      <button onClick={() => { setVoiceText(''); setVoiceListening(false) }} className="flex-1 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 text-sm text-gray-500">重新录入</button>
+                      <button onClick={handleVoiceConfirm} className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-600 text-white text-sm font-medium">AI 解析</button>
                     </div>
                   )}
                 </div>

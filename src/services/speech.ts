@@ -41,13 +41,8 @@ export function startRecognition(onResult: (text: string) => void, onError: (err
   }
 
   rec.onerror = (event: any) => {
-    if (_manualStop || event.error === 'aborted') {
-      recognition = null
-      onEnd?.()
-      return
-    }
-    if (event.error === 'no-speech') {
-      recognition = null
+    recognition = null
+    if (_manualStop || event.error === 'aborted' || event.error === 'no-speech') {
       onEnd?.()
       return
     }
