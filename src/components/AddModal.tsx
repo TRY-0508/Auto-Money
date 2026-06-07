@@ -128,7 +128,7 @@ export default function AddModal({ open, onClose }: Props) {
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" onClick={handleClose}>
+      <div className="fixed inset-0 z-[60] flex items-end md:items-center justify-center" onClick={handleClose}>
       <div className="absolute inset-0 bg-black/40" />
       <div className="relative bg-white dark:bg-gray-900 rounded-t-3xl md:rounded-3xl w-full md:max-w-md max-h-[85vh] md:max-h-[90vh] flex flex-col shadow-xl slide-up" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex-shrink-0">
@@ -136,7 +136,7 @@ export default function AddModal({ open, onClose }: Props) {
           <button onClick={handleClose} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
         </div>
 
-        <div className="p-5 overflow-y-auto flex-1">
+        <div className="p-5 overflow-y-auto flex-1 pb-24 md:pb-5">
           {error && <div className="mb-4 p-3 rounded-2xl bg-red-50 dark:bg-red-900/20 text-red-500 text-sm flex items-center gap-2"><AlertTriangle size={14} />{error}<button onClick={() => setError('')} className="ml-auto text-xs underline">关闭</button></div>}
 
           {step === 'input' && (
