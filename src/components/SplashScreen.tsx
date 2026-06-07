@@ -99,7 +99,7 @@ export default function SplashScreen({ onEnter }: Props) {
   }, [])
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-gradient-to-br from-violet-600 via-purple-600 to-fuchsia-500 overflow-hidden">
+    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-gradient-to-br from-amber-500 via-amber-600 to-orange-600 overflow-hidden">
       {/* Physics floating icons container */}
       <div ref={containerRef} className="absolute inset-0" />
 
@@ -116,7 +116,7 @@ export default function SplashScreen({ onEnter }: Props) {
         <h1 className="text-4xl sm:text-5xl font-extrabold text-white mb-3 tracking-tight">心情收支簿</h1>
         <p className="text-white/70 text-sm sm:text-base mb-2 font-medium">记录每一笔 · 感受每一天</p>
         <p className="text-white/50 text-xs max-w-xs mx-auto leading-relaxed">AI 驱动的消费心理助手，帮你看见情绪与金钱的隐秘关联</p>
-        <button onClick={onEnter} className="mt-10 px-10 py-4 bg-white text-violet-600 rounded-2xl text-lg font-bold shadow-2xl hover:scale-105 active:scale-95 transition-all duration-200 halo-pulse">开始使用</button>
+        <button onClick={onEnter} className="mt-10 px-10 py-4 bg-white text-amber-600 rounded-2xl text-lg font-bold shadow-2xl hover:scale-105 active:scale-95 transition-all duration-200 halo-pulse">开始使用</button>
         <p className="text-white/30 text-xs mt-6">数据完全存储在本地 · 无需注册</p>
       </div>
     </div>

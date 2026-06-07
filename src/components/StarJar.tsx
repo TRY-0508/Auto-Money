@@ -126,7 +126,7 @@ export default function StarJar({ starCount, targetAmount, currentAmount, color,
       </div>
 
       {/* Percent label */}
-      <p className="text-center text-xs text-muted">{Math.round(fillPercent)}% 达成 {fillPercent >= 100 && <span className="text-violet-500 font-bold bounce-in">!</span>}</p>
+      <p className="text-center text-xs text-muted">{Math.round(fillPercent)}% 达成 {fillPercent >= 100 && <span className="text-amber-600 font-bold bounce-in">!</span>}</p>
 
       {/* Popup */}
       <Popup open={!!selected} onClose={() => setSelected(null)}>

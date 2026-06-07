@@ -25,7 +25,7 @@ function CalendarHeatmap({ transactions, yearMonth, selectedDay, onSelectDay, on
   const tr=useRef(0)
   return (
     <div className="card p-4" onTouchStart={e=>{tr.current=e.touches[0].clientX}} onTouchEnd={e=>{const d=tr.current-e.changedTouches[0].clientX;if(Math.abs(d)>60)d>0?nx():pv()}}>
-      <div className="flex items-center justify-between mb-2"><button onClick={pv} className="p-1 text-gray-400 hover:text-violet-500 text-lg">‹</button><h3 className="text-sm font-semibold">月历</h3><button onClick={nx} className="p-1 text-gray-400 hover:text-violet-500 text-lg">›</button></div>
+      <div className="flex items-center justify-between mb-2"><button onClick={pv} className="p-1 text-gray-400 hover:text-amber-500 text-lg">‹</button><h3 className="text-sm font-semibold">月历</h3><button onClick={nx} className="p-1 text-gray-400 hover:text-amber-500 text-lg">›</button></div>
       <div className="grid grid-cols-7 gap-1 mb-1">{['日','一','二','三','四','五','六'].map(d=><div key={d} className="text-center text-[10px] text-gray-400 font-medium">{d}</div>)}</div>
       {wks.map((w,wi)=>(
         <div key={wi} className="grid grid-cols-7 gap-1 mb-1">
@@ -34,13 +34,13 @@ function CalendarHeatmap({ transactions, yearMonth, selectedDay, onSelectDay, on
             const ds=`${yearMonth}-${String(day).padStart(2,'0')}`
             const sel=selectedDay===ds
             const c=cl(day,ds)
-            const ring=sel?'ring-2 ring-violet-500 ring-offset-2 scale-110':'hover:scale-105'
-            const tRing=ds===today&&!sel?'ring-1 ring-violet-400/50':''
+            const ring=sel?'ring-2 ring-amber-500 ring-offset-2 scale-110':'hover:scale-105'
+            const tRing=ds===today&&!sel?'ring-1 ring-amber-400/50':''
             return<button key={di} onClick={()=>onSelectDay(sel?null:ds)} className={`aspect-square rounded-lg flex items-center justify-center text-[11px] font-medium transition-all ${c} ${ring} ${tRing}`}>{day}</button>
           })}
         </div>
       ))}
-      <div className="flex items-center justify-center gap-2 mt-2 text-[10px] text-gray-400"><span>少</span><div className="w-3 h-3 rounded-sm bg-gray-100 dark:bg-gray-800"/><div className="w-3 h-3 rounded-sm bg-yellow-200/80 dark:bg-yellow-700/80"/><div className="w-3 h-3 rounded-sm bg-orange-300/80 dark:bg-orange-600/80"/><div className="w-3 h-3 rounded-sm bg-red-400/80 dark:bg-red-600/80"/><span>多</span>{selectedDay&&<button onClick={()=>onSelectDay(null)} className="ml-auto text-violet-500 font-medium">清除</button>}</div>
+      <div className="flex items-center justify-center gap-2 mt-2 text-[10px] text-gray-400"><span>少</span><div className="w-3 h-3 rounded-sm bg-gray-100 dark:bg-gray-800"/><div className="w-3 h-3 rounded-sm bg-yellow-200/80 dark:bg-yellow-700/80"/><div className="w-3 h-3 rounded-sm bg-orange-300/80 dark:bg-orange-600/80"/><div className="w-3 h-3 rounded-sm bg-red-400/80 dark:bg-red-600/80"/><span>多</span>{selectedDay&&<button onClick={()=>onSelectDay(null)} className="ml-auto text-amber-500 font-medium">清除</button>}</div>
     </div>
   )
 }
@@ -107,13 +107,13 @@ export default function Dashboard() {
 
       {txs.length===0?(
         <div className="card p-10 text-center">
-          <EmptyState icon={<BarChart3 size={48} strokeWidth={1.2} className="text-violet-400"/>} title="开始认识自己" description="记下第一笔账，同步记录心情" action={{label:'记一笔',onClick:()=>setShowAdd(true)}}/>
+          <EmptyState icon={<BarChart3 size={48} strokeWidth={1.2} className="text-amber-400"/>} title="开始认识自己" description="记下第一笔账，同步记录心情" action={{label:'记一笔',onClick:()=>setShowAdd(true)}}/>
         </div>
       ):(
         <>
           <div className="bento stagger">
             <div className="card card-hover tilt bento-col-2">
-              <div className="card-header"><PieChart size={18} strokeWidth={1.8} className="text-violet-500"/>心情统计</div>
+              <div className="card-header"><PieChart size={18} strokeWidth={1.8} className="text-amber-500"/>心情统计</div>
               <div className="card-body">
                 {moodStats.length>0?(
                   <div className="space-y-4">
@@ -135,7 +135,7 @@ export default function Dashboard() {
             </div>
 
             <div className="card card-hover tilt bento-col-2">
-              <div className="card-header"><List size={18} strokeWidth={1.8} className="text-violet-500"/>支出分类</div>
+              <div className="card-header"><List size={18} strokeWidth={1.8} className="text-amber-500"/>支出分类</div>
               <div className="card-body">
                 {expBrk.length>0?(
                   <div className="flex items-center gap-4">
@@ -148,7 +148,7 @@ export default function Dashboard() {
           </div>
 
           <div className="card card-hover overflow-hidden">
-            <div className="card-header"><CalendarIcon size={18} strokeWidth={1.8} className="text-violet-500"/>心情时间线</div>
+            <div className="card-header"><CalendarIcon size={18} strokeWidth={1.8} className="text-amber-500"/>心情时间线</div>
             <div className="card-body overflow-x-auto scrollbar-hide">
               <div className="flex gap-3 pb-1">{moodTimeline.map(d=>{const MI=d.moodVal?MOOD_ICON_MAP[d.moodVal]:null;const color=d.moodVal?MOOD_COLOR_MAP[d.moodVal]:null;return(
                 <div key={d.date} className="flex flex-col items-center gap-1.5 flex-shrink-0 w-11">
@@ -162,12 +162,12 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <button onClick={()=>setShowCalendar(!showCalendar)} className="text-xs font-medium text-violet-500 hover:text-violet-600 w-full text-center">{showCalendar?'收起月历 ▲':'展开月历 ▼'}</button>
+          <button onClick={()=>setShowCalendar(!showCalendar)} className="text-xs font-medium text-amber-500 hover:text-amber-600 w-full text-center">{showCalendar?'收起月历 ▲':'展开月历 ▼'}</button>
           {showCalendar&&<CalendarHeatmap transactions={calTxs} yearMonth={calendarMonth} selectedDay={selectedDay} onSelectDay={setSelectedDay} onMonthChange={setCalendarMonth}/>}
 
           <div className="flex flex-wrap items-center gap-1.5">
             <div className="flex rounded-full border border-gray-200/40 overflow-hidden bg-white/40 backdrop-blur">
-              {(['all','expense','income']as FilterType[]).map(t=><button key={t} onClick={()=>setFilterType(t)} className={`px-3 py-1.5 text-xs font-medium transition-all ${filterType===t?'bg-violet-500 text-white shadow-sm':'text-gray-500 hover:bg-white/60'}`}>{t==='all'?'全部':t==='expense'?'支出':'收入'}</button>)}
+              {(['all','expense','income']as FilterType[]).map(t=><button key={t} onClick={()=>setFilterType(t)} className={`px-3 py-1.5 text-xs font-medium transition-all ${filterType===t?'bg-amber-500 text-white shadow-sm':'text-gray-500 hover:bg-white/60'}`}>{t==='all'?'全部':t==='expense'?'支出':'收入'}</button>)}
             </div>
             <select value={filterMood} onChange={e=>setFilterMood(e.target.value)} className="px-2 py-1.5 rounded-full border border-gray-200/40 bg-white/40 backdrop-blur text-xs font-medium"><option value="">全部心情</option>{MOOD_LIST.map(m=><option key={m.value} value={m.value}>{m.label}</option>)}</select>
             <select value={filterCategory} onChange={e=>setFilterCategory(e.target.value)} className="px-2 py-1.5 rounded-full border border-gray-200/40 bg-white/40 backdrop-blur text-xs font-medium"><option value="">全部分类</option>{categories.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select>
@@ -206,10 +206,10 @@ export default function Dashboard() {
             <div className="space-y-3">
               <div className="flex gap-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-2xl">{['expense','income'].map(t=><button key={t} onClick={()=>setEType(t as any)} className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${eType===t?(t==='expense'?'bg-red-400 text-white shadow-sm':'bg-emerald-400 text-white shadow-sm'):'text-gray-500'}`}>{t==='expense'?'支出':'收入'}</button>)}</div>
               <input type="number" value={eAmt} onChange={e=>setEAmt(e.target.value)} placeholder="0.00" className="input input-lg"/>
-              <div className="grid grid-cols-4 gap-2">{curCats.map(c=>{const Icon=CATEGORY_ICON_MAP[c.icon]||MoreHorizontal;return<button key={c.id} onClick={()=>setECat(c.id)} className={`flex flex-col items-center gap-1 p-2.5 rounded-2xl text-xs transition-all ${eCat===c.id?'bg-violet-50 dark:bg-violet-900/30 ring-2 ring-violet-400 scale-105 shadow-sm':'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100'}`}><Icon size={20} strokeWidth={1.8} className={eCat===c.id?'text-violet-500':'text-gray-400'}/><span className="font-medium">{c.name}</span></button>})}</div>
+              <div className="grid grid-cols-4 gap-2">{curCats.map(c=>{const Icon=CATEGORY_ICON_MAP[c.icon]||MoreHorizontal;return<button key={c.id} onClick={()=>setECat(c.id)} className={`flex flex-col items-center gap-1 p-2.5 rounded-2xl text-xs transition-all ${eCat===c.id?'bg-amber-50 dark:bg-amber-900/30 ring-2 ring-amber-400 scale-105 shadow-sm':'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100'}`}><Icon size={20} strokeWidth={1.8} className={eCat===c.id?'text-amber-500':'text-gray-400'}/><span className="font-medium">{c.name}</span></button>})}</div>
               <input type="date" value={eDate} onChange={e=>setEDate(e.target.value)} className="input"/>
               <input type="text" value={eDesc} onChange={e=>setEDesc(e.target.value)} placeholder="备注" className="input"/>
-              <div><p className="label mb-2">心情</p><div className="flex flex-wrap gap-1.5">{MOOD_LIST.map(m=>{const MI=m.Icon;return<button key={m.value} onClick={()=>setEMood(eMood===m.value?'':m.value)} className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-sm font-medium transition-all ${eMood===m.value?'bg-violet-50 dark:bg-violet-900/30 ring-2 ring-violet-400 scale-105 shadow-sm':'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100'}`}><MI size={15} strokeWidth={1.8}/><span>{m.label}</span></button>})}</div></div>
+              <div><p className="label mb-2">心情</p><div className="flex flex-wrap gap-1.5">{MOOD_LIST.map(m=>{const MI=m.Icon;return<button key={m.value} onClick={()=>setEMood(eMood===m.value?'':m.value)} className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-sm font-medium transition-all ${eMood===m.value?'bg-amber-50 dark:bg-amber-900/30 ring-2 ring-amber-400 scale-105 shadow-sm':'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100'}`}><MI size={15} strokeWidth={1.8}/><span>{m.label}</span></button>})}</div></div>
               {projects.length>0&&<select value={eProj} onChange={e=>setEProj(e.target.value)} className="input"><option value="">分账单（可选）</option>{projects.map(p=><option key={p.id} value={p.id}>{p.icon} {p.name}</option>)}</select>}
               <div className="flex gap-2 pt-1"><button onClick={()=>setEditing(null)} className="btn btn-secondary flex-1">取消</button><button onClick={hSave} className="btn btn-primary flex-1"><Check size={16}/>保存</button></div>
             </div>

@@ -230,7 +230,7 @@ export default function JarPage() {
         ]).map(t => (
           <button key={t.key} onClick={() => switchTab(t.key)}
             className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 ${
-              tab === t.key ? 'bg-white dark:bg-gray-700 shadow-sm text-violet-600 dark:text-violet-400 scale-[1.02]' : 'text-gray-500 hover:text-gray-700'
+              tab === t.key ? 'bg-white dark:bg-gray-700 shadow-sm text-amber-600 dark:text-amber-400 scale-[1.02]' : 'text-gray-500 hover:text-gray-700'
             }`}>
             <t.Icon size={16} strokeWidth={1.8} />{t.label}
           </button>
@@ -246,7 +246,7 @@ export default function JarPage() {
         <div className="space-y-4">
           {!showNewGoal ? (
             <button onClick={() => setShowNewGoal(true)}
-              className="w-full border-2 border-dashed border-violet-300 dark:border-violet-700 rounded-2xl p-4 text-violet-400 hover:border-violet-400 hover:text-violet-500 transition-all flex items-center justify-center gap-2">
+              className="w-full border-2 border-dashed border-amber-300 dark:border-amber-700 rounded-2xl p-4 text-amber-400 hover:border-amber-400 hover:text-amber-500 transition-all flex items-center justify-center gap-2">
               <Plus size={18} />创建心愿
             </button>
           ) : (
@@ -268,7 +268,7 @@ export default function JarPage() {
 
           {goals.length === 0 ? (
             <div className="card p-10 text-center">
-              <Target size={48} strokeWidth={1} className="text-violet-400 mx-auto mb-4 animate-[float_3s_ease-in-out_infinite]" />
+              <Target size={48} strokeWidth={1} className="text-amber-400 mx-auto mb-4 animate-[float_3s_ease-in-out_infinite]" />
               <p className="text-muted text-sm">设定一个心愿，用每次守住的光来填满它</p>
             </div>
           ) : (
@@ -372,7 +372,7 @@ export default function JarPage() {
                     <p className="text-xs text-muted">
                       {evt.amount > 0 && formatAmount(evt.amount) + ' · '}
                       渴望 {evt.desireLevel}/5 · 必要 {evt.necessityLevel}/5
-                      {evt.aiAnalysis && <span className="ml-1 text-violet-500">AI 已分析</span>}
+                      {evt.aiAnalysis && <span className="ml-1 text-amber-500">AI 已分析</span>}
                     </p>
                   </div>
                   <button onClick={() => { setReviewEvent(evt); setReviewDesire(evt.desireLevel); setReviewNote(''); setShowPurchaseOptions(false) }}
@@ -385,7 +385,7 @@ export default function JarPage() {
 
           {coolingEvents.length === 0 && pendingReviewEvents.length === 0 && (
             <div className="card p-10 text-center">
-              <ShieldCheck size={48} strokeWidth={1} className="text-violet-400 mx-auto mb-4 animate-[float_3s_ease-in-out_infinite]" />
+              <ShieldCheck size={48} strokeWidth={1} className="text-amber-400 mx-auto mb-4 animate-[float_3s_ease-in-out_infinite]" />
               <p className="text-muted text-sm">遇到犹豫的消费？先冷却一下</p>
             </div>
           )}
@@ -410,29 +410,29 @@ export default function JarPage() {
               {!evtAIResult ? (
                 <button onClick={handleAIAnalyze} disabled={!evtDesc.trim() || evtAILoading}
                   className={`w-full py-3 rounded-2xl text-sm font-medium transition-all flex items-center justify-center gap-2 ${
-                    evtAILoading ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-400' : 'bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 hover:bg-violet-100 dark:hover:bg-violet-900/40'
+                    evtAILoading ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-400' : 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/40'
                   } disabled:opacity-50`}>
                   <Zap size={16} className={evtAILoading ? 'animate-pulse' : ''} />
                   {evtAILoading ? '分析中...' : 'AI 心理分析'}
                 </button>
               ) : (
-                <div className="bg-violet-50/50 dark:bg-violet-900/10 rounded-2xl p-3.5 space-y-3 text-sm">
+                <div className="bg-amber-50/50 dark:bg-amber-900/10 rounded-2xl p-3.5 space-y-3 text-sm">
                   <div className="flex items-center gap-2">
-                    <Zap size={14} className="text-violet-500" />
-                    <span className="text-xs text-violet-500 font-medium">AI 分析</span>
+                    <Zap size={14} className="text-amber-500" />
+                    <span className="text-xs text-amber-500 font-medium">AI 分析</span>
                     <span className="text-xs text-muted ml-auto">{Math.round(evtAIResult.confidence * 100)}%</span>
                   </div>
                   <p className="text-muted leading-relaxed">{evtAIResult.summary}</p>
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div className="bg-white/60 dark:bg-gray-800/60 rounded-xl p-2">
                       <span className="text-muted">类型</span>
-                      <p className="font-bold text-violet-600 dark:text-violet-400">
+                      <p className="font-bold text-amber-600 dark:text-amber-400">
                         {evtAIResult.impulseType === 'emotional' ? '情绪消费' : evtAIResult.impulseType === 'impulsive' ? '冲动消费' : '不确定'}
                       </p>
                     </div>
                     <div className="bg-white/60 dark:bg-gray-800/60 rounded-xl p-2">
                       <span className="text-muted">建议冷却</span>
-                      <p className="font-bold text-violet-600 dark:text-violet-400">{cooldownLabel(evtAIResult.suggestedCooldown)}</p>
+                      <p className="font-bold text-amber-600 dark:text-amber-400">{cooldownLabel(evtAIResult.suggestedCooldown)}</p>
                     </div>
                     <div className="bg-white/60 dark:bg-gray-800/60 rounded-xl p-2">
                       <span className="text-muted">渴望度</span>
@@ -462,7 +462,7 @@ export default function JarPage() {
                     </div>
                   )}
                   <button onClick={() => { setEvtAIResult(null); setEvtAIError('') }}
-                    className="text-xs text-violet-500 hover:text-violet-600">重新分析</button>
+                    className="text-xs text-amber-500 hover:text-amber-600">重新分析</button>
                 </div>
               )}
 
@@ -498,7 +498,7 @@ export default function JarPage() {
               <p className="text-xs text-muted mt-1">守住率</p>
             </div>
             <div className="card p-3 text-center">
-              <p className="text-2xl font-bold text-violet-500">{formatAmount(totalResistedAmount)}</p>
+              <p className="text-2xl font-bold text-amber-500">{formatAmount(totalResistedAmount)}</p>
               <p className="text-xs text-muted mt-1">守住金额</p>
             </div>
             <div className="card p-3 text-center">
@@ -515,7 +515,7 @@ export default function JarPage() {
             ]).map(f => (
               <button key={f.key} onClick={() => setHistoryFilter(f.key)}
                 className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
-                  historyFilter === f.key ? 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400 font-medium' : 'bg-gray-50 text-gray-500 dark:bg-gray-800'
+                  historyFilter === f.key ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 font-medium' : 'bg-gray-50 text-gray-500 dark:bg-gray-800'
                 }`}>{f.label}</button>
             ))}
           </div>
@@ -573,8 +573,8 @@ export default function JarPage() {
             {!showPurchaseOptions ? (
               <>
                 <div className="text-center">
-                  <div className="w-16 h-16 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center mx-auto mb-3">
-                    <ShieldCheck size={32} className="text-violet-500" />
+                  <div className="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mx-auto mb-3">
+                    <ShieldCheck size={32} className="text-amber-500" />
                   </div>
                   <h2 className="h2">冷静之后，你的决定是？</h2>
                 </div>
@@ -600,10 +600,10 @@ export default function JarPage() {
                 <div>
                   <div className="flex justify-between text-sm mb-1">
                     <span className="text-muted">现在的渴望程度</span>
-                    <span className="font-bold text-violet-500">{reviewDesire}/5</span>
+                    <span className="font-bold text-amber-500">{reviewDesire}/5</span>
                   </div>
                   <input type="range" min="1" max="5" value={reviewDesire} onChange={e => setReviewDesire(parseInt(e.target.value))}
-                    className="w-full accent-violet-500" />
+                    className="w-full accent-amber-500" />
                 </div>
 
                 <textarea value={reviewNote} onChange={e => setReviewNote(e.target.value)}
@@ -616,7 +616,7 @@ export default function JarPage() {
                   <button onClick={() => setShowPurchaseOptions(true)} className="btn btn-secondary w-full text-base py-3">
                     <Flame size={18} />还是想要
                   </button>
-                  <button onClick={handleRetryCooldown} className="w-full text-sm text-muted hover:text-violet-500 py-2 transition-colors">
+                  <button onClick={handleRetryCooldown} className="w-full text-sm text-muted hover:text-amber-500 py-2 transition-colors">
                     再冷静一下
                   </button>
                 </div>
@@ -639,7 +639,7 @@ export default function JarPage() {
                     <Timer size={18} />再冷静一下
                   </button>
                   <button onClick={() => setShowPurchaseOptions(false)}
-                    className="w-full text-sm text-muted hover:text-violet-500 py-2 transition-colors">返回</button>
+                    className="w-full text-sm text-muted hover:text-amber-500 py-2 transition-colors">返回</button>
                 </div>
               </>
             )}
