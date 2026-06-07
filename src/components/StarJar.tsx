@@ -1,132 +1,90 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
+import { Star } from '@/lib/icons'
 
 interface Props {
   starCount: number
-  targetStars: number
+  targetAmount: number
+  currentAmount: number
 }
 
-export default function StarJar({ starCount, targetStars }: Props) {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
+export default function StarJar({ starCount, targetAmount, currentAmount }: Props) {
   const [shake, setShake] = useState(false)
-  const animRef = useRef(0)
-  const prevStars = useRef(starCount)
+  const [prevStars, setPrevStars] = useState(starCount)
+  const fillPercent = targetAmount > 0 ? Math.min((currentAmount / targetAmount) * 100, 100) : 0
 
   useEffect(() => {
-    if (starCount > prevStars.current) { setShake(true); setTimeout(() => setShake(false), 600) }
-    prevStars.current = starCount
-  }, [starCount])
+    if (starCount > prevStars) { setShake(true); setTimeout(() => setShake(false), 600) }
+    setPrevStars(starCount)
+  }, [starCount, prevStars])
 
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
-    const w = canvas.width, h = canvas.height
-    let tick = 0
-
-    const draw = () => {
-      tick++
-      ctx.clearRect(0, 0, w, h)
-
-      const sx = Math.sin(tick * 0.03) * (shake ? 6 : 1)
-      ctx.save()
-      ctx.translate(sx, 0)
-
-      const jx = w / 2, jy = h * 0.55, jw = w * 0.38, jh = h * 0.6
-
-      // Shadow
-      ctx.fillStyle = 'rgba(139,92,246,0.06)'
-      ctx.beginPath(); ctx.ellipse(jx + 4, jy + jh * 0.52, jw * 0.48, 6, 0, 0, Math.PI * 2); ctx.fill()
-
-      // Body
-      ctx.beginPath()
-      ctx.moveTo(jx - jw * 0.38, jy - jh * 0.48)
-      ctx.lineTo(jx + jw * 0.38, jy - jh * 0.48)
-      ctx.lineTo(jx + jw * 0.52, jy + jh * 0.42)
-      ctx.quadraticCurveTo(jx + jw * 0.52, jy + jh * 0.5, jx + jw * 0.46, jy + jh * 0.48)
-      ctx.lineTo(jx - jw * 0.46, jy + jh * 0.48)
-      ctx.quadraticCurveTo(jx - jw * 0.52, jy + jh * 0.5, jx - jw * 0.52, jy + jh * 0.42)
-      ctx.closePath()
-
-      const grad = ctx.createLinearGradient(0, 0, w * 0.3, h * 0.3)
-      grad.addColorStop(0, 'rgba(255,255,255,0.25)')
-      grad.addColorStop(0.5, 'rgba(255,255,255,0.05)')
-      grad.addColorStop(1, 'rgba(255,255,255,0.03)')
-      ctx.fillStyle = grad; ctx.fill()
-      ctx.strokeStyle = 'rgba(139,92,246,0.35)'; ctx.lineWidth = 2.5; ctx.stroke()
-
-      // Rim
-      ctx.beginPath()
-      ctx.ellipse(jx, jy - jh * 0.48, jw * 0.38, jw * 0.07, 0, 0, Math.PI * 2)
-      ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.fill()
-      ctx.strokeStyle = 'rgba(139,92,246,0.4)'; ctx.lineWidth = 2.5; ctx.stroke()
-
-      // Stars inside jar
-      if (starCount > 0) {
-        ctx.save()
-        ctx.beginPath()
-        ctx.moveTo(jx - jw * 0.38, jy - jh * 0.48)
-        ctx.lineTo(jx + jw * 0.38, jy - jh * 0.48)
-        ctx.lineTo(jx + jw * 0.52, jy + jh * 0.42)
-        ctx.quadraticCurveTo(jx + jw * 0.52, jy + jh * 0.5, jx + jw * 0.46, jy + jh * 0.48)
-        ctx.lineTo(jx - jw * 0.46, jy + jh * 0.48)
-        ctx.quadraticCurveTo(jx - jw * 0.52, jy + jh * 0.5, jx - jw * 0.52, jy + jh * 0.42)
-        ctx.closePath(); ctx.clip()
-
-        // Golden glow fill
-        const fillRatio = Math.min(starCount / (targetStars || 1), 0.85)
-        const fillH = fillRatio * jh * 0.45
-        if (fillH > 0) {
-          const fg = ctx.createLinearGradient(0, jy + jh * 0.45, 0, jy + jh * 0.45 - fillH)
-          fg.addColorStop(0, 'rgba(250,204,21,0.35)')
-          fg.addColorStop(0.4, 'rgba(253,224,71,0.5)')
-          fg.addColorStop(1, 'rgba(254,240,138,0.65)')
-          ctx.fillStyle = fg
-          ctx.fillRect(jx - jw * 0.6, jy + jh * 0.48 - fillH, jw * 1.2, fillH + 2)
-        }
-
-        // Draw stars
-        const displayCount = Math.min(starCount, 50)
-        for (let i = 0; i < displayCount; i++) {
-          const seed = i * 137.508
-          const sx = jx + (Math.sin(seed) * jw * 0.35)
-          const sy = (jy + jh * 0.38) - ((i / displayCount) * jh * 0.38) + (Math.cos(seed * 2.3) * 6)
-          const sr = 5 + (Math.sin(i * 0.7) * 3)
-          const alpha = 0.5 + (i / displayCount) * 0.5
-          drawStar(ctx, sx, sy, sr, `rgba(251,191,36,${alpha})`)
-        }
-
-        ctx.restore()
-      }
-
-      ctx.restore()
-      animRef.current = requestAnimationFrame(draw)
-    }
-
-    draw()
-    return () => cancelAnimationFrame(animRef.current)
-  }, [starCount, targetStars, shake])
+  const displayStars = Math.min(starCount, 30)
 
   return (
-    <div className="flex flex-col items-center">
-      <canvas ref={canvasRef} width={260} height={320} className="w-64 h-80 mx-auto" />
+    <div className="flex flex-col items-center gap-2">
+      {/* Jar */}
+      <div className={`relative ${shake ? 'animate-[bounce_0.5s_ease-out]' : ''}`}>
+        {/* Jar body */}
+        <div className="relative w-40 h-52 rounded-b-[4rem] rounded-t-[2.5rem] border-[3px] border-violet-300/60 dark:border-violet-600/40 bg-white/10 dark:bg-gray-900/20 overflow-hidden backdrop-blur-sm shadow-[0_4px_24px_rgba(139,92,246,0.1)]">
+          {/* Golden fill */}
+          <div
+            className="absolute bottom-0 left-0 right-0 transition-all duration-700 ease-out"
+            style={{ height: `${fillPercent * 0.7}%` }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-t from-amber-300/60 via-yellow-200/50 to-yellow-100/40" />
+          </div>
+
+          {/* Stars inside jar */}
+          {Array.from({ length: displayStars }).map((_, i) => {
+            const angle = (i * 137.508) % 360
+            const radius = 10 + (i % 25)
+            const bottom = 5 + ((i / displayStars) * 60) + (i % 15)
+            const left = 50 + Math.sin(angle * Math.PI / 180) * (30 + (i % 10))
+            const size = 10 + (i % 8)
+            const alpha = 0.4 + (i / displayStars) * 0.6
+            const hue = 40 + (i % 15)
+            return (
+              <div
+                key={i}
+                className="absolute transition-all"
+                style={{
+                  bottom: `${bottom}%`,
+                  left: `${left}%`,
+                  animation: `float ${2.5 + (i % 2) * 1.5}s ease-in-out infinite`,
+                  animationDelay: `${i * 0.1}s`,
+                  opacity: alpha,
+                }}
+              >
+                <svg width={size} height={size} viewBox="0 0 24 24" fill={`hsl(${hue}, 90%, 55%)`} stroke={`hsl(${hue}, 80%, 65%)`} strokeWidth="0.5">
+                  <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+                </svg>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Jar rim */}
+        <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-44 h-7 rounded-full border-[3px] border-violet-300/60 dark:border-violet-600/40 bg-white/20 dark:bg-gray-800/30 backdrop-blur-sm" />
+
+        {/* Lid handle */}
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-8 h-4 rounded-t-full border-[3px] border-b-0 border-violet-300/60 dark:border-violet-600/40" />
+      </div>
+
+      {/* Stats */}
+      <div className="text-center space-y-0.5">
+        <div className="flex items-center justify-center gap-1.5">
+          <Star size={16} className="text-amber-400" fill="#fbbf24" />
+          <span className="font-bold text-amber-500">{starCount}</span>
+          <span className="text-xs text-muted">颗星星</span>
+        </div>
+        <p className="text-xs text-muted">
+          已攒 ¥{currentAmount.toFixed(0)} / ¥{targetAmount.toFixed(0)}
+          {fillPercent >= 100 && <span className="ml-1 font-bold text-violet-600 bounce-in">目标达成!</span>}
+        </p>
+        {/* Mini progress bar */}
+        <div className="w-32 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full mx-auto overflow-hidden">
+          <div className="h-full rounded-full bg-gradient-to-r from-amber-400 to-amber-500 transition-all duration-500" style={{ width: `${fillPercent}%` }} />
+        </div>
+      </div>
     </div>
   )
-}
-
-function drawStar(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, color: string) {
-  const spikes = 5, outer = r, inner = r * 0.35
-  let rot = Math.PI / 2 * 3
-  const step = Math.PI / spikes
-  ctx.beginPath()
-  ctx.moveTo(x, y - outer)
-  for (let i = 0; i < spikes; i++) {
-    ctx.lineTo(x + Math.cos(rot) * outer, y + Math.sin(rot) * outer)
-    rot += step
-    ctx.lineTo(x + Math.cos(rot) * inner, y + Math.sin(rot) * inner)
-    rot += step
-  }
-  ctx.closePath()
-  ctx.fillStyle = color
-  ctx.fill()
 }

@@ -68,8 +68,9 @@ export interface ParsedTransaction {
 export interface JarGoal {
   id: string
   name: string
-  targetStars: number
-  currentStars: number
+  targetAmount: number
+  currentAmount: number
+  starCount: number
   description: string
   color: string
   createdAt: number
