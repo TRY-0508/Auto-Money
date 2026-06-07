@@ -1,7 +1,7 @@
 import { useCategories } from '@/db/hooks'
 import { CATEGORY_ICON_MAP, MoreHorizontal } from '@/lib/icons'
 
-const ICON_COLORS = ['#f59e0b','#3b82f6','#ec4899','#8b5cf6','#10b981','#f43f5e','#06b6d4','#84cc16','#f97316','#6366f1','#14b8a6','#eab308']
+const ICON_COLORS = ['#f59e0b','#3b82f6','#10b981','#f43f5e','#ec4899','#06b6d4','#84cc16','#f97316','#d97706','#14b8a6','#eab308','#78716c']
 
 interface CategoryIconProps {
   categoryId: string

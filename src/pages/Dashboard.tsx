@@ -139,8 +139,20 @@ export default function Dashboard() {
               <div className="card-body">
                 {expBrk.length>0?(
                   <div className="flex items-center gap-4">
-                    <div className="w-28 h-28"><ResponsiveContainer><RPie><Pie data={expBrk} cx="50%" cy="50%" innerRadius={26} outerRadius={46} paddingAngle={3} dataKey="amount">{expBrk.map((e,i)=><Cell key={e.categoryId} fill={CHART_COLORS[i%CHART_COLORS.length]} strokeWidth={0}/>)}</Pie></RPie></ResponsiveContainer></div>
-                    <div className="flex-1 space-y-2">{expBrk.slice(0,5).map(item=><div key={item.categoryId} className="flex items-center gap-2 text-xs"><CategoryIcon categoryId={item.categoryId} size={14}/><span className="flex-1 font-medium truncate">{item.categoryName}</span><span className="text-gray-400 amount">{item.percentage}%</span></div>)}</div>
+                    <div className="w-28 h-28 flex-shrink-0"><ResponsiveContainer><RPie><Pie data={expBrk} cx="50%" cy="50%" innerRadius={26} outerRadius={46} paddingAngle={3} dataKey="amount">{expBrk.map((e,i)=><Cell key={e.categoryId} fill={CHART_COLORS[i%CHART_COLORS.length]} strokeWidth={0}/>)}</Pie></RPie></ResponsiveContainer></div>
+                    <div className="flex-1 space-y-1.5 min-w-0">{expBrk.slice(0,6).map((item,i)=>{
+                      const dotColor = CHART_COLORS[i % CHART_COLORS.length]
+                      const cat = categories.find(c => c.id === item.categoryId)
+                      const Icon = cat ? (CATEGORY_ICON_MAP[cat.icon] || MoreHorizontal) : MoreHorizontal
+                      return (
+                        <div key={item.categoryId} className="flex items-center gap-2 text-xs group cursor-default">
+                          <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: dotColor }} />
+                          {cat && <Icon size={14} strokeWidth={1.8} className="text-gray-400 flex-shrink-0" />}
+                          <span className="flex-1 font-medium truncate">{item.categoryName}</span>
+                          <span className="text-muted amount text-[11px]">{item.percentage}%</span>
+                        </div>
+                      )
+                    })}</div>
                   </div>
                 ):<p className="body-sm text-gray-400 text-center py-6">暂无支出</p>}
               </div>

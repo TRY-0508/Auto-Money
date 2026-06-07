@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import { useTransactions, useCategories, useProjects } from '@/db/hooks'
 import { parseTransaction } from '@/services/llm'
 import { startRecognition, isSpeechSupported, stopRecognition } from '@/services/speech'
@@ -22,6 +22,7 @@ export default function AddModal({ open, onClose }: Props) {
   const [step, setStep] = useState<Step>('input')
   const [voiceText, setVoiceText] = useState('')
   const [voiceListening, setVoiceListening] = useState(false)
+  const voiceStartRef = useRef(0)
 
   const [manualType, setManualType] = useState<'expense' | 'income'>('expense')
   const [manualAmount, setManualAmount] = useState('')
@@ -70,11 +71,14 @@ export default function AddModal({ open, onClose }: Props) {
 
   const handleVoiceStart = () => {
     if (!isSpeechSupported()) { setError('请使用 Chrome 或 Edge'); return }
+    voiceStartRef.current = Date.now()
     setVoiceListening(true); setVoiceText(''); setError('')
     startRecognition(t => setVoiceText(t), e => { setVoiceListening(false); setError(e) }, () => setVoiceListening(false))
   }
 
   const handleVoiceEnd = () => {
+    // Require minimum hold of 300ms to avoid premature stop
+    if (Date.now() - voiceStartRef.current < 300) return
     stopRecognition(); setVoiceListening(false)
     if (voiceText.trim()) {
       setTextInput(voiceText.trim()); setLoading(true)
@@ -118,13 +122,13 @@ export default function AddModal({ open, onClose }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" onClick={handleClose}>
       <div className="absolute inset-0 bg-black/40" />
-      <div className="relative bg-white dark:bg-gray-900 rounded-t-3xl md:rounded-3xl w-full md:max-w-md max-h-[92vh] overflow-y-auto shadow-xl slide-up" onClick={e => e.stopPropagation()}>
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800 sticky top-0 bg-white dark:bg-gray-900 z-10">
+      <div className="relative bg-white dark:bg-gray-900 rounded-t-3xl md:rounded-3xl w-full md:max-w-md max-h-[85vh] md:max-h-[90vh] flex flex-col shadow-xl slide-up" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex-shrink-0">
           <h2 className="font-semibold">{step === 'input' ? '记一笔' : step === 'parsed' ? 'AI 解析' : '确认记录'}</h2>
           <button onClick={handleClose} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
         </div>
 
-        <div className="p-5">
+        <div className="p-5 overflow-y-auto flex-1">
           {error && <div className="mb-4 p-3 rounded-2xl bg-red-50 dark:bg-red-900/20 text-red-500 text-sm flex items-center gap-2"><AlertTriangle size={14} />{error}<button onClick={() => setError('')} className="ml-auto text-xs underline">关闭</button></div>}
 
           {step === 'input' && (

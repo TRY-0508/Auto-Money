@@ -50,6 +50,15 @@
 /* ── Base ── */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+/* WeChat & in-app browser SVG fix */
+svg { overflow: visible; shape-rendering: geometricPrecision; }
+@supports not (backdrop-filter: blur(1px)) {
+  .card { background: rgba(255,255,255,0.92); }
+  .dark .card { background: rgba(41,37,36,0.92); }
+  .glass-v2 { background: rgba(255,255,255,0.85); }
+  .dark .glass-v2 { background: rgba(41,37,36,0.85); }
+}
+
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
