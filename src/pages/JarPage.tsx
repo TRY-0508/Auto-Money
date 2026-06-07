@@ -410,35 +410,33 @@ export default function JarPage() {
               {!evtAIResult ? (
                 <button onClick={handleAIAnalyze} disabled={!evtDesc.trim() || evtAILoading}
                   className={`w-full py-3 rounded-2xl text-sm font-medium transition-all flex items-center justify-center gap-2 ${
-                    evtAILoading ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-400' : 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/40'
+                    evtAILoading ? 'bg-gray-100 dark:bg-gray-800 text-gray-400' : 'bg-gray-100 dark:bg-gray-800 text-amber-600 dark:text-amber-400 hover:bg-gray-200 dark:hover:bg-gray-700'
                   } disabled:opacity-50`}>
                   <Zap size={16} className={evtAILoading ? 'animate-pulse' : ''} />
                   {evtAILoading ? '分析中...' : 'AI 心理分析'}
                 </button>
               ) : (
-                <div className="bg-amber-50/50 dark:bg-amber-900/10 rounded-2xl p-3.5 space-y-3 text-sm">
+                <div className="bg-gray-50/80 dark:bg-gray-800/50 rounded-2xl p-3.5 space-y-3 text-sm border border-gray-100/60 dark:border-gray-700/30">
                   <div className="flex items-center gap-2">
                     <Zap size={14} className="text-amber-500" />
-                    <span className="text-xs text-amber-500 font-medium">AI 分析</span>
+                    <span className="text-xs text-amber-600 font-medium">AI 分析</span>
                     <span className="text-xs text-muted ml-auto">{Math.round(evtAIResult.confidence * 100)}%</span>
                   </div>
                   <p className="text-muted leading-relaxed">{evtAIResult.summary}</p>
                   <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div className="bg-white/60 dark:bg-gray-800/60 rounded-xl p-2">
+                    <div className="bg-white/70 dark:bg-gray-800/70 rounded-xl p-2">
                       <span className="text-muted">类型</span>
-                      <p className="font-bold text-amber-600 dark:text-amber-400">
-                        {evtAIResult.impulseType === 'emotional' ? '情绪消费' : evtAIResult.impulseType === 'impulsive' ? '冲动消费' : '不确定'}
-                      </p>
+                      <p className="font-bold text-amber-600">{evtAIResult.impulseType === 'emotional' ? '情绪消费' : evtAIResult.impulseType === 'impulsive' ? '冲动消费' : '不确定'}</p>
                     </div>
-                    <div className="bg-white/60 dark:bg-gray-800/60 rounded-xl p-2">
+                    <div className="bg-white/70 dark:bg-gray-800/70 rounded-xl p-2">
                       <span className="text-muted">建议冷却</span>
-                      <p className="font-bold text-amber-600 dark:text-amber-400">{cooldownLabel(evtAIResult.suggestedCooldown)}</p>
+                      <p className="font-bold text-teal-600 dark:text-teal-400">{cooldownLabel(evtAIResult.suggestedCooldown)}</p>
                     </div>
-                    <div className="bg-white/60 dark:bg-gray-800/60 rounded-xl p-2">
+                    <div className="bg-white/70 dark:bg-gray-800/70 rounded-xl p-2">
                       <span className="text-muted">渴望度</span>
                       <p className="font-bold text-amber-500">{evtAIResult.suggestedDesire}/5</p>
                     </div>
-                    <div className="bg-white/60 dark:bg-gray-800/60 rounded-xl p-2">
+                    <div className="bg-white/70 dark:bg-gray-800/70 rounded-xl p-2">
                       <span className="text-muted">必要性</span>
                       <p className="font-bold text-blue-500">{evtAIResult.suggestedNecessity}/5</p>
                     </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { MOOD_LIST, CAT_ICON_OPTIONS } from '@/lib/icons'
+import { MOOD_LIST, CAT_ICON_OPTIONS, Star } from '@/lib/icons'
 import { createRoot } from 'react-dom/client'
 
 interface Props { onEnter: () => void }
@@ -111,7 +111,7 @@ export default function SplashScreen({ onEnter }: Props) {
       {/* Content */}
       <div className={`relative z-10 text-center px-8 transition-all duration-1000 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
         <div className="w-24 h-24 rounded-3xl bg-white/15 backdrop-blur-sm flex items-center justify-center mx-auto mb-6 shadow-2xl bounce-in">
-          <span className="text-5xl">💜</span>
+          <Star size={48} strokeWidth={1.5} className="text-amber-300" fill="#fcd34d" />
         </div>
         <h1 className="text-4xl sm:text-5xl font-extrabold text-white mb-3 tracking-tight">心情收支簿</h1>
         <p className="text-white/70 text-sm sm:text-base mb-2 font-medium">记录每一笔 · 感受每一天</p>
