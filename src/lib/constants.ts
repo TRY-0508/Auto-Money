@@ -36,4 +36,5 @@ export const DEFAULT_SETTINGS: Settings = {
   speechApiKey: '',
   speechSecretKey: '',
   speechProvider: 'none',
+  colorScheme: 'most-frequent',
 }

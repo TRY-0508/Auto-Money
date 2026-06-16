@@ -1,19 +1,19 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
-import { useTransactions, useCategories, useProjects } from '@/db/hooks'
-import { getMonthlyStats, getCategoryBreakdown } from '@/lib/stats'
+import { useTransactions, useCategories, useProjects, useSettings, useBudgets } from '@/db/hooks'
+import { getMonthlyStats, getCategoryBreakdown, getDailyTrend } from '@/lib/stats'
 import { getCurrentYearMonth, formatAmount, formatDate } from '@/lib/utils'
-import { MOOD_LIST, MOOD_ICON_MAP, MOOD_COLOR_MAP, CATEGORY_ICON_MAP, MoreHorizontal, BarChart3, Trash2, PieChart, List, Calendar as CalendarIcon, Check } from '@/lib/icons'
+import { MOOD_LIST, MOOD_ICON_MAP, MOOD_COLOR_MAP, CATEGORY_ICON_MAP, MoreHorizontal, BarChart3, Trash2, PieChart, List, Calendar as CalendarIcon, Check, ArrowUpRight, ArrowDownRight, TrendingUp, Wallet } from '@/lib/icons'
 import CategoryIcon from '@/components/CategoryIcon'
 import EmptyState from '@/components/EmptyState'
 import AddModal from '@/components/AddModal'
 import ProjectSwitcher from '@/components/ProjectSwitcher'
 import type { Transaction } from '@/types'
-import { PieChart as RPie, Pie, Cell, ResponsiveContainer } from 'recharts'
+import { PieChart as RPie, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, LineChart, Line, AreaChart, Area } from 'recharts'
 
 const BANNER: Record<string, string> = { happy:'banner-happy',calm:'banner-calm',neutral:'banner-neutral',sad:'banner-sad',anxious:'banner-anxious',angry:'banner-angry',excited:'banner-excited',tired:'banner-tired' }
 const PAGE: Record<string, string> = { happy:'page-happy',calm:'page-calm',neutral:'page-neutral',sad:'page-sad',anxious:'page-anxious',angry:'page-angry',excited:'page-excited',tired:'page-tired' }
 type FilterType = 'all'|'expense'|'income'
-const CHART_COLORS = ['#f59e0b','#3b82f6','#10b981','#f43f5e','#ec4899','#06b6d4','#84cc16','#f97316','#d97706','#14b8a6','#eab308','#78716c']
+const CHART_COLORS = ['#3b82f6','#10b981','#f43f5e','#f59e0b','#f97316','#ec4899','#06b6d4','#84cc16','#d97706','#14b8a6','#eab308','#78716c']
 
 function CalendarHeatmap({ transactions, yearMonth, selectedDay, onSelectDay, onMonthChange }: { transactions: Transaction[]; yearMonth: string; selectedDay: string|null; onSelectDay:(d:string|null)=>void; onMonthChange:(ym:string)=>void }) {
   const [y,m]=yearMonth.split('-').map(Number); const dim=new Date(y,m,0).getDate(); const fd=new Date(y,m-1,1).getDay(); const today=new Date().toISOString().slice(0,10)
@@ -24,7 +24,7 @@ function CalendarHeatmap({ transactions, yearMonth, selectedDay, onSelectDay, on
   const pv=()=>{let ny=y,nm=m-1;if(nm===0){nm=12;ny--};onMonthChange(`${ny}-${String(nm).padStart(2,'0')}`)};const nx=()=>{let ny=y,nm=m+1;if(nm===13){nm=1;ny++};onMonthChange(`${ny}-${String(nm).padStart(2,'0')}`)}
   const tr=useRef(0)
   return (
-    <div className="card p-4" onTouchStart={e=>{tr.current=e.touches[0].clientX}} onTouchEnd={e=>{const d=tr.current-e.changedTouches[0].clientX;if(Math.abs(d)>60)d>0?nx():pv()}}>
+    <div className="card card-chart p-4" onTouchStart={e=>{tr.current=e.touches[0].clientX}} onTouchEnd={e=>{const d=tr.current-e.changedTouches[0].clientX;if(Math.abs(d)>60)d>0?nx():pv()}}>
       <div className="flex items-center justify-between mb-2"><button onClick={pv} className="p-1 text-gray-400 hover:text-amber-500 text-lg">‹</button><h3 className="text-sm font-semibold">月历</h3><button onClick={nx} className="p-1 text-gray-400 hover:text-amber-500 text-lg">›</button></div>
       <div className="grid grid-cols-7 gap-1 mb-1">{['日','一','二','三','四','五','六'].map(d=><div key={d} className="text-center text-[10px] text-gray-400 font-medium">{d}</div>)}</div>
       {wks.map((w,wi)=>(
@@ -55,19 +55,44 @@ export default function Dashboard() {
 
   const [yearMonth,setYearMonth]=useState(getCurrentYearMonth());const [year,month]=yearMonth.split('-').map(Number)
   const {transactions:all,updateTransaction,deleteTransaction}=useTransactions({month:yearMonth})
-  const {categories}=useCategories();const {projects}=useProjects()
+  const {categories}=useCategories();const {projects}=useProjects();const {settings}=useSettings();const {budgets}=useBudgets()
   const txs=useMemo(()=>projectId?all.filter(t=>t.projectId===projectId):all,[all,projectId])
   const stats=useMemo(()=>getMonthlyStats(txs,yearMonth),[txs,yearMonth])
   const expBrk=useMemo(()=>getCategoryBreakdown(txs,categories,'expense',yearMonth),[txs,categories,yearMonth])
+  const incBrk=useMemo(()=>getCategoryBreakdown(txs,categories,'income',yearMonth),[txs,categories,yearMonth])
+  const dailyTrend=useMemo(()=>getDailyTrend(txs,30),[txs])
+  const prevStats=useMemo(()=>{const [y,m]=yearMonth.split('-').map(Number);let py=y,pm=m-1;if(pm===0){pm=12;py--};return getMonthlyStats(all,`${py}-${String(pm).padStart(2,'0')}`)},[all,yearMonth])
 
   const moodStats=useMemo(()=>{const m:Record<string,{count:number;totalSpent:number}>={};for(const t of txs){if(!t.mood||t.type!=='expense')continue;if(!m[t.mood])m[t.mood]={count:0,totalSpent:0};m[t.mood].count++;m[t.mood].totalSpent+=t.amount};return MOOD_LIST.filter(x=>m[x.value]).map(x=>({...x,...m[x.value]})).sort((a,b)=>b.count-a.count)},[txs])
-  const dom=moodStats[0];const moodKey=dom?.value||'neutral'
+
+  const colorScheme = settings?.colorScheme || 'most-frequent'
+  const allTxWithMood = useMemo(() => txs.filter(t => t.mood && t.type === 'expense').sort((a,b) => b.date.localeCompare(a.date)), [txs])
+  const dom = useMemo(() => {
+    if (colorScheme === 'latest' && allTxWithMood.length > 0) {
+      return moodStats.find(m => m.value === allTxWithMood[0].mood)
+    }
+    if (colorScheme === 'neutral') return undefined
+    if (colorScheme === 'adaptive') {
+      const today = new Date().toISOString().slice(0,10)
+      const todayTx = allTxWithMood.filter(t => t.date === today)
+      if (todayTx.length > 0) return moodStats.find(m => m.value === todayTx[todayTx.length-1].mood)
+      return moodStats[0]
+    }
+    return moodStats[0]
+  }, [colorScheme, allTxWithMood, moodStats])
+  const moodKey = dom?.value || 'neutral'
 
   const moodTimeline=useMemo(()=>{const today=new Date();return Array.from({length:14},(_,i)=>{const d=new Date(today);d.setDate(d.getDate()-(13-i));const ds=d.toISOString().slice(0,10);const dayTxs=txs.filter(t=>t.date===ds);const lm=dayTxs.filter(t=>t.mood).pop();return{date:ds,label:i===13?'今天':i===12?'昨天':`${d.getMonth()+1}/${d.getDate()}`,moodVal:lm?.mood||null,spent:dayTxs.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0)}})},[txs])
 
   const filtered=useMemo(()=>{let d=txs;if(filterType!=='all')d=d.filter(t=>t.type===filterType);if(filterMood)d=d.filter(t=>t.mood===filterMood);if(filterCategory)d=d.filter(t=>t.categoryId===filterCategory);if(dateFrom)d=d.filter(t=>t.date>=dateFrom);if(dateTo)d=d.filter(t=>t.date<=dateTo);if(selectedDay)d=d.filter(t=>t.date===selectedDay);if(searchQuery.trim()){const q=searchQuery.toLowerCase();d=d.filter(t=>t.description.toLowerCase().includes(q)||(categories.find(c=>c.id===t.categoryId)?.name||'').toLowerCase().includes(q))};return d},[txs,filterType,filterMood,filterCategory,dateFrom,dateTo,selectedDay,searchQuery,categories])
   const grouped=useMemo(()=>{const g:Record<string,Transaction[]>={};for(const t of filtered)g[t.date]=[...(g[t.date]||[]),t];return Object.entries(g).sort((a,b)=>b[0].localeCompare(a[0]))},[filtered])
   const calTxs=useMemo(()=>all.filter(t=>t.date.startsWith(calendarMonth)),[all,calendarMonth])
+
+  const currentBudget = useMemo(() => budgets.find(b => b.yearMonth === yearMonth && b.categoryId === null), [budgets, yearMonth])
+  const budgetUsed = currentBudget ? stats.totalExpense : 0
+  const budgetPct = currentBudget && currentBudget.amount > 0 ? Math.min((budgetUsed / currentBudget.amount) * 100, 100) : 0
+  const budgetRemaining = currentBudget ? Math.max(currentBudget.amount - budgetUsed, 0) : 0
+  const budgetOverspent = currentBudget ? Math.max(budgetUsed - currentBudget.amount, 0) : 0
 
   const hEdit=(t:Transaction)=>{setEditing(t);setEAmt(String(t.amount));setEDesc(t.description);setEDate(t.date);setECat(t.categoryId);setEType(t.type);setEMood(t.mood||'');setEProj(t.projectId||'')}
   const hSave=async()=>{if(!editing)return;const a=parseFloat(eAmt);if(!a||a<=0)return;await updateTransaction(editing.id,{amount:a,description:eDesc,date:eDate,categoryId:eCat,type:eType,mood:eMood||undefined,projectId:eProj||undefined});setEditing(null)}
@@ -79,6 +104,14 @@ export default function Dashboard() {
   useEffect(()=>{document.body.className=PAGE[moodKey]||PAGE.neutral;return()=>{document.body.className=''}},[moodKey])
   const DomIcon=dom?.Icon
 
+  const incomeChange = prevStats.totalIncome > 0 ? Math.round(((stats.totalIncome - prevStats.totalIncome) / prevStats.totalIncome) * 100) : 0
+  const expenseChange = prevStats.totalExpense > 0 ? Math.round(((stats.totalExpense - prevStats.totalExpense) / prevStats.totalExpense) * 100) : 0
+
+  const moodBarData = useMemo(() => MOOD_LIST.filter(m => moodStats.find(ms => ms.value === m.value)).map(m => {
+    const ms = moodStats.find(x => x.value === m.value)
+    return { name: m.label, value: ms?.totalSpent || 0, count: ms?.count || 0, color: m.color }
+  }).sort((a,b) => b.value - a.value), [moodStats])
+
   return (
     <div className="max-w-4xl mx-auto space-y-4 slide-up pb-24 md:pb-6">
       <ProjectSwitcher selectedId={projectId} onChange={setProjectId}/>
@@ -87,21 +120,17 @@ export default function Dashboard() {
         {(()=>{const o:{v:string;l:string}[]=[];const n=new Date();for(let i=0;i<12;i++){const d=new Date(n.getFullYear(),n.getMonth()-i,1);o.push({v:`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`,l:`${d.getFullYear()}年${d.getMonth()+1}月`})}return o})().map(o=><option key={o.v} value={o.v}>{o.l}</option>)}
       </select>
 
+      {/* Mood Banner */}
       <div className={`rounded-3xl p-6 text-white shadow-2xl relative overflow-hidden ${BANNER[moodKey]||BANNER.neutral}`}>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.2),transparent_50%),radial-gradient(circle_at_bottom_left,rgba(0,0,0,0.1),transparent_40%)]"/>
         <div className="absolute inset-0 dot-pattern"/>
-        <div className="relative z-10">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-white/70 text-sm font-medium uppercase tracking-wider">{greet}</p>
-              <p className="text-2xl font-bold mt-1 tracking-tight text-white neon-text">心情收支簿</p>
-              <p className="text-white/60 text-xs mt-2 italic">{quotes[moodKey]||quotes.neutral}</p>
-            </div>
-            {DomIcon&&<div className="bg-white/15 backdrop-blur-sm rounded-2xl p-4 bounce-in"><DomIcon size={44} strokeWidth={1.5} className="text-white drop-shadow-lg"/></div>}
+        <div className="relative z-10 flex items-start justify-between">
+          <div>
+            <p className="text-white/70 text-sm font-medium uppercase tracking-wider">{greet}</p>
+            <p className="text-2xl font-bold mt-1 tracking-tight text-white neon-text">心情收支簿</p>
+            <p className="text-white/60 text-xs mt-2 italic">{quotes[moodKey]||quotes.neutral}</p>
           </div>
-          <div className="grid grid-cols-3 gap-3 mt-5">
-            {[{l:'收入',v:formatAmount(stats.totalIncome)},{l:'支出',v:formatAmount(stats.totalExpense)},{l:'结余',v:formatAmount(stats.balance)}].map(c=><div key={c.l} className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 text-center"><p className="text-white/60 text-xs">{c.l}</p><p className="text-base sm:text-lg font-bold mt-1">{c.v}</p></div>)}
-          </div>
+          {DomIcon&&<div className="bg-white/15 backdrop-blur-sm rounded-2xl p-4 bounce-in"><DomIcon size={44} strokeWidth={1.5} className="text-white drop-shadow-lg"/></div>}
         </div>
       </div>
 
@@ -111,35 +140,47 @@ export default function Dashboard() {
         </div>
       ):(
         <>
+          {/* Stats Row */}
           <div className="bento stagger">
-            <div className="card card-hover tilt bento-col-2">
-              <div className="card-header"><PieChart size={18} strokeWidth={1.8} className="text-amber-500"/>心情统计</div>
-              <div className="card-body">
-                {moodStats.length>0?(
-                  <div className="space-y-4">
-                    {/* Rainbow bar */}
-                    <div className="flex h-4 rounded-full overflow-hidden">
-                      {(()=>{const total=moodStats.reduce((s,m)=>s+m.count,0);return moodStats.map((m,i)=>{const pct=Math.round((m.count/total)*100);return pct>0?<div key={m.value} className="h-full transition-all duration-700 first:rounded-l-full last:rounded-r-full" style={{width:`${pct}%`,backgroundColor:MOOD_COLOR_MAP[m.value]||'#6b7280'}} title={`${m.label} ${pct}%`}/>:null})})()}
-                    </div>
-                    {/* Mood pills */}
-                    <div className="flex flex-wrap gap-1.5">
-                      {moodStats.map(m=>{const MI=m.Icon;const color=MOOD_COLOR_MAP[m.value]||'#6b7280';return(
-                        <div key={m.value} className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium" style={{backgroundColor:color+'15',color}}>
-                          <MI size={14} strokeWidth={1.8}/>{m.label} {m.count}次
-                        </div>
-                      )})}
-                    </div>
-                  </div>
-                ):<p className="text-sm text-muted text-center py-6">记账时选心情，这里就会出现统计</p>}
-              </div>
+            <div className="card card-stat card-hover bento-col-2 md:bento-col-2 p-4">
+              <div className="flex items-center gap-2 mb-1"><div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center"><ArrowUpRight size={16} className="text-emerald-500"/></div><span className="text-xs text-muted">本月收入</span></div>
+              <p className="text-xl font-bold amount">{formatAmount(stats.totalIncome)}</p>
+              {incomeChange !== 0 && <p className={`text-xs mt-0.5 ${incomeChange > 0 ? 'text-emerald-500' : 'text-red-400'}`}>{incomeChange > 0 ? '+' : ''}{incomeChange}% 环比</p>}
             </div>
+            <div className="card card-stat card-hover bento-col-2 md:bento-col-2 p-4">
+              <div className="flex items-center gap-2 mb-1"><div className="w-8 h-8 rounded-xl bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center"><ArrowDownRight size={16} className="text-rose-400"/></div><span className="text-xs text-muted">本月支出</span></div>
+              <p className="text-xl font-bold amount">{formatAmount(stats.totalExpense)}</p>
+              {expenseChange !== 0 && <p className={`text-xs mt-0.5 ${expenseChange > 0 ? 'text-red-400' : 'text-emerald-500'}`}>{expenseChange > 0 ? '+' : ''}{expenseChange}% 环比</p>}
+            </div>
+            <div className="card card-stat card-hover bento-col-2 md:bento-col-2 p-4">
+              <div className="flex items-center gap-2 mb-1"><div className="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center"><TrendingUp size={16} className="text-amber-500"/></div><span className="text-xs text-muted">本月结余</span></div>
+              <p className={`text-xl font-bold amount ${stats.balance < 0 ? 'text-red-400' : ''}`}>{formatAmount(stats.balance)}</p>
+              <p className="text-xs text-muted mt-0.5">{stats.count} 笔交易</p>
+            </div>
+            <div className="card card-stats card-hover bento-col-2 md:bento-col-2 p-4">
+              <div className="flex items-center gap-2 mb-1"><div className="w-8 h-8 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center"><Wallet size={16} className="text-purple-500"/></div><span className="text-xs text-muted">本月预算</span></div>
+              {currentBudget ? (
+                <>
+                  <p className="text-xl font-bold amount">{formatAmount(budgetRemaining)}<span className="text-sm font-normal text-muted"> / {formatAmount(currentBudget.amount)}</span></p>
+                  <div className="mt-2 h-2 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
+                    <div className={`h-full rounded-full transition-all duration-700 ${budgetPct > 90 ? 'bg-red-400' : budgetPct > 70 ? 'bg-amber-400' : 'bg-emerald-400'}`} style={{width:`${budgetPct}%`}}/>
+                  </div>
+                  <p className="text-xs text-muted mt-1">{budgetOverspent > 0 ? <span className="text-red-400">超出 {formatAmount(budgetOverspent)}</span> : `已用 ${Math.round(budgetPct)}%`}</p>
+                </>
+              ) : (
+                <p className="text-sm text-muted">未设定</p>
+              )}
+            </div>
+          </div>
 
-            <div className="card card-hover tilt bento-col-2">
-              <div className="card-header"><List size={18} strokeWidth={1.8} className="text-amber-500"/>支出分类</div>
+          {/* Charts Row */}
+          <div className="bento stagger">
+            <div className="card card-chart card-hover bento-col-2">
+              <div className="card-header"><PieChart size={18} strokeWidth={1.8} className="text-amber-500"/>五型消费分布</div>
               <div className="card-body">
                 {expBrk.length>0?(
                   <div className="flex items-center gap-4">
-                    <div className="w-28 h-28 flex-shrink-0"><ResponsiveContainer><RPie><Pie data={expBrk} cx="50%" cy="50%" innerRadius={26} outerRadius={46} paddingAngle={3} dataKey="amount">{expBrk.map((e,i)=><Cell key={e.categoryId} fill={CHART_COLORS[i%CHART_COLORS.length]} strokeWidth={0}/>)}</Pie></RPie></ResponsiveContainer></div>
+                    <div className="w-32 h-32 flex-shrink-0"><ResponsiveContainer><RPie><Pie data={expBrk} cx="50%" cy="50%" innerRadius={30} outerRadius={52} paddingAngle={4} dataKey="amount">{expBrk.map((e,i)=><Cell key={e.categoryId} fill={CHART_COLORS[i%CHART_COLORS.length]} strokeWidth={0}/>)}</Pie></RPie></ResponsiveContainer></div>
                     <div className="flex-1 space-y-1.5 min-w-0">{expBrk.slice(0,6).map((item,i)=>{
                       const dotColor = CHART_COLORS[i % CHART_COLORS.length]
                       const cat = categories.find(c => c.id === item.categoryId)
@@ -157,9 +198,58 @@ export default function Dashboard() {
                 ):<p className="body-sm text-gray-400 text-center py-6">暂无支出</p>}
               </div>
             </div>
+
+            <div className="card card-chart card-hover bento-col-2">
+              <div className="card-header"><BarChart3 size={18} strokeWidth={1.8} className="text-amber-500"/>心情×消费</div>
+              <div className="card-body">
+                {moodBarData.length>0?(
+                  <div className="h-44">
+                    <ResponsiveContainer>
+                      <BarChart data={moodBarData} layout="vertical" margin={{ top: 0, right: 20, left: 0, bottom: 0 }}>
+                        <XAxis type="number" hide />
+                        <YAxis type="category" dataKey="name" tick={{fontSize:11,fill:'#a8a29e'}} axisLine={false} tickLine={false} width={32} />
+                        <Tooltip contentStyle={{borderRadius:'12px',border:'none',boxShadow:'0 4px 20px rgba(0,0,0,0.1)',fontSize:'12px'}} formatter={(v:number)=>(['¥'+v.toFixed(2),'消费金额'])} />
+                        <Bar dataKey="value" radius={[0,8,8,0]} barSize={16}>
+                          {moodBarData.map((entry,idx) => <Cell key={idx} fill={entry.color} fillOpacity={0.7} />)}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                ):<p className="body-sm text-gray-400 text-center py-6">记账时选心情，这里就会出现统计</p>}
+              </div>
+            </div>
           </div>
 
-          <div className="card card-hover overflow-hidden">
+          {/* Daily Trend Line Chart */}
+          <div className="card card-chart card-hover overflow-hidden">
+            <div className="card-header"><TrendingUp size={18} strokeWidth={1.8} className="text-amber-500"/>30日收支趋势</div>
+            <div className="card-body">
+              <div className="h-40">
+                <ResponsiveContainer>
+                  <AreaChart data={dailyTrend} margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.15}/>
+                        <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                      </linearGradient>
+                      <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.12}/>
+                        <stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <XAxis dataKey="date" tick={{fontSize:9,fill:'#a8a29e'}} axisLine={false} tickLine={false} interval={6} />
+                    <YAxis tick={{fontSize:9,fill:'#a8a29e'}} axisLine={false} tickLine={false} width={40} />
+                    <Tooltip contentStyle={{borderRadius:'12px',border:'none',boxShadow:'0 4px 20px rgba(0,0,0,0.1)',fontSize:'12px'}} />
+                    <Area type="monotone" dataKey="income" stroke="#10b981" strokeWidth={1.5} fill="url(#colorIncome)" name="收入" />
+                    <Area type="monotone" dataKey="expense" stroke="#f43f5e" strokeWidth={1.5} fill="url(#colorExpense)" name="支出" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+
+          {/* Mood Timeline */}
+          <div className="card card-list card-hover overflow-hidden">
             <div className="card-header"><CalendarIcon size={18} strokeWidth={1.8} className="text-amber-500"/>心情时间线</div>
             <div className="card-body overflow-x-auto scrollbar-hide">
               <div className="flex gap-3 pb-1">{moodTimeline.map(d=>{const MI=d.moodVal?MOOD_ICON_MAP[d.moodVal]:null;const color=d.moodVal?MOOD_COLOR_MAP[d.moodVal]:null;return(
@@ -189,7 +279,7 @@ export default function Dashboard() {
             <input type="text" value={searchQuery} onChange={e=>setSearchQuery(e.target.value)} placeholder="搜索" className="input flex-1 min-w-[80px] !py-1.5 !px-3 !rounded-full !text-xs"/>
           </div>
 
-          <div className="card overflow-hidden">
+          <div className="card card-list overflow-hidden">
             {grouped.length===0?<div className="text-center py-12 text-gray-400 body-sm">没有找到匹配的记录</div>:grouped.map(([date,items])=>(
               <div key={date}>
                 <div className="px-5 py-2.5 bg-gradient-to-r from-gray-50/60 to-transparent dark:from-gray-800/40 text-xs font-semibold text-gray-500 flex justify-between">

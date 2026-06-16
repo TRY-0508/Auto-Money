@@ -4,6 +4,7 @@ import {
   Smartphone, Package, MoreHorizontal, Banknote, Briefcase, TrendingUp,
   Gift, FileText, Coffee, Cat, Plane, Dumbbell, Music, Shirt,
   SprayCan as MakeupIcon, Beer, Stethoscope, Lightbulb, Camera, Wrench, Bus, Train, Pizza,
+  ArrowUpRight, ArrowDownRight,
   // Mood icons
   Smile, Meh, Frown, Angry, AlertTriangle, Star, Moon, Heart, Zap,
   // Nav & UI icons
@@ -11,6 +12,7 @@ import {
   Calendar, PiggyBank, MessageCircle, BarChart3, PieChart, List,
   Trash2, Edit3, ArrowLeft, ArrowRight, X, Menu, Send, Download, Upload,
   Copy, Tag, Target, FolderOpen, Database, Check,
+  Palette, Wallet,
   // Cool-down & Jar icons
   Timer, Clock, ShieldCheck, ShieldX, Thermometer, Flame, Hourglass,
 } from 'lucide-react'
@@ -28,15 +30,14 @@ export const CATEGORY_ICON_MAP: Record<IconKey, LucideIcon> = {
   dumbbell: Dumbbell, music: Music, shirt: Shirt, makeup: MakeupIcon,
   beer: Beer, stethoscope: Stethoscope, lightbulb: Lightbulb, camera: Camera,
   wrench: Wrench, bus: Bus, train: Train, pizza: Pizza,
-  heart: Heart, zap: Zap,
+  heart: Heart, zap: Zap, 'alert-triangle': AlertTriangle,
 }
 
 export const PRESET_CAT_ICONS: Record<string, IconKey> = {
-  '餐饮': 'utensils', '交通': 'car', '购物': 'shopping-bag', '娱乐': 'gamepad-2',
-  '住房': 'home', '医疗': 'pill', '教育': 'book-open', '通讯': 'smartphone',
-  '日用': 'package', '其他': 'more-horizontal',
+  '必要消费': 'home', '价值消费': 'trending-up', '情绪消费': 'heart',
+  '冲动消费': 'zap', '意外消费': 'alert-triangle',
   '工资': 'banknote', '兼职': 'briefcase', '理财': 'trending-up',
-  '红包': 'gift', '报销': 'file-text',
+  '红包': 'gift', '其他': 'more-horizontal',
 }
 
 export const CAT_ICON_OPTIONS: { key: IconKey; label: string; Icon: LucideIcon }[] = Object.entries({
@@ -73,6 +74,8 @@ export { LayoutDashboard, Brain, Settings, Plus, Mic, Pencil, Search,
   Calendar, PiggyBank, MessageCircle, BarChart3, PieChart, List,
   Trash2, Edit3, ArrowLeft, ArrowRight, X, Menu, Send, Download, Upload,
   MoreHorizontal, Package, Copy, Tag, Target, FolderOpen, Database, AlertTriangle, Check, Star, Lightbulb,
+  Palette, Wallet, TrendingUp,
+  ArrowUpRight, ArrowDownRight,
   Timer, Clock, ShieldCheck, ShieldX, Thermometer, Flame, Hourglass, Zap }
 
 // ── Project Icons (keys mapped to Lucide) ──

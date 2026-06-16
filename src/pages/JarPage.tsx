@@ -59,6 +59,7 @@ export default function JarPage() {
   const [evtAIResult, setEvtAIResult] = useState<CoolDownAIAnalysis | null>(null)
   const [evtAIError, setEvtAIError] = useState('')
   const [evtGoalId, setEvtGoalId] = useState('')
+  const [evtCooldownHours, setEvtCooldownHours] = useState(24)
 
   // Re-evaluation
   const [reviewEvent, setReviewEvent] = useState<CoolDownEvent | null>(null)
@@ -119,6 +120,7 @@ export default function JarPage() {
     try {
       const result = await analyzeCalmEvent(evtDesc.trim(), parseFloat(evtAmount) || 0)
       setEvtAIResult(result)
+      setEvtCooldownHours(result.suggestedCooldown || 24)
     } catch (err: any) {
       setEvtAIError(err.message || '分析失败，请检查 API 配置')
     } finally { setEvtAILoading(false) }
@@ -128,7 +130,7 @@ export default function JarPage() {
     if (!evtDesc.trim()) return
     const analysis = evtAIResult
     const now = Date.now()
-    const cooldown = analysis?.suggestedCooldown ?? 24
+    const cooldown = evtCooldownHours
     await addEvent({
       goalId: evtGoalId || undefined,
       description: evtDesc.trim(),
@@ -146,7 +148,7 @@ export default function JarPage() {
     })
     setShowNewEvent(false)
     setEvtDesc(''); setEvtAmount(''); setEvtAIResult(null); setEvtAIError('')
-    setEvtGoalId('')
+    setEvtGoalId(''); setEvtCooldownHours(24)
   }
 
   // ── Re-evaluation ──
@@ -477,6 +479,23 @@ export default function JarPage() {
                   {goals.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
                 </select>
               )}
+
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs text-gray-400">冷却时间</span>
+                  <span className="text-xs font-medium text-amber-500">{cooldownLabel(evtCooldownHours)}</span>
+                </div>
+                <div className="flex gap-1.5 flex-wrap">
+                  {[6, 12, 24, 48, 72, 168].map(h => (
+                    <button key={h} onClick={() => setEvtCooldownHours(h)}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                        evtCooldownHours === h
+                          ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 ring-1 ring-amber-300'
+                          : 'bg-gray-50 dark:bg-gray-800 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'
+                      }`}>{cooldownLabel(h)}</button>
+                  ))}
+                </div>
+              </div>
 
               <button onClick={handleAddEvent} disabled={!evtDesc.trim()}
                 className="btn btn-primary w-full">

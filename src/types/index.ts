@@ -49,6 +49,16 @@ export interface Settings {
   speechApiKey: string
   speechSecretKey: string
   speechProvider: 'baidu' | 'none'
+  colorScheme: 'most-frequent' | 'latest' | 'neutral' | 'adaptive'
+}
+
+export interface Deficit {
+  id: string
+  amount: number
+  yearMonth: string
+  remainingAmount: number
+  status: 'active' | 'filled'
+  createdAt: number
 }
 
 export interface ChatMessage {

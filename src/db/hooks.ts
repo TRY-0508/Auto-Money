@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from './index'
-import type { Transaction, Category, Budget, Settings, ChatMessage, Project, JarGoal, CoolDownEvent } from '@/types'
+import type { Transaction, Category, Budget, Settings, ChatMessage, Project, JarGoal, CoolDownEvent, Deficit } from '@/types'
 
 export function useCategories() {
   const categories = useLiveQuery(async () => {
@@ -176,4 +176,24 @@ export function useCoolDownEvents() {
   }
 
   return { events, addEvent, updateEvent, deleteEvent }
+}
+
+export function useDeficits() {
+  const deficits = useLiveQuery(() => db.deficits.orderBy('createdAt').reverse().toArray()) ?? []
+
+  const addDeficit = async (d: Omit<Deficit, 'id' | 'createdAt'>) => {
+    const id = crypto.randomUUID()
+    await db.deficits.add({ id, ...d, createdAt: Date.now() })
+    return id
+  }
+
+  const updateDeficit = async (id: string, updates: Partial<Deficit>) => {
+    await db.deficits.update(id, updates)
+  }
+
+  const deleteDeficit = async (id: string) => {
+    await db.deficits.delete(id)
+  }
+
+  return { deficits, addDeficit, updateDeficit, deleteDeficit }
 }

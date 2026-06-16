@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie'
-import type { Transaction, Category, Budget, Settings, ChatMessage, Project, JarGoal, CoolDownEvent } from '@/types'
+import type { Transaction, Category, Budget, Settings, ChatMessage, Project, JarGoal, CoolDownEvent, Deficit } from '@/types'
 
 class AutoMoneyDB extends Dexie {
   transactions!: Table<Transaction, string>
@@ -10,10 +10,11 @@ class AutoMoneyDB extends Dexie {
   projects!: Table<Project, string>
   jarGoals!: Table<JarGoal, string>
   coolDownEvents!: Table<CoolDownEvent, string>
+  deficits!: Table<Deficit, string>
 
   constructor() {
     super('AutoMoneyDB')
-    this.version(4).stores({
+    this.version(5).stores({
       transactions: 'id, date, type, categoryId, projectId, mood',
       categories: 'id, type',
       budgets: 'id, categoryId, yearMonth',
@@ -22,6 +23,7 @@ class AutoMoneyDB extends Dexie {
       projects: 'id',
       jarGoals: 'id',
       coolDownEvents: 'id, goalId, status, cooldownEndsAt, createdAt',
+      deficits: 'id, yearMonth, status',
     })
   }
 }

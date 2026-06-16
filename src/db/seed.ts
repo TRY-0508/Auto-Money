@@ -8,7 +8,7 @@ const EXPENSE_CATEGORIES: Omit<Category, 'id'>[] = [
   { name: '价值消费', type: 'expense', icon: 'trending-up', color: '#10b981', isSystem: true },
   { name: '情绪消费', type: 'expense', icon: 'heart', color: '#f43f5e', isSystem: true },
   { name: '冲动消费', type: 'expense', icon: 'zap', color: '#f59e0b', isSystem: true },
-  { name: '其他', type: 'expense', icon: 'more-horizontal', color: '#6b7280', isSystem: true },
+  { name: '意外消费', type: 'expense', icon: 'alert-triangle', color: '#f97316', isSystem: true },
 ]
 
 const INCOME_CATEGORIES: Omit<Category, 'id'>[] = [

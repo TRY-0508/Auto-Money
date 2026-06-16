@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
-import { useSettings, useCategories, useTransactions, useProjects } from '@/db/hooks'
+import { useSettings, useCategories, useTransactions, useProjects, useBudgets } from '@/db/hooks'
 import { encryptApiKey, decryptApiKey } from '@/lib/crypto'
 import { exportAllData, importAllData, exportCSV, downloadFile } from '@/services/export'
 import { db } from '@/db'
 import { getCurrentYearMonth, formatAmount } from '@/lib/utils'
 import { getMonthlyStats, getCategoryBreakdown } from '@/lib/stats'
-import { CAT_ICON_OPTIONS, CATEGORY_ICON_MAP, PROJECT_ICON_MAP, PROJECT_ICONS as PROJ_ICONS_LIST, MoreHorizontal, Settings as SettingsIcon, Tag, FolderOpen, Database, Download, Upload, Trash2, Edit3, Check, X, Mic } from '@/lib/icons'
+import { CAT_ICON_OPTIONS, CATEGORY_ICON_MAP, PROJECT_ICON_MAP, PROJECT_ICONS as PROJ_ICONS_LIST, MoreHorizontal, Settings as SettingsIcon, Tag, FolderOpen, Database, Download, Upload, Trash2, Edit3, Check, X, Mic, Palette, Wallet, Plus } from '@/lib/icons'
 
 const ALL_COLORS = ['#3b82f6', '#22c55e', '#ef4444', '#eab308', '#a855f7', '#f97316', '#ec4899', '#06b6d4', '#6366f1', '#14b8a6', '#84cc16', '#f59e0b', '#78716c']
 
@@ -34,6 +34,7 @@ export default function Settings() {
   const { categories, addCategory, updateCategory, deleteCategory } = useCategories()
   const { transactions } = useTransactions()
   const { projects, addProject, deleteProject } = useProjects()
+  const { budgets, addBudget, updateBudget, deleteBudget } = useBudgets()
 
   const [apiKey, setApiKey] = useState(''); const [baseUrl, setBaseUrl] = useState('https://api.deepseek.com/v1'); const [model, setModel] = useState('deepseek-chat'); const [saved, setSaved] = useState(false); const [testResult, setTestResult] = useState('')
   const [speechApiKey, setSpeechApiKey] = useState(''); const [speechSecretKey, setSpeechSecretKey] = useState(''); const [speechSaved, setSpeechSaved] = useState(false)
@@ -41,6 +42,13 @@ export default function Settings() {
   const [showAddProject, setShowAddProject] = useState(false); const [newProjectName, setNewProjectName] = useState(''); const [newProjectIcon, setNewProjectIcon] = useState('package'); const [newProjectColor, setNewProjectColor] = useState('#3b82f6')
   const [showClearConfirm, setShowClearConfirm] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null); const [importMessage, setImportMessage] = useState('')
+
+  const [budgetAmount, setBudgetAmount] = useState('')
+  const [budgetEditing, setBudgetEditing] = useState(false)
+  const currentYM = getCurrentYearMonth()
+  const currentBudget = budgets.find(b => b.yearMonth === currentYM && b.categoryId === null)
+
+  const [colorScheme, setColorScheme] = useState<string>(settings?.colorScheme || 'most-frequent')
 
   useEffect(() => { if (settings) { setBaseUrl(settings.apiBaseUrl || 'https://api.deepseek.com/v1'); setModel(settings.model || 'deepseek-chat') } }, [settings])
 
@@ -84,8 +92,32 @@ export default function Settings() {
               <div><label className="text-xs text-gray-400 mb-1 block">Secret Key</label><input type="password" value={speechSecretKey} onChange={e => setSpeechSecretKey(e.target.value)} placeholder={settings.speechSecretKey ? '已配置' : ''} className="w-full px-3 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300" /></div>
               <p className="text-xs text-muted">前往 <a href="https://console.bce.baidu.com/ai/#/ai/speech/overview/index" target="_blank" className="text-amber-500 underline">百度智能云</a> 创建应用获取密钥，免费额度 5 万次/年</p>
               <button onClick={handleSaveSpeech} className="w-full py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold shadow-lg shadow-amber-500/20">{speechSaved ? '已保存' : '保存语音配置'}</button>
-            </>
+              </>
           )}
+        </div>
+      </div>
+
+      {/* Color Scheme */}
+      <div className="glow-card p-5">
+        <h3 className="text-sm font-bold tracking-tight mb-4 flex items-center gap-2"><Palette size={18} strokeWidth={1.8} className="text-amber-500" />配色方案</h3>
+        <p className="text-xs text-gray-400 mb-3">选择首页背景色跟随的方式</p>
+        <div className="grid grid-cols-2 gap-2">
+          {([
+            { key: 'most-frequent', label: '最多心情', desc: '跟随本月出现最多的心情' },
+            { key: 'latest', label: '最新消费', desc: '跟随最近一笔消费的心情' },
+            { key: 'neutral', label: '中性色调', desc: '始终使用暖奶油色' },
+            { key: 'adaptive', label: '全天适应', desc: '根据当日心情动态变化' },
+          ]).map(opt => (
+            <button key={opt.key} onClick={() => { setColorScheme(opt.key); updateSettings?.({ colorScheme: opt.key as any }) }}
+              className={`p-3 rounded-xl border text-left transition-all ${
+                colorScheme === opt.key
+                  ? 'border-amber-300 bg-amber-50 dark:bg-amber-900/20 ring-1 ring-amber-300'
+                  : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 hover:border-amber-200'
+              }`}>
+              <p className="text-xs font-semibold">{opt.label}</p>
+              <p className="text-[10px] text-gray-400 mt-0.5">{opt.desc}</p>
+            </button>
+          ))}
         </div>
       </div>
 
@@ -120,6 +152,56 @@ export default function Settings() {
             </button>
           )})}</div>
         </div>
+      </div>
+
+      {/* Budget */}
+      <div className="glow-card p-5">
+        <h3 className="text-sm font-bold tracking-tight mb-4 flex items-center gap-2"><Wallet size={18} strokeWidth={1.8} className="text-amber-500" />月度预算</h3>
+        <p className="text-xs text-gray-400 mb-3">设定每月预算，盈余可转入心愿，超出形成亏空需优先填平</p>
+        {currentBudget ? (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 dark:bg-gray-800">
+              <div>
+                <p className="text-xs text-muted">{currentYM} 预算</p>
+                <p className="text-xl font-bold text-amber-600 dark:text-amber-400">{formatAmount(currentBudget.amount)}</p>
+              </div>
+              <div className="flex gap-1">
+                <button onClick={() => { setBudgetAmount(String(currentBudget.amount)); setBudgetEditing(true) }} className="btn-icon"><Edit3 size={14} /></button>
+                <button onClick={() => deleteBudget(currentBudget.id)} className="btn-icon btn-icon-danger"><Trash2 size={14} /></button>
+              </div>
+            </div>
+            {budgetEditing && (
+              <div className="flex gap-2">
+                <input type="number" value={budgetAmount} onChange={e => setBudgetAmount(e.target.value)} placeholder="金额" className="input flex-1" autoFocus />
+                <button onClick={async () => { await updateBudget(currentBudget.id, { amount: parseFloat(budgetAmount) || 0 }); setBudgetEditing(false) }} className="btn btn-primary btn-sm"><Check size={14} /></button>
+                <button onClick={() => setBudgetEditing(false)} className="btn btn-secondary btn-sm"><X size={14} /></button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {!budgetEditing ? (
+              <button onClick={() => setBudgetEditing(true)} className="w-full py-2.5 rounded-2xl border border-dashed border-amber-300 dark:border-amber-700 text-amber-500 text-sm font-medium flex items-center justify-center gap-1.5 hover:bg-amber-50 dark:hover:bg-amber-900/20"><Plus size={15} />设定本月预算</button>
+            ) : (
+              <div className="flex gap-2">
+                <input type="number" value={budgetAmount} onChange={e => setBudgetAmount(e.target.value)} placeholder="预算金额" className="input flex-1" autoFocus />
+                <button onClick={async () => { await addBudget({ categoryId: null, amount: parseFloat(budgetAmount) || 0, period: 'monthly', yearMonth: currentYM }); setBudgetEditing(false); setBudgetAmount('') }} disabled={!budgetAmount} className="btn btn-primary btn-sm"><Check size={14} /></button>
+                <button onClick={() => { setBudgetEditing(false); setBudgetAmount('') }} className="btn btn-secondary btn-sm"><X size={14} /></button>
+              </div>
+            )}
+          </div>
+        )}
+        {budgets.filter(b => b.yearMonth !== currentYM || b.categoryId !== null).length > 0 && (
+          <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">
+            <p className="text-xs text-muted mb-2">历史预算</p>
+            {budgets.filter(b => b.yearMonth !== currentYM || b.categoryId !== null).sort((a,b) => b.yearMonth.localeCompare(a.yearMonth)).map(b => (
+              <div key={b.id} className="flex items-center justify-between py-1.5 text-xs">
+                <span className="text-muted">{b.yearMonth}{b.categoryId ? ' · ' + (categories.find(c => c.id === b.categoryId)?.name || '分类') : ''}</span>
+                <span className="font-medium">{formatAmount(b.amount)}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Projects */}

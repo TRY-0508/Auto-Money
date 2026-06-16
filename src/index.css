@@ -121,6 +121,48 @@ body {
   box-shadow: 0 8px 30px rgba(217,119,6,0.08), 0 2px 8px rgba(0,0,0,0.04);
 }
 
+/* ── Card Color Tiers (visual hierarchy) ── */
+.card-accent {
+  background: rgba(245,158,11,0.06);
+  border: 1px solid rgba(245,158,11,0.12);
+}
+.dark .card-accent {
+  background: rgba(245,158,11,0.08);
+  border-color: rgba(245,158,11,0.15);
+}
+.card-stat {
+  background: rgba(255,255,255,0.72);
+  border: 1px solid rgba(255,255,255,0.6);
+}
+.dark .card-stat {
+  background: rgba(41,37,36,0.65);
+  border-color: rgba(255,255,255,0.1);
+}
+.card-chart {
+  background: rgba(255,255,255,0.88);
+  border: 1px solid rgba(255,255,255,0.7);
+}
+.dark .card-chart {
+  background: rgba(41,37,36,0.78);
+  border-color: rgba(255,255,255,0.12);
+}
+.card-list {
+  background: rgba(250,249,247,0.6);
+  border: 1px solid rgba(200,195,188,0.25);
+}
+.dark .card-list {
+  background: rgba(34,32,30,0.55);
+  border-color: rgba(255,255,255,0.06);
+}
+.card-soft {
+  background: rgba(255,255,255,0.45);
+  border: 1px solid rgba(255,255,255,0.4);
+}
+.dark .card-soft {
+  background: rgba(28,25,23,0.4);
+  border-color: rgba(255,255,255,0.05);
+}
+
 /* ── Buttons ── */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 0.375rem;
