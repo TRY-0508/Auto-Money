@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef } from 'react'
-import { useTransactions, useCategories, useProjects, useBudgets } from '@/db/hooks'
+import { useTransactions, useCategories, useProjects, useBudgets, useSettings } from '@/db/hooks'
 import { getMonthlyStats, getCategoryBreakdown, getDailyTrend } from '@/lib/stats'
 import { getCurrentYearMonth, formatAmount, formatDate } from '@/lib/utils'
 import { MOOD_LIST, MOOD_ICON_MAP, MOOD_COLOR_MAP, CATEGORY_ICON_MAP, MoreHorizontal, BarChart3, Trash2, PieChart, List, Calendar as CalendarIcon, Check, ArrowUpRight, ArrowDownRight, TrendingUp, Wallet } from '@/lib/icons'
@@ -54,7 +54,7 @@ export default function Dashboard() {
 
   const [yearMonth,setYearMonth]=useState(getCurrentYearMonth());const [year,month]=yearMonth.split('-').map(Number)
   const {transactions:all,updateTransaction,deleteTransaction}=useTransactions({month:yearMonth})
-  const {categories}=useCategories();const {projects}=useProjects();const {budgets}=useBudgets()
+  const {categories}=useCategories();const {projects}=useProjects();const {budgets}=useBudgets();const {settings}=useSettings()
   const txs=useMemo(()=>projectId?all.filter(t=>t.projectId===projectId):all,[all,projectId])
   const stats=useMemo(()=>getMonthlyStats(txs,yearMonth),[txs,yearMonth])
   const expBrk=useMemo(()=>getCategoryBreakdown(txs,categories,'expense',yearMonth),[txs,categories,yearMonth])
@@ -104,7 +104,8 @@ export default function Dashboard() {
       </select>
 
       {/* Mood Banner */}
-      <div className={`rounded-3xl p-6 text-white shadow-2xl relative overflow-hidden ${BANNER[moodKey]||BANNER.neutral}`}>
+      <div className={`rounded-3xl p-6 text-white shadow-2xl relative overflow-hidden ${settings?.themeMode!=='fixed'?BANNER[moodKey]||BANNER.neutral:''}`}
+        style={settings?.themeMode==='fixed'?{background:'var(--c-primary-gradient)'}:undefined}>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.2),transparent_50%),radial-gradient(circle_at_bottom_left,rgba(0,0,0,0.1),transparent_40%)]"/>
         <div className="absolute inset-0 dot-pattern"/>
         <div className="relative z-10 flex items-start justify-between">
