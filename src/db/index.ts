@@ -24,6 +24,20 @@ class AutoMoneyDB extends Dexie {
       jarGoals: 'id',
       coolDownEvents: 'id, goalId, status, cooldownEndsAt, createdAt',
       deficits: 'id, yearMonth, status',
+    }).upgrade(async tx => {
+      // Remove old traditional expense categories that aren't the 5 psychological ones
+      const OLD_TRADITIONAL = [
+        '餐饮', '交通', '购物', '娱乐', '住房', '医疗', '教育', '通讯', '日用',
+        '饮食', '咖啡', '美食', '汽车', '公交', '火车', '飞机', '游戏',
+        '宠物', '摄影', '音乐', '健身', '服饰', '美妆', '聚会', '灵感',
+        '健康', '维修', '工作', '礼物', '报销', '数码',
+      ]
+      const allCats = await tx.table('categories').toArray()
+      for (const cat of allCats) {
+        if (OLD_TRADITIONAL.includes(cat.name) && cat.isSystem !== false) {
+          await tx.table('categories').delete(cat.id)
+        }
+      }
     })
   }
 }

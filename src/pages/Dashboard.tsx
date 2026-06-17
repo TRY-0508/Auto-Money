@@ -1,5 +1,5 @@
-import { useState, useMemo, useEffect, useRef } from 'react'
-import { useTransactions, useCategories, useProjects, useSettings, useBudgets } from '@/db/hooks'
+import { useState, useMemo, useRef } from 'react'
+import { useTransactions, useCategories, useProjects, useBudgets } from '@/db/hooks'
 import { getMonthlyStats, getCategoryBreakdown, getDailyTrend } from '@/lib/stats'
 import { getCurrentYearMonth, formatAmount, formatDate } from '@/lib/utils'
 import { MOOD_LIST, MOOD_ICON_MAP, MOOD_COLOR_MAP, CATEGORY_ICON_MAP, MoreHorizontal, BarChart3, Trash2, PieChart, List, Calendar as CalendarIcon, Check, ArrowUpRight, ArrowDownRight, TrendingUp, Wallet } from '@/lib/icons'
@@ -64,22 +64,7 @@ export default function Dashboard() {
 
   const moodStats=useMemo(()=>{const m:Record<string,{count:number;totalSpent:number}>={};for(const t of txs){if(!t.mood||t.type!=='expense')continue;if(!m[t.mood])m[t.mood]={count:0,totalSpent:0};m[t.mood].count++;m[t.mood].totalSpent+=t.amount};return MOOD_LIST.filter(x=>m[x.value]).map(x=>({...x,...m[x.value]})).sort((a,b)=>b.count-a.count)},[txs])
 
-  const colorScheme = settings?.colorScheme || 'most-frequent'
-  const allTxWithMood = useMemo(() => txs.filter(t => t.mood && t.type === 'expense').sort((a,b) => b.date.localeCompare(a.date)), [txs])
-  const dom = useMemo(() => {
-    if (colorScheme === 'latest' && allTxWithMood.length > 0) {
-      return moodStats.find(m => m.value === allTxWithMood[0].mood)
-    }
-    if (colorScheme === 'neutral') return undefined
-    if (colorScheme === 'adaptive') {
-      const today = new Date().toISOString().slice(0,10)
-      const todayTx = allTxWithMood.filter(t => t.date === today)
-      if (todayTx.length > 0) return moodStats.find(m => m.value === todayTx[todayTx.length-1].mood)
-      return moodStats[0]
-    }
-    return moodStats[0]
-  }, [colorScheme, allTxWithMood, moodStats])
-  const moodKey = dom?.value || 'neutral'
+  const dom=moodStats[0];const moodKey=dom?.value||'neutral'
 
   const moodTimeline=useMemo(()=>{const today=new Date();return Array.from({length:14},(_,i)=>{const d=new Date(today);d.setDate(d.getDate()-(13-i));const ds=d.toISOString().slice(0,10);const dayTxs=txs.filter(t=>t.date===ds);const lm=dayTxs.filter(t=>t.mood).pop();return{date:ds,label:i===13?'今天':i===12?'昨天':`${d.getMonth()+1}/${d.getDate()}`,moodVal:lm?.mood||null,spent:dayTxs.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0)}})},[txs])
 
@@ -100,14 +85,6 @@ export default function Dashboard() {
 
   const hr=new Date().getHours();const greet=hr<6?'夜深了':hr<12?'早上好':hr<18?'下午好':'晚上好'
   const quotes:Record<string,string>={happy:'开心的消费是给自己的礼物',calm:'平静的日子，理性的支出',sad:'难过的日子也要对自己温柔',anxious:'焦虑时停一停，深呼吸',angry:'愤怒时别做决定，先冷静',excited:'兴奋是好事，也别忘了理性',tired:'累了就休息，别用购物犒劳自己',neutral:'记录心情，认识自己'}
-  useEffect(()=>{
-    if (settings?.themeMode !== 'dynamic') return
-    const root = document.documentElement
-    const moods = ['happy','calm','neutral','sad','anxious','angry','excited','tired']
-    moods.forEach(m => root.classList.remove(`theme-dynamic-${m}`))
-    root.classList.add(`theme-dynamic-${moodKey}`)
-    return () => { moods.forEach(m => root.classList.remove(`theme-dynamic-${m}`)) }
-  },[moodKey, settings?.themeMode])
   const DomIcon=dom?.Icon
 
   const incomeChange = prevStats.totalIncome > 0 ? Math.round(((stats.totalIncome - prevStats.totalIncome) / prevStats.totalIncome) * 100) : 0
@@ -275,7 +252,7 @@ export default function Dashboard() {
 
           <div className="flex flex-wrap items-center gap-1.5">
             <div className="flex rounded-full border border-gray-200/40 overflow-hidden bg-white/40 backdrop-blur">
-              {(['all','expense','income']as FilterType[]).map(t=><button key={t} onClick={()=>setFilterType(t)} className={`px-3 py-1.5 text-xs font-medium transition-all ${filterType===t?'bg-[var(--c-primary)] text-white shadow-sm':'text-gray-500 hover:bg-white/60'}`}>{t==='all'?'全部':t==='expense'?'支出':'收入'}</button>)}
+              {(['all','expense','income']as FilterType[]).map(t=><button key={t} onClick={()=>setFilterType(t)} className={`px-3 py-1.5 text-xs font-medium transition-all ${filterType===t?'bg-primary text-white shadow-sm':'text-gray-500 hover:bg-white/60'}`}>{t==='all'?'全部':t==='expense'?'支出':'收入'}</button>)}
             </div>
             <select value={filterMood} onChange={e=>setFilterMood(e.target.value)} className="px-2 py-1.5 rounded-full border border-gray-200/40 bg-white/40 backdrop-blur text-xs font-medium"><option value="">全部心情</option>{MOOD_LIST.map(m=><option key={m.value} value={m.value}>{m.label}</option>)}</select>
             <select value={filterCategory} onChange={e=>setFilterCategory(e.target.value)} className="px-2 py-1.5 rounded-full border border-gray-200/40 bg-white/40 backdrop-blur text-xs font-medium"><option value="">全部分类</option>{categories.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select>

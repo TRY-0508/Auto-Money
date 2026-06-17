@@ -159,7 +159,7 @@ export default function AddModal({ open, onClose }: Props) {
                   <textarea value={textInput} onChange={e => setTextInput(e.target.value)} placeholder="用自然语言描述这笔收支" rows={3} className="w-full px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-amber-300" onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleParse() } }} />
                   <div className="flex gap-2">
                     <button onClick={() => { setStep('manual'); setParsed(null) }} className="flex-1 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 text-sm text-gray-500">手动填写</button>
-                     <button onClick={handleParse} disabled={loading || !textInput.trim()} className="flex-1 py-3 rounded-2xl bg-[var(--c-primary-gradient)] text-white text-sm font-medium disabled:opacity-50">AI 解析</button>
+                     <button onClick={handleParse} disabled={loading || !textInput.trim()} className="flex-1 py-3 rounded-2xl bg-primary-gradient text-white text-sm font-medium disabled:opacity-50">AI 解析</button>
                   </div>
                 </>
               ) : (
@@ -189,7 +189,7 @@ export default function AddModal({ open, onClose }: Props) {
                   )}
                   {!voiceText && !voiceProcessing ? (
                     <button type="button" onClick={handleVoiceToggle}
-                       className={`w-full py-14 rounded-3xl text-sm font-medium text-white transition-all select-none ${voiceListening ? 'bg-red-400 scale-95' : 'bg-[var(--c-primary-gradient)] active:scale-95'}`}
+                       className={`w-full py-14 rounded-3xl text-sm font-medium text-white transition-all select-none ${voiceListening ? 'bg-red-400 scale-95' : 'bg-primary-gradient active:scale-95'}`}
                       style={{ userSelect: 'none', WebkitUserSelect: 'none' }}>
                       {voiceListening ? '点击停止' : '点击开始录音'}
                     </button>
@@ -198,7 +198,7 @@ export default function AddModal({ open, onClose }: Props) {
                   ) : (
                     <div className="flex gap-2">
                       <button onClick={() => { setVoiceText(''); setVoiceListening(false); setVoiceProcessing(false) }} className="flex-1 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 text-sm text-gray-500">重新录入</button>
-                       <button onClick={handleVoiceConfirm} className="flex-1 py-3 rounded-2xl bg-[var(--c-primary-gradient)] text-white text-sm font-medium">AI 解析</button>
+                       <button onClick={handleVoiceConfirm} className="flex-1 py-3 rounded-2xl bg-primary-gradient text-white text-sm font-medium">AI 解析</button>
                     </div>
                   )}
                 </div>
@@ -229,7 +229,7 @@ export default function AddModal({ open, onClose }: Props) {
               {!categories.find(c => c.name === parsed.category && c.type === parsed.type) && <div className="p-3 rounded-2xl bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 text-xs text-yellow-700 dark:text-yellow-400">「{parsed.category}」不在现有分类中，确认后将自动创建</div>}
               <div className="flex gap-2">
                 <button onClick={() => { setStep('input'); setParsed(null); setTextInput('') }} className="flex-1 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 text-sm">重新输入</button>
-                 <button onClick={handleConfirmParsed} className="flex-1 py-3 rounded-2xl bg-[var(--c-primary-gradient)] text-white text-sm font-medium">确认并编辑</button>
+                 <button onClick={handleConfirmParsed} className="flex-1 py-3 rounded-2xl bg-primary-gradient text-white text-sm font-medium">确认并编辑</button>
               </div>
             </div>
           )}
@@ -264,7 +264,7 @@ export default function AddModal({ open, onClose }: Props) {
                 <div className="p-3 rounded-2xl bg-gray-50 dark:bg-gray-800 space-y-2">
                   <div className="flex gap-2">
                     <input type="text" value={newCatName} onChange={e => setNewCatName(e.target.value)} placeholder="分类名称" autoFocus onKeyDown={e => e.key === 'Enter' && handleQuickAddCat()} className="flex-1 px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 text-sm" />
-                    <button onClick={handleQuickAddCat} disabled={!newCatName.trim()} className="px-4 py-2 rounded-xl bg-[var(--c-primary)] text-white text-sm font-medium disabled:opacity-50">添加</button>
+                    <button onClick={handleQuickAddCat} disabled={!newCatName.trim()} className="px-4 py-2 rounded-xl bg-primary text-white text-sm font-medium disabled:opacity-50">添加</button>
                   </div>
                   <div className="flex gap-1 flex-wrap max-h-20 overflow-y-auto">
                     {CAT_ICON_OPTIONS.map(({ key, Icon }) => (

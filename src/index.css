@@ -139,6 +139,9 @@ body {
 
 /* ── Semantic Backgrounds ── */
 .bg-primary-soft { background: var(--c-primary-soft); }
+.bg-primary { background: var(--c-primary); }
+.bg-primary-gradient { background: var(--c-primary-gradient); }
+.text-primary { color: var(--c-primary); }
 .bg-income-soft { background: rgba(16,185,129,0.08); }
 .bg-expense-soft { background: rgba(244,63,94,0.08); }
 
