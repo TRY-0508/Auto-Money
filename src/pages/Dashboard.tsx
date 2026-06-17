@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef } from 'react'
-import { useTransactions, useCategories, useProjects, useBudgets, useSettings } from '@/db/hooks'
+import { useTransactions, useCategories, useProjects, useSettings, useJarGoals } from '@/db/hooks'
 import { getMonthlyStats, getCategoryBreakdown, getDailyTrend } from '@/lib/stats'
 import { getCurrentYearMonth, formatAmount, formatDate } from '@/lib/utils'
 import { CATEGORY_DESCRIPTIONS } from '@/lib/constants'
@@ -80,7 +80,7 @@ export default function Dashboard() {
 
   const [yearMonth,setYearMonth]=useState(getCurrentYearMonth());const [year,month]=yearMonth.split('-').map(Number)
   const {transactions:all,updateTransaction,deleteTransaction}=useTransactions({month:yearMonth})
-  const {categories}=useCategories();const {projects}=useProjects();const {budgets}=useBudgets();const {settings}=useSettings()
+  const {categories}=useCategories();const {projects}=useProjects();const {settings}=useSettings();const {goals,updateGoal}=useJarGoals()
   const txs=useMemo(()=>projectId?all.filter(t=>t.projectId===projectId):all,[all,projectId])
   const stats=useMemo(()=>getMonthlyStats(txs,yearMonth),[txs,yearMonth])
   const expBrk=useMemo(()=>getCategoryBreakdown(txs,categories,'expense',yearMonth),[txs,categories,yearMonth])
@@ -100,12 +100,7 @@ export default function Dashboard() {
   const filtered=useMemo(()=>{let d=txs;if(filterType!=='all')d=d.filter(t=>t.type===filterType);if(filterMood)d=d.filter(t=>t.mood===filterMood);if(filterCategory)d=d.filter(t=>t.categoryId===filterCategory);if(dateFrom)d=d.filter(t=>t.date>=dateFrom);if(dateTo)d=d.filter(t=>t.date<=dateTo);if(selectedDay)d=d.filter(t=>t.date===selectedDay);if(searchQuery.trim()){const q=searchQuery.toLowerCase();d=d.filter(t=>t.description.toLowerCase().includes(q)||(categories.find(c=>c.id===t.categoryId)?.name||'').toLowerCase().includes(q))};return d},[txs,filterType,filterMood,filterCategory,dateFrom,dateTo,selectedDay,searchQuery,categories])
   const grouped=useMemo(()=>{const g:Record<string,Transaction[]>={};for(const t of filtered)g[t.date]=[...(g[t.date]||[]),t];return Object.entries(g).sort((a,b)=>b[0].localeCompare(a[0]))},[filtered])
   const calTxs=useMemo(()=>all.filter(t=>t.date.startsWith(calendarMonth)),[all,calendarMonth])
-
-  const currentBudget = useMemo(() => budgets.find(b => b.yearMonth === yearMonth && b.categoryId === null), [budgets, yearMonth])
-  const budgetUsed = currentBudget ? stats.totalExpense : 0
-  const budgetPct = currentBudget && currentBudget.amount > 0 ? Math.min((budgetUsed / currentBudget.amount) * 100, 100) : 0
-  const budgetRemaining = currentBudget ? Math.max(currentBudget.amount - budgetUsed, 0) : 0
-  const budgetOverspent = currentBudget ? Math.max(budgetUsed - currentBudget.amount, 0) : 0
+  const todayStr=new Date().toISOString().slice(0,10);const todayBalance=useMemo(()=>{const dt=all.filter(t=>t.date===todayStr);return dt.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0)-dt.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0)},[all,todayStr])
 
   const hEdit=(t:Transaction)=>{setEditing(t);setEAmt(String(t.amount));setEDesc(t.description);setEDate(t.date);setECat(t.categoryId);setEType(t.type);setEMood(t.mood||'');setEProj(t.projectId||'')}
   const hSave=async()=>{if(!editing)return;const a=parseFloat(eAmt);if(!a||a<=0)return;await updateTransaction(editing.id,{amount:a,description:eDesc,date:eDate,categoryId:eCat,type:eType,mood:eMood||undefined,projectId:eProj||undefined});setEditing(null)}
@@ -224,10 +219,15 @@ export default function Dashboard() {
                 <p className="text-[10px] text-muted mt-0.5">{stats.count}笔</p>
               </div>
               <div className="p-3 sm:p-4">
-                <p className="text-[10px] text-muted mb-0.5">预算</p>
-                {currentBudget?<>
-                  <p className="text-base sm:text-lg font-bold amount truncate">{Math.round(budgetPct)}%</p>
-                  <div className="mt-1 h-1 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden"><div className={`h-full rounded-full ${budgetPct>90?'bg-red-400':budgetPct>70?'bg-amber-400':'bg-emerald-400'}`} style={{width:`${budgetPct}%`}}/></div>
+                <p className="text-[10px] text-muted mb-0.5">今日结余</p>
+                {todayBalance!==0?<>
+                  <p className={`text-base sm:text-lg font-bold amount truncate ${todayBalance<0?'text-red-400':''}`}>{formatAmount(todayBalance)}</p>
+                  {goals.length>0&&(
+                    <select onChange={async(e)=>{const gid=e.target.value;if(!gid)return;const g=goals.find(x=>x.id===gid);if(!g)return;await updateGoal(gid,{currentAmount:g.currentAmount+Math.max(todayBalance,0),starCount:g.starCount+(todayBalance>0?1:0)});e.target.value=''}} className="mt-1 text-[9px] bg-gray-50 dark:bg-gray-800 rounded-lg px-1 py-0.5 w-full">
+                      <option value="">{todayBalance>0?'存入心愿':'记录亏空'}</option>
+                      {goals.map(g=><option key={g.id} value={g.id}>{g.name}</option>)}
+                    </select>
+                  )}
                 </>:<p className="text-sm text-muted">—</p>}
               </div>
             </div>
@@ -277,7 +277,6 @@ export default function Dashboard() {
             </div>
             <div className="flex justify-between text-[9px] text-muted px-1 mt-0.5">
               <span>收 {formatAmount(stats.totalIncome)}</span>
-              {currentBudget&&<span>预算 {formatAmount(currentBudget.amount)} ({Math.round(budgetPct)}%)</span>}
               <span className={stats.balance<0?'text-red-400':''}>余 {formatAmount(stats.balance)}</span>
             </div>
           </div>
