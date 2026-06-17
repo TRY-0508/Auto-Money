@@ -75,6 +75,7 @@ export default function Dashboard() {
   const [calendarMonth,setCalendarMonth]=useState(getCurrentYearMonth());const [selectedDay,setSelectedDay]=useState<string|null>(null)
   const [calendarView,setCalendarView]=useState<'expense'|'income'|'balance'>('expense')
   const [showCalendar,setShowCalendar]=useState(false);const [showAdd,setShowAdd]=useState(false)
+  const [showSavePopup,setShowSavePopup]=useState(false);const [saveGoalId,setSaveGoalId]=useState('')
   const [editing,setEditing]=useState<Transaction|null>(null);const [deleteId,setDeleteId]=useState<string|null>(null)
   const [eAmt,setEAmt]=useState('');const [eDesc,setEDesc]=useState('');const [eDate,setEDate]=useState('');const [eCat,setECat]=useState('');const [eType,setEType]=useState<'expense'|'income'>('expense');const [eMood,setEMood]=useState('');const [eProj,setEProj]=useState('')
 
@@ -222,15 +223,7 @@ export default function Dashboard() {
                 <p className="text-[10px] text-muted mb-0.5">今日结余</p>
                 {todayBalance!==0?<>
                   <p className={`text-base sm:text-lg font-bold amount truncate ${todayBalance<0?'text-red-400':''}`}>{formatAmount(todayBalance)}</p>
-                  {goals.length>0&&todayBalance!==0&&(
-                    <div className="flex gap-1 mt-1">
-                      <select id="goalSelect" className="text-[9px] bg-gray-50 dark:bg-gray-800 rounded-lg px-1 py-0.5 flex-1 min-w-0">
-                        <option value="">选择心愿</option>
-                        {goals.map(g=><option key={g.id} value={g.id}>{g.name}</option>)}
-                      </select>
-                      <button onClick={async()=>{const sel=document.getElementById('goalSelect')as HTMLSelectElement;const gid=sel?.value;if(!gid)return;const g=goals.find(x=>x.id===gid);if(!g)return;await updateGoal(gid,{currentAmount:g.currentAmount+Math.max(0,todayBalance)});sel.value=''}} className="text-[9px] bg-primary-gradient text-white rounded-lg px-2 py-0.5 font-medium whitespace-nowrap">{todayBalance>0?'存入':'记录'}</button>
-                    </div>
-                  )}
+                  {goals.length>0&&<button onClick={()=>setShowSavePopup(true)} className="mt-1 text-[9px] bg-primary-gradient text-white rounded-lg px-2 py-0.5 font-medium">{todayBalance>0?'存入心愿':'记录亏空'}</button>}
                 </>:<p className="text-sm text-muted">—</p>}
               </div>
             </div>
@@ -395,6 +388,30 @@ export default function Dashboard() {
 
       <button onClick={()=>setShowAdd(true)} className="fab fixed bottom-safe right-6 rounded-2xl text-white text-2xl z-40 flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-200 font-light shadow-2xl">+</button>
       <AddModal open={showAdd} onClose={()=>setShowAdd(false)}/>
+
+      {showSavePopup&&(
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-end md:items-center justify-center p-4 fade-in backdrop-blur-sm" onClick={()=>setShowSavePopup(false)}>
+          <div className="bg-white dark:bg-gray-900 rounded-t-3xl md:rounded-3xl w-full max-w-xs shadow-2xl p-5" onClick={e=>e.stopPropagation()}>
+            <h3 className="font-bold text-lg mb-1">{todayBalance>0?'存入心愿':'记录亏空'}</h3>
+            <p className="text-sm text-muted mb-4">{formatAmount(todayBalance)} 将转入所选心愿</p>
+            <div className="space-y-2 mb-4">
+              {goals.map(g=>(
+                <button key={g.id} onClick={()=>setSaveGoalId(g.id)} className={`w-full text-left p-3 rounded-xl border transition-all flex items-center justify-between ${saveGoalId===g.id?'border-[var(--c-primary)] bg-[var(--c-primary-soft)]':'border-gray-200 dark:border-gray-700 hover:border-gray-300'}`}>
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm" style={{background:g.color}}>{g.name.charAt(0)}</div>
+                    <div><p className="text-sm font-medium">{g.name}</p><p className="text-[10px] text-muted">{formatAmount(g.currentAmount)} / {formatAmount(g.targetAmount)}</p></div>
+                  </div>
+                  {saveGoalId===g.id&&<Check size={16} className="text-accent"/>}
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <button onClick={()=>setShowSavePopup(false)} className="btn btn-secondary flex-1 text-sm">取消</button>
+              <button onClick={async()=>{if(!saveGoalId)return;const g=goals.find(x=>x.id===saveGoalId);if(!g)return;await updateGoal(saveGoalId,{currentAmount:g.currentAmount+Math.max(0,todayBalance)});setShowSavePopup(false);setSaveGoalId('')}} disabled={!saveGoalId} className="btn btn-primary flex-1 text-sm">{todayBalance>0?'确认存入':'确认记录'}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
