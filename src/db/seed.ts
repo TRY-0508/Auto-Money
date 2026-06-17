@@ -20,12 +20,16 @@ const INCOME_CATEGORIES: Omit<Category, 'id'>[] = [
 ]
 
 export async function seedDatabase() {
-  const catCount = await db.categories.count()
-  if (catCount > 0) return
+  const cats = await db.categories.toArray()
+  const hasExpense = EXPENSE_CATEGORIES.every(seed => cats.some(c => c.name === seed.name && c.type === 'expense'))
+  const hasIncome = INCOME_CATEGORIES.every(seed => cats.some(c => c.name === seed.name && c.type === 'income'))
 
   const allCategories = [...EXPENSE_CATEGORIES, ...INCOME_CATEGORIES]
   for (const cat of allCategories) {
-    await db.categories.add({ id: generateId(), ...cat })
+    const exists = cats.some(c => c.name === cat.name && c.type === cat.type)
+    if (!exists) {
+      await db.categories.add({ id: generateId(), ...cat })
+    }
   }
 
   const settingsCount = await db.settings.count()
