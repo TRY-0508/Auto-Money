@@ -14,17 +14,37 @@ const BANNER: Record<string, string> = { happy:'banner-happy',calm:'banner-calm'
 type FilterType = 'all'|'expense'|'income'
 const CHART_COLORS = ['#3b82f6','#10b981','#f43f5e','#f59e0b','#f97316','#ec4899','#06b6d4','#84cc16','#d97706','#14b8a6','#eab308','#78716c']
 
-function CalendarHeatmap({ transactions, yearMonth, selectedDay, onSelectDay, onMonthChange }: { transactions: Transaction[]; yearMonth: string; selectedDay: string|null; onSelectDay:(d:string|null)=>void; onMonthChange:(ym:string)=>void }) {
+function CalendarHeatmap({ transactions, yearMonth, selectedDay, onSelectDay, onMonthChange, view }: { transactions: Transaction[]; yearMonth: string; selectedDay: string|null; onSelectDay:(d:string|null)=>void; onMonthChange:(ym:string)=>void; view: 'expense'|'income'|'balance' }) {
   const [y,m]=yearMonth.split('-').map(Number); const dim=new Date(y,m,0).getDate(); const fd=new Date(y,m-1,1).getDay(); const today=new Date().toISOString().slice(0,10)
-  const dt=useMemo(()=>{const mp:Record<string,number>={};for(const t of transactions){if(t.type==='expense')mp[t.date]=(mp[t.date]||0)+t.amount}return mp},[transactions])
-  const mx=Math.max(...Object.values(dt),1);const wks:(number|null)[][]=[];let wk:(number|null)[]=[]
+  const dt=useMemo(()=>{
+    const mp:Record<string,number>={};
+    if(view==='balance'){for(const t of transactions)mp[t.date]=(mp[t.date]||0)+(t.type==='income'?t.amount:-t.amount)}
+    else{for(const t of transactions){if(t.type===view)mp[t.date]=(mp[t.date]||0)+t.amount}}
+    return mp
+  },[transactions,view])
+  const vals=Object.values(dt);const mx=Math.max(...vals,1);const mn=Math.min(...vals,0)
+  const wks:(number|null)[][]=[];let wk:(number|null)[]=[]
   for(let i=0;i<fd;i++)wk.push(null);for(let d=1;d<=dim;d++){wk.push(d);if(wk.length===7){wks.push(wk);wk=[]}};if(wk.length>0){while(wk.length<7)wk.push(null);wks.push(wk)}
-  const cl=(day:number|null,ds:string)=>{if(day===null)return'';const t=dt[ds]||0;if(t===0)return'bg-gray-100 dark:bg-gray-800 text-gray-400';const r=t/mx;if(r>.66)return'bg-red-400/80 dark:bg-red-600/80 text-white';if(r>.33)return'bg-orange-300/80 dark:bg-orange-600/80 text-white';return'bg-yellow-200/80 dark:bg-yellow-700/80 text-gray-700'}
+  const cl=(day:number|null,ds:string)=>{
+    if(day===null)return''
+    const t=dt[ds]
+    if(t===undefined||t===0)return'bg-gray-100 dark:bg-gray-800 text-gray-400'
+    if(view==='balance'){
+      if(t>0){const r=t/mx;if(r>.66)return'bg-emerald-500/70 text-white';if(r>.33)return'bg-emerald-300/60 text-emerald-800';return'bg-emerald-200/50 text-emerald-700'}
+      else{const r=Math.abs(t)/Math.abs(mn);if(r>.66)return'bg-red-500/70 text-white';if(r>.33)return'bg-red-300/60 text-red-800';return'bg-red-200/50 text-red-700'}
+    }
+    if(view==='income'){const r=t/mx;if(r>.66)return'bg-emerald-500/70 text-white';if(r>.33)return'bg-emerald-300/60 text-emerald-800';return'bg-emerald-200/50 text-emerald-700'}
+    const r=t/mx;if(r>.66)return'bg-red-400/80 dark:bg-red-600/80 text-white';if(r>.33)return'bg-orange-300/80 dark:bg-orange-600/80 text-white';return'bg-yellow-200/80 dark:bg-yellow-700/80 text-gray-700'
+  }
   const pv=()=>{let ny=y,nm=m-1;if(nm===0){nm=12;ny--};onMonthChange(`${ny}-${String(nm).padStart(2,'0')}`)};const nx=()=>{let ny=y,nm=m+1;if(nm===13){nm=1;ny++};onMonthChange(`${ny}-${String(nm).padStart(2,'0')}`)}
   const tr=useRef(0)
   return (
-    <div className="card card-chart p-4" onTouchStart={e=>{tr.current=e.touches[0].clientX}} onTouchEnd={e=>{const d=tr.current-e.changedTouches[0].clientX;if(Math.abs(d)>60)d>0?nx():pv()}}>
-      <div className="flex items-center justify-between mb-2"><button onClick={pv} className="p-1 text-gray-400 hover:text-accent text-lg">‹</button><h3 className="text-sm font-semibold">月历</h3><button onClick={nx} className="p-1 text-gray-400 hover:text-accent text-lg">›</button></div>
+    <div className="card card-chart p-3 sm:p-4" onTouchStart={e=>{tr.current=e.touches[0].clientX}} onTouchEnd={e=>{const d=tr.current-e.changedTouches[0].clientX;if(Math.abs(d)>60)d>0?nx():pv()}}>
+      <div className="flex items-center justify-between mb-2">
+        <button onClick={pv} className="p-1 text-gray-400 hover:text-accent text-lg">‹</button>
+        <div className="flex items-center gap-1.5 text-xs font-semibold"><span>{yearMonth}</span></div>
+        <button onClick={nx} className="p-1 text-gray-400 hover:text-accent text-lg">›</button>
+      </div>
       <div className="grid grid-cols-7 gap-1 mb-1">{['日','一','二','三','四','五','六'].map(d=><div key={d} className="text-center text-[10px] text-gray-400 font-medium">{d}</div>)}</div>
       {wks.map((w,wi)=>(
         <div key={wi} className="grid grid-cols-7 gap-1 mb-1">
@@ -39,7 +59,12 @@ function CalendarHeatmap({ transactions, yearMonth, selectedDay, onSelectDay, on
           })}
         </div>
       ))}
-      <div className="flex items-center justify-center gap-2 mt-2 text-[10px] text-gray-400"><span>少</span><div className="w-3 h-3 rounded-sm bg-gray-100 dark:bg-gray-800"/><div className="w-3 h-3 rounded-sm bg-yellow-200/80 dark:bg-yellow-700/80"/><div className="w-3 h-3 rounded-sm bg-orange-300/80 dark:bg-orange-600/80"/><div className="w-3 h-3 rounded-sm bg-red-400/80 dark:bg-red-600/80"/><span>多</span>{selectedDay&&<button onClick={()=>onSelectDay(null)} className="ml-auto text-accent font-medium">清除</button>}</div>
+      <div className="flex items-center justify-between mt-2 text-[10px]">
+        {view==='expense'&&<div className="flex items-center gap-1.5 text-gray-400"><span>少</span><div className="w-2.5 h-2.5 rounded-sm bg-gray-100 dark:bg-gray-800"/><div className="w-2.5 h-2.5 rounded-sm bg-yellow-200/80 dark:bg-yellow-700/80"/><div className="w-2.5 h-2.5 rounded-sm bg-orange-300/80 dark:bg-orange-600/80"/><div className="w-2.5 h-2.5 rounded-sm bg-red-400/80 dark:bg-red-600/80"/><span>多</span></div>}
+        {view==='income'&&<div className="flex items-center gap-1.5 text-gray-400"><span>少</span><div className="w-2.5 h-2.5 rounded-sm bg-gray-100 dark:bg-gray-800"/><div className="w-2.5 h-2.5 rounded-sm bg-emerald-200/50"/><div className="w-2.5 h-2.5 rounded-sm bg-emerald-300/60"/><div className="w-2.5 h-2.5 rounded-sm bg-emerald-500/70"/><span>多</span></div>}
+        {view==='balance'&&<div className="flex items-center gap-1.5 text-gray-400"><span>亏</span><div className="w-2.5 h-2.5 rounded-sm bg-red-500/70"/><div className="w-2.5 h-2.5 rounded-sm bg-red-200/50"/><div className="w-2.5 h-2.5 rounded-sm bg-emerald-200/50"/><div className="w-2.5 h-2.5 rounded-sm bg-emerald-500/70"/><span>盈</span></div>}
+        {selectedDay&&<button onClick={()=>onSelectDay(null)} className="text-accent font-medium">清除</button>}
+      </div>
     </div>
   )
 }
@@ -48,6 +73,7 @@ export default function Dashboard() {
   const [projectId,setProjectId]=useState<string|null>(null);const [filterType,setFilterType]=useState<FilterType>('all');const [filterMood,setFilterMood]=useState('');const [filterCategory,setFilterCategory]=useState('')
   const [dateFrom,setDateFrom]=useState('');const [dateTo,setDateTo]=useState('');const [searchQuery,setSearchQuery]=useState('')
   const [calendarMonth,setCalendarMonth]=useState(getCurrentYearMonth());const [selectedDay,setSelectedDay]=useState<string|null>(null)
+  const [calendarView,setCalendarView]=useState<'expense'|'income'|'balance'>('expense')
   const [showCalendar,setShowCalendar]=useState(false);const [showAdd,setShowAdd]=useState(false)
   const [editing,setEditing]=useState<Transaction|null>(null);const [deleteId,setDeleteId]=useState<string|null>(null)
   const [eAmt,setEAmt]=useState('');const [eDesc,setEDesc]=useState('');const [eDate,setEDate]=useState('');const [eCat,setECat]=useState('');const [eType,setEType]=useState<'expense'|'income'>('expense');const [eMood,setEMood]=useState('');const [eProj,setEProj]=useState('')
@@ -212,7 +238,7 @@ export default function Dashboard() {
           {/* Charts Row — two compact donuts side by side */}
           <div className="grid grid-cols-2 gap-2 sm:gap-4">
             <div className="card card-chart p-2 sm:p-4">
-              <div className="flex items-center gap-1.5 mb-1.5 px-0.5"><PieChart size={13} strokeWidth={1.8} className="text-accent"/><span className="text-[10px] sm:text-xs font-semibold">五型消费</span></div>
+              <div className="flex items-center gap-1.5 mb-1.5 px-0.5"><PieChart size={13} strokeWidth={1.8} className="text-accent"/><span className="text-[10px] sm:text-xs font-semibold">消费分布</span></div>
               {expBrk.length>0?(
                 <div className="flex items-center gap-1.5 sm:gap-3">
                   <div className="w-14 h-14 sm:w-24 sm:h-24 flex-shrink-0 relative">
@@ -229,7 +255,7 @@ export default function Dashboard() {
             </div>
 
             <div className="card card-chart p-2 sm:p-4">
-              <div className="flex items-center gap-1.5 mb-1.5 px-0.5"><PieChart size={13} strokeWidth={1.8} className="text-accent"/><span className="text-[10px] sm:text-xs font-semibold">心情比例</span></div>
+              <div className="flex items-center gap-1.5 mb-1.5 px-0.5"><PieChart size={13} strokeWidth={1.8} className="text-accent"/><span className="text-[10px] sm:text-xs font-semibold">心情分布</span></div>
               {moodBarData.length>0?(
                 <div className="flex items-center gap-1.5 sm:gap-3">
                   <div className="w-14 h-14 sm:w-24 sm:h-24 flex-shrink-0 relative">
@@ -292,7 +318,19 @@ export default function Dashboard() {
               )})}</div>
             </div>
           </div>
-          {showCalendar&&<CalendarHeatmap transactions={calTxs} yearMonth={calendarMonth} selectedDay={selectedDay} onSelectDay={setSelectedDay} onMonthChange={setCalendarMonth}/>}
+          {showCalendar&&<>
+            <div className="flex rounded-full border border-gray-200/40 overflow-hidden bg-white/40 backdrop-blur w-fit mx-auto">
+              {(['expense','income','balance']as const).map(v=><button key={v} onClick={()=>setCalendarView(v)} className={`px-3 py-1 text-[10px] font-medium transition-all ${calendarView===v?'bg-[var(--c-primary)] text-white shadow-sm':'text-gray-500 hover:bg-white/60'}`}>{v==='expense'?'支出':v==='income'?'收入':'结余'}</button>)}
+            </div>
+            <CalendarHeatmap transactions={calTxs} yearMonth={calendarMonth} selectedDay={selectedDay} onSelectDay={setSelectedDay} onMonthChange={setCalendarMonth} view={calendarView}/>
+            {selectedDay&&(()=>{const dayTx=txs.filter(t=>t.date===selectedDay);const dIn=dayTx.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);const dEx=dayTx.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);return(
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="rounded-xl bg-emerald-50 dark:bg-emerald-900/20 p-2"><p className="text-[9px] text-muted">{selectedDay.slice(5)} 收入</p><p className="text-xs font-bold text-emerald-600">{formatAmount(dIn)}</p></div>
+                <div className="rounded-xl bg-rose-50 dark:bg-rose-900/20 p-2"><p className="text-[9px] text-muted">{selectedDay.slice(5)} 支出</p><p className="text-xs font-bold text-rose-500">{formatAmount(dEx)}</p></div>
+                <div className="rounded-xl bg-gray-50 dark:bg-gray-800 p-2"><p className="text-[9px] text-muted">{selectedDay.slice(5)} 结余</p><p className={`text-xs font-bold ${dIn-dEx<0?'text-red-400':''}`}>{formatAmount(dIn-dEx)}</p></div>
+              </div>
+            )})()}
+          </>}
 
           <div className="flex flex-wrap items-center gap-1.5">
             <div className="flex rounded-full border border-gray-200/40 overflow-hidden bg-white/40 backdrop-blur">

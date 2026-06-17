@@ -6,7 +6,7 @@ import { DEFAULT_SETTINGS } from '@/lib/constants'
 const EXPENSE_CATEGORIES: Omit<Category, 'id'>[] = [
   { name: '必要消费', type: 'expense', icon: 'home', color: '#3b82f6', isSystem: true },
   { name: '价值消费', type: 'expense', icon: 'trending-up', color: '#10b981', isSystem: true },
-  { name: '情绪消费', type: 'expense', icon: 'heart', color: '#f43f5e', isSystem: true },
+  { name: '情绪消费', type: 'expense', icon: 'sparkles', color: '#f43f5e', isSystem: true },
   { name: '冲动消费', type: 'expense', icon: 'zap', color: '#f59e0b', isSystem: true },
   { name: '意外消费', type: 'expense', icon: 'alert-triangle', color: '#f97316', isSystem: true },
 ]
