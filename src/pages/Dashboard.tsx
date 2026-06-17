@@ -219,12 +219,10 @@ export default function Dashboard() {
                 <p className={`text-base sm:text-lg font-bold amount truncate ${stats.balance<0?'text-red-400':''}`}>{formatAmount(stats.balance)}</p>
                 <p className="text-[10px] text-muted mt-0.5">{stats.count}笔</p>
               </div>
-              <div className="p-3 sm:p-4">
+              <div className="p-3 sm:p-4 relative">
                 <p className="text-[10px] text-muted mb-0.5">今日结余</p>
-                {todayBalance!==0?<>
-                  <p className={`text-base sm:text-lg font-bold amount truncate ${todayBalance<0?'text-red-400':''}`}>{formatAmount(todayBalance)}</p>
-                  {goals.length>0&&<button onClick={()=>setShowSavePopup(true)} className="mt-1 text-[9px] bg-primary-gradient text-white rounded-lg px-2 py-0.5 font-medium">{todayBalance>0?'存入心愿':'记录亏空'}</button>}
-                </>:<p className="text-sm text-muted">—</p>}
+                <p className={`text-base sm:text-lg font-bold amount truncate ${todayBalance<0?'text-red-400':''}`}>{formatAmount(todayBalance)}</p>
+                {todayBalance!==0&&goals.length>0&&<button onClick={()=>setShowSavePopup(true)} className="absolute right-3 bottom-3 text-[9px] bg-[var(--c-primary-soft)] hover:bg-[var(--c-primary-soft)] text-accent rounded-lg px-2 py-1 font-medium">{todayBalance>0?'存入' :'记录'}</button>}
               </div>
             </div>
           </div>

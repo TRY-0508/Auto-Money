@@ -15,10 +15,10 @@ interface Props {
   targetAmount: number
   currentAmount: number
   color: string
-  resistedEvents: ResistRecord[]
+  resistedEvents?: ResistRecord[]
 }
 
-export default function StarJar({ starCount, targetAmount, currentAmount, color, resistedEvents }: Props) {
+export default function StarJar({ starCount, targetAmount, currentAmount, color, resistedEvents = [] }: Props) {
   const [selected, setSelected] = useState<ResistRecord | null>(null)
   const [hovered, setHovered] = useState<string | null>(null)
   const fillPercent = targetAmount > 0 ? Math.min((currentAmount / targetAmount) * 100, 100) : 0
