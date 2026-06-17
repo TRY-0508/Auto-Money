@@ -192,23 +192,6 @@ function PsychTab() {
         ) : <p className="text-xs text-muted text-center py-8">暂无心情数据</p>}
       </div>
 
-      {/* Mood list with details */}
-      <div className="card card-list p-4">
-        <h3 className="text-xs font-semibold text-muted mb-3">详细数据</h3>
-        {moodData.length > 0 ? (
-          <div className="space-y-2">
-            {moodData.map(m => (
-              <div key={m.label} className="flex items-center gap-3 p-2.5 rounded-xl bg-white/60 dark:bg-gray-800/40">
-                <m.Icon size={20} strokeWidth={1.8} color={m.color} />
-                <span className="flex-1 font-medium text-sm">{m.label}</span>
-                <span className="text-muted text-xs">{m.count}笔</span>
-                <span className="font-semibold text-accent dark:text-accent text-sm">{formatAmount(m.amount)}</span>
-              </div>
-            ))}
-          </div>
-        ) : <p className="text-xs text-muted text-center py-4">请先记录带心情的消费</p>}
-      </div>
-
       {error && <div className="mb-4 p-3 rounded-2xl bg-red-50 dark:bg-red-900/20 text-red-500 text-sm flex items-center gap-2"><AlertTriangle size={14} />{error}</div>}
       <button onClick={handleGenerate} disabled={loading || moodData.length === 0}
         className="w-full py-3 rounded-2xl bg-primary-gradient text-white text-sm font-semibold disabled:opacity-50 hover:brightness-110 transition-all shadow-lg">
