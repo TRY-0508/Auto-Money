@@ -85,7 +85,7 @@ export default function Dashboard() {
   const stats=useMemo(()=>getMonthlyStats(txs,yearMonth),[txs,yearMonth])
   const expBrk=useMemo(()=>getCategoryBreakdown(txs,categories,'expense',yearMonth),[txs,categories,yearMonth])
   const incBrk=useMemo(()=>getCategoryBreakdown(txs,categories,'income',yearMonth),[txs,categories,yearMonth])
-  const dailyTrend=useMemo(()=>getDailyTrend(txs,30),[txs])
+  const dailyTrend=useMemo(()=>getDailyTrend(txs,14),[txs])
   const flowData=useMemo(()=>dailyTrend.map(d=>({date:d.date.slice(5),收入:d.income,支出:d.expense,结余:d.income-d.expense})),[dailyTrend])
   const prevStats=useMemo(()=>{const [y,m]=yearMonth.split('-').map(Number);let py=y,pm=m-1;if(pm===0){pm=12;py--};return getMonthlyStats(all,`${py}-${String(pm).padStart(2,'0')}`)},[all,yearMonth])
 
@@ -241,21 +241,21 @@ export default function Dashboard() {
                 {expBrk.length>0?<div className="flex flex-col items-center gap-1 mt-1"><div className="w-16 h-16 sm:w-20 sm:h-20 relative"><ResponsiveContainer><RPie><Pie data={expBrk} cx="50%" cy="50%" innerRadius={18} outerRadius={28} paddingAngle={2} dataKey="amount" stroke="#fff" strokeWidth={1}>{expBrk.map((e,i)=><Cell key={e.categoryId} fill={CHART_COLORS[i%CHART_COLORS.length]}/>)}</Pie></RPie></ResponsiveContainer><div className="absolute inset-0 flex items-center justify-center pointer-events-none"><span className="text-[9px] sm:text-[10px] font-bold">{formatAmount(stats.totalExpense)}</span></div></div><div className="flex flex-wrap justify-center gap-x-1.5 gap-y-0.5">{expBrk.slice(0,4).map((item,i)=><span key={item.categoryId} className="text-[8px] text-muted flex items-center gap-0.5"><span className="w-1 h-1 rounded-sm flex-shrink-0" style={{backgroundColor:CHART_COLORS[i%CHART_COLORS.length]}}/>{item.categoryName}</span>)}</div></div>:<p className="text-[9px] text-muted py-6">—</p>}
               </div>
               <div className="card card-chart p-2 sm:p-3"><span className="text-[9px] sm:text-[10px] font-semibold">消费心情</span>
-                {expMoodData.length>0?<div className="flex flex-col items-center gap-1 mt-1"><div className="w-16 h-16 sm:w-20 sm:h-20 relative"><ResponsiveContainer><RPie><Pie data={expMoodData} cx="50%" cy="50%" innerRadius={18} outerRadius={28} paddingAngle={2} dataKey="value" stroke="#fff" strokeWidth={1} nameKey="name">{expMoodData.map((e,i)=><Cell key={i} fill={e.color}/>)}</Pie></RPie></ResponsiveContainer><div className="absolute inset-0 flex items-center justify-center pointer-events-none"><span className="text-[9px] sm:text-[10px] font-bold">{expMoodData.length}种</span></div></div><div className="flex flex-wrap justify-center gap-x-1.5 gap-y-0.5">{expMoodData.slice(0,4).map(e=><span key={e.name} className="text-[8px] text-muted flex items-center gap-0.5"><span className="w-1 h-1 rounded-sm flex-shrink-0" style={{backgroundColor:e.color}}/>{e.name}</span>)}</div></div>:<p className="text-[9px] text-muted py-6">—</p>}
+                {expMoodData.length>0?<div className="flex justify-center mt-1"><div className="w-16 h-16 sm:w-20 sm:h-20 relative"><ResponsiveContainer><RPie><Pie data={expMoodData} cx="50%" cy="50%" innerRadius={0} outerRadius={28} paddingAngle={1} dataKey="value" stroke="#fff" strokeWidth={1} nameKey="name">{expMoodData.map((e,i)=><Cell key={i} fill={e.color}/>)}</Pie></RPie></ResponsiveContainer></div></div>:<p className="text-[9px] text-muted py-6">—</p>}
               </div>
               <div className="card card-chart p-2 sm:p-3"><span className="text-[9px] sm:text-[10px] font-semibold">收入类型</span>
                 {incBrk.length>0?<div className="flex flex-col items-center gap-1 mt-1"><div className="w-16 h-16 sm:w-20 sm:h-20 relative"><ResponsiveContainer><RPie><Pie data={incBrk} cx="50%" cy="50%" innerRadius={18} outerRadius={28} paddingAngle={2} dataKey="amount" stroke="#fff" strokeWidth={1}>{incBrk.map((e,i)=><Cell key={e.categoryId} fill={CHART_COLORS[(i+5)%CHART_COLORS.length]}/>)}</Pie></RPie></ResponsiveContainer><div className="absolute inset-0 flex items-center justify-center pointer-events-none"><span className="text-[9px] sm:text-[10px] font-bold">{formatAmount(stats.totalIncome)}</span></div></div><div className="flex flex-wrap justify-center gap-x-1.5 gap-y-0.5">{incBrk.slice(0,4).map((item,i)=><span key={item.categoryId} className="text-[8px] text-muted flex items-center gap-0.5"><span className="w-1 h-1 rounded-sm flex-shrink-0" style={{backgroundColor:CHART_COLORS[(i+5)%CHART_COLORS.length]}}/>{item.categoryName}</span>)}</div></div>:<p className="text-[9px] text-muted py-6">—</p>}
               </div>
               <div className="card card-chart p-2 sm:p-3"><span className="text-[9px] sm:text-[10px] font-semibold">收入心情</span>
-                {incMoodData.length>0?<div className="flex flex-col items-center gap-1 mt-1"><div className="w-16 h-16 sm:w-20 sm:h-20 relative"><ResponsiveContainer><RPie><Pie data={incMoodData} cx="50%" cy="50%" innerRadius={18} outerRadius={28} paddingAngle={2} dataKey="value" stroke="#fff" strokeWidth={1} nameKey="name">{incMoodData.map((e,i)=><Cell key={i} fill={e.color}/>)}</Pie></RPie></ResponsiveContainer><div className="absolute inset-0 flex items-center justify-center pointer-events-none"><span className="text-[9px] sm:text-[10px] font-bold">{incMoodData.length}种</span></div></div><div className="flex flex-wrap justify-center gap-x-1.5 gap-y-0.5">{incMoodData.slice(0,4).map(e=><span key={e.name} className="text-[8px] text-muted flex items-center gap-0.5"><span className="w-1 h-1 rounded-sm flex-shrink-0" style={{backgroundColor:e.color}}/>{e.name}</span>)}</div></div>:<p className="text-[9px] text-muted py-6">—</p>}
+                {incMoodData.length>0?<div className="flex justify-center mt-1"><div className="w-16 h-16 sm:w-20 sm:h-20 relative"><ResponsiveContainer><RPie><Pie data={incMoodData} cx="50%" cy="50%" innerRadius={0} outerRadius={28} paddingAngle={1} dataKey="value" stroke="#fff" strokeWidth={1} nameKey="name">{incMoodData.map((e,i)=><Cell key={i} fill={e.color}/>)}</Pie></RPie></ResponsiveContainer></div></div>:<p className="text-[9px] text-muted py-6">—</p>}
               </div>
             </div>
           </div>
 
-          {/* 30-Day Flow — dual fill + balance line */}
+          {/* 14-Day Flow — dual fill + balance line */}
           <div className="card card-chart overflow-hidden p-2 sm:p-3">
             <div className="flex items-center justify-between px-1 mb-1">
-              <span className="text-[10px] sm:text-xs font-semibold">30日收支流</span>
+              <span className="text-[10px] sm:text-xs font-semibold">14日收支流</span>
               <div className="flex items-center gap-2 text-[9px]">
                 <span className="flex items-center gap-1"><span className="w-2 h-0.5 bg-emerald-400 rounded"/><span className="text-muted">收入</span></span>
                 <span className="flex items-center gap-1"><span className="w-2 h-0.5 bg-rose-400 rounded"/><span className="text-muted">支出</span></span>
@@ -326,6 +326,16 @@ export default function Dashboard() {
           </div>
 
           <div className="card card-list overflow-hidden">
+            {(()=>{const tInc=filtered.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);const tExp=filtered.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);return(
+              <div className="px-3 py-2 bg-[var(--c-primary-soft)] text-[10px] flex justify-between items-center">
+                <span className="text-muted">当前 {filtered.length}笔</span>
+                <span className="flex gap-3">
+                  <span className="text-emerald-600 dark:text-emerald-400">收{formatAmount(tInc)}</span>
+                  <span className="text-rose-500">支{formatAmount(tExp)}</span>
+                  <span className={tInc-tExp<0?'text-red-400':''}>余{formatAmount(tInc-tExp)}</span>
+                </span>
+              </div>
+            )})()}
             {grouped.length===0?<div className="text-center py-12 text-gray-400 body-sm">没有找到匹配的记录</div>:grouped.map(([date,items])=>(
               <div key={date}>
                 <div className="px-3 py-1.5 bg-gradient-to-r from-gray-50/60 to-transparent dark:from-gray-800/40 text-[10px] font-semibold text-gray-500 flex justify-between">
