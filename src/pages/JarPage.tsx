@@ -351,7 +351,7 @@ export default function JarPage() {
                       <p className="text-xs text-muted">剩余</p>
                     </div>
                   <button onClick={() => handleDeleteEvent(evt.id)} className="btn-icon btn-icon-danger flex-shrink-0"><X size={12} /></button>
-                  <button onClick={async()=>{const gid=evt.goalId||goals[0]?.id;await updateEvent(evt.id,{status:'resisted',earnedStar:true,earnedAt:Date.now(),reEvaluationAt:Date.now(),goalId:gid||evt.goalId});if(gid){const g=goals.find(x=>x.id===gid);if(g)await updateGoal(gid,{currentAmount:g.currentAmount+(evt.amount||0)});await updateSettings?.({totalStars:(settings?.totalStars||0)+1})}}} className="btn-icon text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 flex-shrink-0" title="提前守住"><Check size={12}/></button>
+                  <button onClick={async()=>{const gid=evt.goalId||goals[0]?.id;await updateEvent(evt.id,{status:'resisted',earnedStar:true,earnedAt:Date.now(),reEvaluationDesire:1,reEvaluationNote:'提前守住',reEvaluationAt:Date.now(),goalId:gid||evt.goalId});if(gid){const g=goals.find(x=>x.id===gid);if(g)await updateGoal(gid,{currentAmount:g.currentAmount+(evt.amount||0)});await updateSettings?.({totalStars:(settings?.totalStars||0)+1})}}} className="btn-icon text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 flex-shrink-0" title="提前守住"><Check size={12}/></button>
                   </div>
                 )
               })}
