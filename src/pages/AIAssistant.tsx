@@ -141,8 +141,10 @@ function ReportTab() {
 function PsychTab() {
   const [loading, setLoading] = useState(false); const [report, setReport] = useState(''); const [error, setError] = useState('')
   const yearMonth = getCurrentYearMonth(); const { transactions } = useTransactions({ month: yearMonth })
-  const { categories } = useCategories()
+  const { categories } = useCategories(); const { budgets } = useBudgets()
   const stats = useMemo(() => getMonthlyStats(transactions, yearMonth), [transactions, yearMonth])
+  const currentBudget = useMemo(() => budgets.find(b => b.yearMonth === yearMonth && b.categoryId === null), [budgets, yearMonth])
+  const budgetRemaining = currentBudget ? currentBudget.amount - stats.totalExpense : 0
 
   const moodData = useMemo(() => {
     const map: Record<string, { count: number; amount: number; categories: string[] }> = {}
@@ -162,7 +164,14 @@ function PsychTab() {
 
   return (
     <div className="space-y-3 sm:space-y-5">
-      {/* Mood Bar Chart — vertical bars with custom colors */}
+      <div className="card card-stat overflow-hidden">
+        <div className="grid grid-cols-4 divide-x divide-gray-100 dark:divide-gray-800">
+          <div className="p-2.5 sm:p-3 text-center"><p className="text-[10px] text-muted">支出</p><p className="text-sm font-bold mt-0.5">{formatAmount(stats.totalExpense)}</p></div>
+          <div className="p-2.5 sm:p-3 text-center"><p className="text-[10px] text-muted">收入</p><p className="text-sm font-bold mt-0.5">{formatAmount(stats.totalIncome)}</p></div>
+          <div className="p-2.5 sm:p-3 text-center"><p className="text-[10px] text-muted">预算</p><p className="text-sm font-bold mt-0.5">{currentBudget?formatAmount(currentBudget.amount):'—'}</p></div>
+          <div className="p-2.5 sm:p-3 text-center"><p className="text-[10px] text-muted">剩余</p><p className={`text-sm font-bold mt-0.5 ${budgetRemaining<0?'text-red-400':''}`}>{currentBudget?formatAmount(Math.max(budgetRemaining,0)):'—'}</p></div>
+        </div>
+      </div>
       <div className="card card-chart p-5">
         <h3 className="text-xs font-semibold text-muted mb-3">心情 × 消费</h3>
         {moodBarData.length > 0 ? (

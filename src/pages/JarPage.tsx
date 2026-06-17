@@ -7,7 +7,7 @@ import { formatAmount } from '@/lib/utils'
 import {
   Target, Plus, X, Trash2,
   Timer, Clock, ShieldCheck, ShieldX, Flame,
-  Hourglass, BarChart3, AlertTriangle, Zap,
+  Hourglass, BarChart3, AlertTriangle, Zap, Check,
 } from '@/lib/icons'
 
 const GOAL_COLORS = ['#f59e0b', '#d97706', '#10b981', '#f43f5e', '#3b82f6', '#ec4899', '#14b8a6', '#eab308', '#fb923c']
@@ -350,7 +350,8 @@ export default function JarPage() {
                       <p className={`text-sm font-mono font-bold ${rm.expired ? 'text-accent' : 'text-blue-600'}`}>{rm.text}</p>
                       <p className="text-xs text-muted">剩余</p>
                     </div>
-                    <button onClick={() => handleDeleteEvent(evt.id)} className="btn-icon btn-icon-danger flex-shrink-0"><X size={12} /></button>
+                  <button onClick={() => handleDeleteEvent(evt.id)} className="btn-icon btn-icon-danger flex-shrink-0"><X size={12} /></button>
+                  <button onClick={async()=>{const gid=evt.goalId||goals[0]?.id;await updateEvent(evt.id,{status:'resisted',earnedStar:true,earnedAt:Date.now(),reEvaluationAt:Date.now(),goalId:gid||evt.goalId});if(gid){const g=goals.find(x=>x.id===gid);if(g)await updateGoal(gid,{currentAmount:g.currentAmount+(evt.amount||0)});await updateSettings?.({totalStars:(settings?.totalStars||0)+1})}}} className="btn-icon text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 flex-shrink-0" title="提前守住"><Check size={12}/></button>
                   </div>
                 )
               })}
