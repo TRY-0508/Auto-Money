@@ -459,7 +459,7 @@ export default function JarPage() {
                     <div className="text-xs">
                       <span className="text-muted">冷静时想想</span>
                       {evtAIResult.reflectionQuestions.map((q, i) => (
-                        <p key={i} className="mt-1 text-muted italic leading-relaxed">&ldquo;{q}&rdquo;</p>
+                        <p key={i} className="mt-1 text-muted italic leading-relaxed">"{q}"</p>
                       ))}
                     </div>
                   )}
@@ -572,7 +572,7 @@ export default function JarPage() {
                         渴望 {evt.desireLevel}→{evt.reEvaluationDesire ?? '?'}
                         {goal && <span className="ml-1" style={{ color: goal.color }}>· {goal.name}</span>}
                       </p>
-                      {evt.reEvaluationNote && <p className="text-xs text-muted mt-0.5 italic">&ldquo;{evt.reEvaluationNote}&rdquo;</p>}
+                      {evt.reEvaluationNote && <p className="text-xs text-muted mt-0.5 italic">"{evt.reEvaluationNote}"</p>}
                     </div>
                     <span className="text-xs text-muted flex-shrink-0">{fmtDate(evt.createdAt)}</span>
                   </div>

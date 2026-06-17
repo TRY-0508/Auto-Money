@@ -162,7 +162,7 @@ export default function StarJar({ starCount, targetAmount, currentAmount, color,
               {selected.note && (
                 <div className="pt-2 border-t border-gray-100 dark:border-gray-700">
                   <span className="text-muted text-xs">当时反思</span>
-                  <p className="text-xs mt-0.5 italic leading-relaxed">&ldquo;{selected.note}&rdquo;</p>
+                  <p className="text-xs mt-0.5 italic leading-relaxed">"{selected.note}"</p>
                 </div>
               )}
             </div>

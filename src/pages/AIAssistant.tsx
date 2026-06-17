@@ -286,9 +286,9 @@ function ChatTab() {
             <p className="text-sm text-muted mb-6">可以问我收支、心情、消费习惯</p>
             <div className="text-left text-xs text-muted space-y-2 bg-gray-50 dark:bg-gray-800 rounded-2xl p-4 max-w-sm mx-auto">
               <p className="font-medium text-gray-500 mb-1">试试这样问我：</p>
-              <p className="leading-relaxed">&ldquo;这个月我在焦虑情绪下花了多少？&rdquo;</p>
-              <p className="leading-relaxed">&ldquo;冲动消费占总支出的比例？&rdquo;</p>
-              <p className="leading-relaxed">&ldquo;给我减少情绪消费的建议&rdquo;</p>
+              <p className="leading-relaxed">"这个月我在焦虑情绪下花了多少？"</p>
+              <p className="leading-relaxed">"冲动消费占总支出的比例？"</p>
+              <p className="leading-relaxed">"给我减少情绪消费的建议"</p>
             </div>
           </div>
         ) : messages.map(msg => (
