@@ -34,12 +34,10 @@ React · TypeScript · Vite · Tailwind CSS · Dexie.js · Zustand · Recharts �
 
 | 文档 | 说明 |
 |------|------|
-| [项目概念](docs/idea.md) | 心理学理论基础 |
-| [设计方案](docs/design-plan.md) | 总体设计架构 |
-| [系统设计](docs/design.md) | 数据模型 + 流程 |
-| [设计系统](docs/design-system.md) | 视觉设计规范 |
-| [技术手册](docs/technical-manual.md) | 技术实现细节 |
-| [实现状态](docs/workplan.md) | 当前版本状态 |
+| [项目概念](docs/idea.md) | 心理学理论基础与核心理念 |
+| [系统设计](docs/design.md) | 架构、数据模型、页面、视觉规范 |
+| [技术实现](docs/technical.md) | 技术栈、项目结构、API、构建部署 |
+| [版本记录](docs/changelog.md) | 版本历史与待优化项 |
 
 ## License
 
