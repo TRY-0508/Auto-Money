@@ -271,7 +271,14 @@ export default function JarPage() {
           {goals.length === 0 ? (
             <div className="card card-soft p-10 text-center">
               <Target size={48} strokeWidth={1} className="text-accent mx-auto mb-4 animate-[float_3s_ease-in-out_infinite]" />
-              <p className="text-muted text-sm">设定一个心愿，用每次守住的光来填满它</p>
+              <p className="text-sm font-medium mb-1">设定一个心愿</p>
+              <p className="text-xs text-muted leading-relaxed">每次面对冲动时的清醒选择都是一束星光<br/>星光汇聚，点亮你真正想要抵达的地方</p>
+              <div className="mt-4 text-[10px] text-muted bg-white/50 dark:bg-gray-800/50 rounded-xl p-3 text-left">
+                <p className="font-medium mb-1">💡 怎么用：</p>
+                <p>1. 创建心愿（如：旅行基金 ¥5000）</p>
+                <p>2. 切换到「欲望冷却」记录消费冲动</p>
+                <p>3. 冷静期后守住 → 星光 + 金额自动计入</p>
+              </div>
             </div>
           ) : (
             <div className="space-y-4">
@@ -388,7 +395,8 @@ export default function JarPage() {
           {coolingEvents.length === 0 && pendingReviewEvents.length === 0 && (
             <div className="card card-soft p-10 text-center">
               <ShieldCheck size={48} strokeWidth={1} className="text-accent mx-auto mb-4 animate-[float_3s_ease-in-out_infinite]" />
-              <p className="text-muted text-sm">遇到犹豫的消费？先冷却一下</p>
+              <p className="text-sm font-medium mb-1">还没有冷却事件</p>
+              <p className="text-xs text-muted leading-relaxed">遇到让你犹豫的消费冲动？<br/>点击下方按钮，让 AI 帮你分析、给自己一段冷静时间</p>
             </div>
           )}
 

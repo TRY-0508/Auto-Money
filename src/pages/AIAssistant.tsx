@@ -139,7 +139,7 @@ function ReportTab() {
       {error && <div className="mb-4 p-3 rounded-2xl bg-red-50 dark:bg-red-900/20 text-red-500 text-sm flex items-center gap-2"><AlertTriangle size={14} />{error}</div>}
       <button onClick={handleGenerate} disabled={loading || stats.count === 0}
         className="w-full py-3 rounded-2xl bg-primary-gradient text-white text-sm font-semibold disabled:opacity-50 hover:brightness-110 transition-all shadow-lg">
-        {loading ? '分析中...' : stats.count === 0 ? '暂无数据' : '生成财务报告'}
+        {loading ? '分析中...' : stats.count === 0 ? '请先在首页记录收支' : '生成财务报告'}
       </button>
 
       {report && (
@@ -275,7 +275,13 @@ function ChatTab() {
           <div className="text-center py-12">
             <MessageCircle size={48} strokeWidth={1} className="text-accent mx-auto mb-4" />
             <p className="text-gray-500 text-sm font-medium">我是你的 AI 心理记账助手</p>
-            <p className="text-gray-400 text-xs mt-1">可以问我收支、心情、消费习惯</p>
+            <p className="text-gray-400 text-xs mt-1 mb-4">可以问我收支、心情、消费习惯</p>
+            <div className="text-left text-[10px] text-muted space-y-1.5 bg-gray-50 dark:bg-gray-800 rounded-2xl p-3 max-w-xs mx-auto">
+              <p>💬 <b>试试问我：</b></p>
+              <p>&ldquo;这个月我在焦虑时花了多少？&rdquo;</p>
+              <p>&ldquo;冲动消费占总支出的比例是多少？&rdquo;</p>
+              <p>&ldquo;给我一些减少情绪消费的建议&rdquo;</p>
+            </div>
           </div>
         ) : messages.map(msg => (
           <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>

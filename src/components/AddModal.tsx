@@ -3,6 +3,7 @@ import { useTransactions, useCategories, useProjects } from '@/db/hooks'
 import { parseTransaction } from '@/services/llm'
 import { startRecognition, isSpeechSupported, stopRecognition } from '@/services/speech'
 import { MOOD_LIST, MOOD_COLOR_MAP, CATEGORY_ICON_MAP, CAT_ICON_OPTIONS, MoreHorizontal, AlertTriangle, Check } from '@/lib/icons'
+import { CATEGORY_DESCRIPTIONS } from '@/lib/constants'
 import type { ParsedTransaction } from '@/types'
 
 interface Props { open: boolean; onClose: () => void }
@@ -259,6 +260,9 @@ export default function AddModal({ open, onClose }: Props) {
                   <span className="text-lg">{showNewCat ? '×' : '+'}</span><span className="text-[10px]">新建</span>
                 </button>
               </div>
+              {manualCategoryId && CATEGORY_DESCRIPTIONS[categories.find(c=>c.id===manualCategoryId)?.name||''] && (
+                <p className="text-[10px] text-muted text-center -mt-2">{CATEGORY_DESCRIPTIONS[categories.find(c=>c.id===manualCategoryId)!.name].desc}</p>
+              )}
 
               {showNewCat && (
                 <div className="p-3 rounded-2xl bg-gray-50 dark:bg-gray-800 space-y-2">

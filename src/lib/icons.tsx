@@ -95,17 +95,18 @@ export { LayoutDashboard, Brain, Settings, Plus, Mic, Pencil, Search,
 
 // ── Project Icons (keys mapped to Lucide) ──
 export const PROJECT_ICONS: { key: string; label: string; Icon: LucideIcon }[] = [
-  { key: 'plane-project', label: '旅行', Icon: Plane },
-  { key: 'gamepad-project', label: '游戏', Icon: Gamepad2 },
-  { key: 'home-project', label: '居家', Icon: Home },
+  { key: 'home-project', label: '日常', Icon: Home },
+  { key: 'book-open-project', label: '学习', Icon: BookOpen },
   { key: 'briefcase-project', label: '工作', Icon: Briefcase },
-  { key: 'gift-project', label: '礼物', Icon: Gift },
+  { key: 'gamepad-project', label: '娱乐', Icon: Gamepad2 },
+  { key: 'gift-project', label: '人情', Icon: Gift },
   { key: 'stethoscope-project', label: '健康', Icon: Stethoscope },
   { key: 'car-project', label: '出行', Icon: Car },
-  { key: 'music-project', label: '音乐', Icon: Music },
-  { key: 'book-open-project', label: '学习', Icon: BookOpen },
+  { key: 'plane-project', label: '旅行', Icon: Plane },
   { key: 'cat-project', label: '宠物', Icon: Cat },
-  { key: 'package-project', label: '其他', Icon: Package },
+  { key: 'smartphone-project', label: '数码', Icon: Smartphone },
+  { key: 'music-project', label: '爱好', Icon: Music },
+  { key: 'package-project', label: '杂项', Icon: Package },
 ]
 
 export const PROJECT_ICON_MAP: Record<string, LucideIcon> = Object.fromEntries(
