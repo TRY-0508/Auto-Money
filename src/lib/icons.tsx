@@ -12,7 +12,7 @@ import {
   Calendar, PiggyBank, MessageCircle, BarChart3, PieChart, List,
   Trash2, Edit3, ArrowLeft, ArrowRight, X, Menu, Send, Download, Upload,
   Copy, Tag, Target, FolderOpen, Database, Check,
-  Palette, Wallet,
+  Palette, Wallet, Sparkles, RotateCcw,
   // Cool-down & Jar icons
   Timer, Clock, ShieldCheck, ShieldX, Thermometer, Flame, Hourglass,
 } from 'lucide-react'
@@ -31,13 +31,14 @@ export const CATEGORY_ICON_MAP: Record<IconKey, LucideIcon> = {
   beer: Beer, stethoscope: Stethoscope, lightbulb: Lightbulb, camera: Camera,
   wrench: Wrench, bus: Bus, train: Train, pizza: Pizza,
   heart: Heart, zap: Zap, 'alert-triangle': AlertTriangle,
+  sparkles: Sparkles, 'rotate-ccw': RotateCcw,
 }
 
 export const PRESET_CAT_ICONS: Record<string, IconKey> = {
   '必要消费': 'home', '价值消费': 'trending-up', '情绪消费': 'heart',
   '冲动消费': 'zap', '意外消费': 'alert-triangle',
-  '工资': 'banknote', '兼职': 'briefcase', '理财': 'trending-up',
-  '红包': 'gift', '其他': 'more-horizontal',
+  '劳动收入': 'briefcase', '增值收入': 'trending-up', '馈赠收入': 'gift',
+  '惊喜收入': 'sparkles', '回流收入': 'rotate-ccw',
 }
 
 export const CAT_ICON_OPTIONS: { key: IconKey; label: string; Icon: LucideIcon }[] = [
@@ -88,7 +89,7 @@ export { LayoutDashboard, Brain, Settings, Plus, Mic, Pencil, Search,
   Calendar, PiggyBank, MessageCircle, BarChart3, PieChart, List,
   Trash2, Edit3, ArrowLeft, ArrowRight, X, Menu, Send, Download, Upload,
   MoreHorizontal, Package, Copy, Tag, Target, FolderOpen, Database, AlertTriangle, Check, Star, Lightbulb,
-  Palette, Wallet, TrendingUp,
+  Palette, Wallet, TrendingUp, Sparkles, RotateCcw,
   ArrowUpRight, ArrowDownRight,
   Timer, Clock, ShieldCheck, ShieldX, Thermometer, Flame, Hourglass, Zap }
 
