@@ -85,7 +85,7 @@ function ReportTab() {
 
       {/* Consumption bar chart */}
       <div className="card card-chart p-5">
-        <h3 className="text-xs font-semibold text-muted mb-3">消费分类</h3>
+        <h3 className="text-xs font-semibold text-muted mb-3">支出分类</h3>
         {breakdown.length > 0 ? (
           <div className="h-40">
             <ResponsiveContainer>
@@ -104,7 +104,7 @@ function ReportTab() {
 
       {/* Income bar chart */}
       <div className="card card-chart p-5">
-        <h3 className="text-xs font-semibold text-muted mb-3">收入来源</h3>
+        <h3 className="text-xs font-semibold text-muted mb-3">收入分类</h3>
         {incomeBrk.length > 0 ? (
           <div className="h-40">
             <ResponsiveContainer>
@@ -185,7 +185,7 @@ function PsychTab() {
 
       {/* Mood list with details */}
       <div className="card card-list p-4">
-        <h3 className="text-xs font-semibold text-muted mb-3">心情 × 消费</h3>
+        <h3 className="text-xs font-semibold text-muted mb-3">详细数据</h3>
         {moodData.length > 0 ? (
           <div className="space-y-2">
             {moodData.map(m => (
