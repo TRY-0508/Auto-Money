@@ -158,7 +158,7 @@ export default function Settings() {
       {/* Budget */}
       <div className="glow-card p-5">
         <h3 className="text-sm font-bold tracking-tight mb-4 flex items-center gap-2"><Wallet size={18} strokeWidth={1.8} className="text-accent" />月度预算</h3>
-        <p className="text-xs text-muted mb-3">设定每月消费上限，剩余额度可转入心愿</p>
+        <p className="text-xs text-muted mb-3">设定每月消费上限，超支需填平亏空</p>
         {currentBudget ? (
           <div className="space-y-3">
             <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 dark:bg-gray-800">
