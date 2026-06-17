@@ -3,12 +3,12 @@ import { useTransactions, useCategories, useProjects, useBudgets, useSettings } 
 import { getMonthlyStats, getCategoryBreakdown, getDailyTrend } from '@/lib/stats'
 import { getCurrentYearMonth, formatAmount, formatDate } from '@/lib/utils'
 import { CATEGORY_DESCRIPTIONS } from '@/lib/constants'
-import { MOOD_LIST, MOOD_ICON_MAP, MOOD_COLOR_MAP, CATEGORY_ICON_MAP, MoreHorizontal, BarChart3, Trash2, PieChart, List, Calendar as CalendarIcon, Check, ArrowUpRight, TrendingUp, Plus } from '@/lib/icons'
+import { MOOD_LIST, MOOD_ICON_MAP, MOOD_COLOR_MAP, CATEGORY_ICON_MAP, MoreHorizontal, BarChart3, Trash2, PieChart, Calendar as CalendarIcon, Check, ArrowUpRight, TrendingUp, Plus } from '@/lib/icons'
 import CategoryIcon from '@/components/CategoryIcon'
 import AddModal from '@/components/AddModal'
 import ProjectSwitcher from '@/components/ProjectSwitcher'
 import type { Transaction } from '@/types'
-import { PieChart as RPie, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts'
+import { PieChart as RPie, Pie, Cell, ResponsiveContainer, AreaChart, Area } from 'recharts'
 
 const BANNER: Record<string, string> = { happy:'banner-happy',calm:'banner-calm',neutral:'banner-neutral',sad:'banner-sad',anxious:'banner-anxious',angry:'banner-angry',excited:'banner-excited',tired:'banner-tired' }
 type FilterType = 'all'|'expense'|'income'
@@ -246,45 +246,52 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Weekly Trend — compact bar chart */}
-          <div className="card card-chart overflow-hidden">
-            <div className="flex items-center justify-between px-3 sm:px-4 pt-3 sm:pt-4">
-              <div className="flex items-center gap-1.5"><TrendingUp size={14} strokeWidth={1.8} className="text-accent"/><span className="text-[10px] sm:text-xs font-semibold">本周趋势</span></div>
-              <div className="flex items-center gap-2 text-[9px]">
-                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-emerald-400"/><span className="text-muted">收入</span></span>
-                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-rose-400"/><span className="text-muted">支出</span></span>
+          {/* 30-Day Trend — two compact sparkline cards */}
+          <div className="grid grid-cols-2 gap-2 sm:gap-3">
+            <div className="card card-chart p-2 sm:p-3 overflow-hidden">
+              <p className="text-[9px] sm:text-[10px] text-muted mb-0.5">30日收入趋势</p>
+              <p className="text-sm font-bold text-emerald-500 amount">{formatAmount(stats.totalIncome)}</p>
+              <div className="h-10 sm:h-12 -mx-1">
+                <ResponsiveContainer>
+                  <AreaChart data={dailyTrend} margin={{top:2,right:0,left:0,bottom:0}}>
+                    <defs><linearGradient id="sparkIncome" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#10b981" stopOpacity={0.3}/><stop offset="100%" stopColor="#10b981" stopOpacity={0}/></linearGradient></defs>
+                    <Area type="monotone" dataKey="income" stroke="#10b981" strokeWidth={1.5} fill="url(#sparkIncome)" dot={false} />
+                  </AreaChart>
+                </ResponsiveContainer>
               </div>
             </div>
-            <div className="p-2 sm:p-3 h-32">
-              <ResponsiveContainer>
-                <BarChart data={dailyTrend.slice(-7)} margin={{ top: 4, right: 4, left: 0, bottom: 0 }} barCategoryGap="40%">
-                  <XAxis dataKey="date" tick={{fontSize:9,fill:'#a8a29e'}} axisLine={false} tickLine={false} tickFormatter={(v:string)=>v.slice(3)} />
-                  <YAxis tick={{fontSize:9,fill:'#a8a29e'}} axisLine={false} tickLine={false} width={36} />
-                  <Tooltip cursor={{fill:'rgba(0,0,0,0.03)',rx:6}} contentStyle={{borderRadius:'12px',border:'none',boxShadow:'0 4px 20px rgba(0,0,0,0.1)',fontSize:'11px',padding:'6px 10px'}} />
-                  <Bar dataKey="income" name="收入" radius={[4,4,0,0]} barSize={10} fill="#10b981" fillOpacity={0.85} />
-                  <Bar dataKey="expense" name="支出" radius={[4,4,0,0]} barSize={10} fill="#f43f5e" fillOpacity={0.75} />
-                </BarChart>
-              </ResponsiveContainer>
+            <div className="card card-chart p-2 sm:p-3 overflow-hidden">
+              <p className="text-[9px] sm:text-[10px] text-muted mb-0.5">30日支出趋势</p>
+              <p className="text-sm font-bold text-rose-400 amount">{formatAmount(stats.totalExpense)}</p>
+              <div className="h-10 sm:h-12 -mx-1">
+                <ResponsiveContainer>
+                  <AreaChart data={dailyTrend} margin={{top:2,right:0,left:0,bottom:0}}>
+                    <defs><linearGradient id="sparkExpense" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f43f5e" stopOpacity={0.25}/><stop offset="100%" stopColor="#f43f5e" stopOpacity={0}/></linearGradient></defs>
+                    <Area type="monotone" dataKey="expense" stroke="#f43f5e" strokeWidth={1.5} fill="url(#sparkExpense)" dot={false} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           </div>
 
-          {/* Mood Timeline */}
-          <div className="card card-list card-hover overflow-hidden">
-            <div className="card-header"><CalendarIcon size={18} strokeWidth={1.8} className="text-accent"/>心情时间线</div>
-            <div className="card-body overflow-x-auto scrollbar-hide">
-              <div className="flex gap-3 pb-1">{moodTimeline.map(d=>{const MI=d.moodVal?MOOD_ICON_MAP[d.moodVal]:null;const color=d.moodVal?MOOD_COLOR_MAP[d.moodVal]:null;return(
-                <div key={d.date} className="flex flex-col items-center gap-1.5 flex-shrink-0 w-11">
-                  <span className="text-[10px] text-gray-400 font-medium">{d.label}</span>
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ${d.moodVal?'shadow-sm scale-100':'bg-gray-50 dark:bg-gray-800 scale-90'}`} style={d.moodVal&&color?{backgroundColor:color+'18'}:{}}>
-                    {MI?<MI size={18} strokeWidth={1.8} color={color||'#6b7280'}/>:<span className="text-gray-300 text-xs">—</span>}
+          {/* Mood Timeline — compact */}
+          <div className="card card-list overflow-hidden">
+            <div className="px-3 py-2 border-b border-gray-50 dark:border-gray-800/40 flex items-center justify-between">
+              <div className="flex items-center gap-1.5"><CalendarIcon size={14} strokeWidth={1.8} className="text-accent"/><span className="text-[10px] sm:text-xs font-semibold">心情时间线</span></div>
+              <button onClick={()=>setShowCalendar(!showCalendar)} className="text-[10px] text-accent font-medium">{showCalendar?'收起月历':'展开月历'}</button>
+            </div>
+            <div className="overflow-x-auto scrollbar-hide px-2 py-2">
+              <div className="flex gap-2">{moodTimeline.map(d=>{const MI=d.moodVal?MOOD_ICON_MAP[d.moodVal]:null;const color=d.moodVal?MOOD_COLOR_MAP[d.moodVal]:null;return(
+                <div key={d.date} className="flex flex-col items-center gap-1 flex-shrink-0 w-8">
+                  <span className="text-[8px] text-gray-400 font-medium">{d.label}</span>
+                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-300 ${d.moodVal?'shadow-sm scale-100':'bg-gray-50 dark:bg-gray-800 scale-90'}`} style={d.moodVal&&color?{backgroundColor:color+'18'}:{}}>
+                    {MI?<MI size={14} strokeWidth={1.8} color={color||'#6b7280'}/>:<span className="text-gray-300 text-[9px]">—</span>}
                   </div>
-                  {d.spent>0&&<span className="text-[9px] text-gray-400 font-medium amount">¥{Math.round(d.spent)}</span>}
+                  {d.spent>0&&<span className="text-[7px] text-gray-400 font-medium amount">¥{Math.round(d.spent)}</span>}
                 </div>
               )})}</div>
             </div>
           </div>
-
-          <button onClick={()=>setShowCalendar(!showCalendar)} className="text-xs font-medium text-accent hover:brightness-90 w-full text-center">{showCalendar?'收起月历 ▲':'展开月历 ▼'}</button>
           {showCalendar&&<CalendarHeatmap transactions={calTxs} yearMonth={calendarMonth} selectedDay={selectedDay} onSelectDay={setSelectedDay} onMonthChange={setCalendarMonth}/>}
 
           <div className="flex flex-wrap items-center gap-1.5">
@@ -302,12 +309,12 @@ export default function Dashboard() {
           <div className="card card-list overflow-hidden">
             {grouped.length===0?<div className="text-center py-12 text-gray-400 body-sm">没有找到匹配的记录</div>:grouped.map(([date,items])=>(
               <div key={date}>
-                <div className="px-5 py-2.5 bg-gradient-to-r from-gray-50/60 to-transparent dark:from-gray-800/40 text-xs font-semibold text-gray-500 flex justify-between">
+                <div className="px-3 py-1.5 bg-gradient-to-r from-gray-50/60 to-transparent dark:from-gray-800/40 text-[10px] font-semibold text-gray-500 flex justify-between">
                   <span>{formatDate(date)}</span>
                   <span className="text-gray-400 font-normal amount">收 ¥{items.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0).toFixed(2)} 支 ¥{items.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0).toFixed(2)}</span>
                 </div>
                 {items.map(t=>{const MI=t.mood?MOOD_ICON_MAP[t.mood]:null;const color=t.mood?MOOD_COLOR_MAP[t.mood]:null;return(
-                  <div key={t.id} className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50/40 dark:hover:bg-gray-800/20 transition-colors cursor-pointer group border-b border-gray-50/40 dark:border-gray-800/20 last:border-0" onClick={()=>hEdit(t)}>
+                  <div key={t.id} className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50/40 dark:hover:bg-gray-800/20 transition-colors cursor-pointer group border-b border-gray-50/40 dark:border-gray-800/20 last:border-0" onClick={()=>hEdit(t)}>
                     <CategoryIcon categoryId={t.categoryId} size={16}/>
                     <div className="flex-1 min-w-0"><p className="text-sm font-semibold truncate">{categories.find(c=>c.id===t.categoryId)?.name||'未分类'}</p>{t.description&&<p className="text-xs text-gray-400 truncate mt-0.5">{t.description}</p>}</div>
                     {MI&&<MI size={16} strokeWidth={1.8} color={color||'#6b7280'}/>}
