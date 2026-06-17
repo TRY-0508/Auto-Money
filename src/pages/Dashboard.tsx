@@ -54,7 +54,7 @@ export default function Dashboard() {
 
   const [yearMonth,setYearMonth]=useState(getCurrentYearMonth());const [year,month]=yearMonth.split('-').map(Number)
   const {transactions:all,updateTransaction,deleteTransaction}=useTransactions({month:yearMonth})
-  const {categories}=useCategories();const {projects}=useProjects();const {settings}=useSettings();const {budgets}=useBudgets()
+  const {categories}=useCategories();const {projects}=useProjects();const {budgets}=useBudgets()
   const txs=useMemo(()=>projectId?all.filter(t=>t.projectId===projectId):all,[all,projectId])
   const stats=useMemo(()=>getMonthlyStats(txs,yearMonth),[txs,yearMonth])
   const expBrk=useMemo(()=>getCategoryBreakdown(txs,categories,'expense',yearMonth),[txs,categories,yearMonth])
