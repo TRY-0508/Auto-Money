@@ -152,7 +152,8 @@ function PsychTab() {
     return MOOD_LIST.filter(m => map[m.value]).map(m => ({ ...m, ...(map[m.value] || { count: 0, amount: 0, categories: [] }) }))
   }, [transactions, categories])
 
-  const moodBarData = useMemo(() => moodData.map(m => ({ name: m.label, value: m.amount, count: m.count, color: m.color })).sort((a,b) => b.value - a.value), [moodData])
+  const moodBarData = useMemo(() => moodData.map(m => ({ name: m.label, value: m.amount, count: m.count })).sort((a,b) => b.value - a.value), [moodData])
+  const moodColors = useMemo(() => generateColors(Math.max(moodBarData.length, 3)), [moodBarData.length])
 
   const handleGenerate = async () => {
     setLoading(true); setError(''); setReport('')
@@ -183,7 +184,7 @@ function PsychTab() {
                 <Tooltip cursor={{fill:'rgba(0,0,0,0.03)',rx:8}} contentStyle={{borderRadius:'14px',border:'none',boxShadow:'0 8px 32px rgba(0,0,0,0.1)',fontSize:'12px',padding:'8px 14px'}} formatter={(v:number)=>(['¥'+v.toFixed(2),'消费金额'])} />
                 <Bar dataKey="value" radius={[6,6,0,0]} barSize={36} fillOpacity={0.75}>
                   {moodBarData.map((entry,idx)=>(
-                    <Cell key={idx} fill={entry.color} />
+                    <Cell key={idx} fill={moodColors[idx]} />
                   ))}
                 </Bar>
               </BarChart>
