@@ -48,8 +48,6 @@ export default function Settings() {
   const currentYM = getCurrentYearMonth()
   const currentBudget = budgets.find(b => b.yearMonth === currentYM && b.categoryId === null)
 
-  const [colorScheme, setColorScheme] = useState<string>(settings?.colorScheme || 'most-frequent')
-
   useEffect(() => { if (settings) { setBaseUrl(settings.apiBaseUrl || 'https://api.deepseek.com/v1'); setModel(settings.model || 'deepseek-chat') } }, [settings])
 
   const handleSaveApiKey = async () => { if (!updateSettings) return; await updateSettings({ apiKey: apiKey ? await encryptApiKey(apiKey) : settings?.apiKey || '', apiBaseUrl: baseUrl, model }); setSaved(true); setTimeout(() => setSaved(false), 2000); setApiKey('') }
@@ -74,7 +72,7 @@ export default function Settings() {
           <div><label className="text-xs text-gray-400 mb-1 block">Base URL</label><input type="text" value={baseUrl} onChange={e => setBaseUrl(e.target.value)} className="w-full px-3 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300" /></div>
           <div><label className="text-xs text-gray-400 mb-1 block">模型</label><input type="text" value={model} onChange={e => setModel(e.target.value)} className="w-full px-3 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300" /></div>
           {testResult && <p className={`text-xs font-medium ${testResult.includes('成功') ? 'text-green-500' : 'text-red-500'}`}>{testResult}</p>}
-          <div className="flex gap-2"><button onClick={handleTestConnection} className="flex-1 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 text-sm font-medium">测试连接</button><button onClick={handleSaveApiKey} className="flex-1 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold shadow-lg shadow-amber-500/20">{saved ? '已保存' : '保存'}</button></div>
+          <div className="flex gap-2"><button onClick={handleTestConnection} className="flex-1 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 text-sm font-medium">测试连接</button><button onClick={handleSaveApiKey} className="flex-1 py-2.5 rounded-2xl bg-[var(--c-primary-gradient)] text-white text-sm font-semibold shadow-lg">{saved ? '已保存' : '保存'}</button></div>
         </div>
       </div>
 
@@ -91,7 +89,7 @@ export default function Settings() {
               <div><label className="text-xs text-gray-400 mb-1 block">API Key</label><input type="password" value={speechApiKey} onChange={e => setSpeechApiKey(e.target.value)} placeholder={settings.speechApiKey ? '已配置' : ''} className="w-full px-3 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300" /></div>
               <div><label className="text-xs text-gray-400 mb-1 block">Secret Key</label><input type="password" value={speechSecretKey} onChange={e => setSpeechSecretKey(e.target.value)} placeholder={settings.speechSecretKey ? '已配置' : ''} className="w-full px-3 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300" /></div>
               <p className="text-xs text-muted">前往 <a href="https://console.bce.baidu.com/ai/#/ai/speech/overview/index" target="_blank" className="text-amber-500 underline">百度智能云</a> 创建应用获取密钥，免费额度 5 万次/年</p>
-              <button onClick={handleSaveSpeech} className="w-full py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold shadow-lg shadow-amber-500/20">{speechSaved ? '已保存' : '保存语音配置'}</button>
+              <button onClick={handleSaveSpeech} className="w-full py-2.5 rounded-2xl bg-[var(--c-primary-gradient)] text-white text-sm font-semibold shadow-lg">{speechSaved ? '已保存' : '保存语音配置'}</button>
               </>
           )}
         </div>
@@ -99,26 +97,64 @@ export default function Settings() {
 
       {/* Color Scheme */}
       <div className="glow-card p-5">
-        <h3 className="text-sm font-bold tracking-tight mb-4 flex items-center gap-2"><Palette size={18} strokeWidth={1.8} className="text-amber-500" />配色方案</h3>
-        <p className="text-xs text-gray-400 mb-3">选择首页背景色跟随的方式</p>
-        <div className="grid grid-cols-2 gap-2">
-          {([
-            { key: 'most-frequent', label: '最多心情', desc: '跟随本月出现最多的心情' },
-            { key: 'latest', label: '最新消费', desc: '跟随最近一笔消费的心情' },
-            { key: 'neutral', label: '中性色调', desc: '始终使用暖奶油色' },
-            { key: 'adaptive', label: '全天适应', desc: '根据当日心情动态变化' },
-          ]).map(opt => (
-            <button key={opt.key} onClick={() => { setColorScheme(opt.key); updateSettings?.({ colorScheme: opt.key as any }) }}
-              className={`p-3 rounded-xl border text-left transition-all ${
-                colorScheme === opt.key
-                  ? 'border-amber-300 bg-amber-50 dark:bg-amber-900/20 ring-1 ring-amber-300'
-                  : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 hover:border-amber-200'
-              }`}>
-              <p className="text-xs font-semibold">{opt.label}</p>
-              <p className="text-[10px] text-gray-400 mt-0.5">{opt.desc}</p>
-            </button>
-          ))}
+        <h3 className="text-sm font-bold tracking-tight mb-4 flex items-center gap-2"><Palette size={18} strokeWidth={1.8} className="text-amber-500" />主题配色</h3>
+        <p className="text-xs text-muted mb-3">选择喜欢的配色方案，影响所有界面的主色调</p>
+
+        <p className="text-xs font-semibold text-muted mb-2">配色模式</p>
+        <div className="flex gap-2 mb-4 p-1 bg-gray-100 dark:bg-gray-800 rounded-2xl">
+          <button onClick={() => updateSettings?.({ themeMode: 'dynamic' })}
+            className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${settings?.themeMode !== 'fixed' ? 'bg-white dark:bg-gray-700 shadow-sm text-amber-600' : 'text-gray-500'}`}>动态心情</button>
+          <button onClick={() => updateSettings?.({ themeMode: 'fixed' })}
+            className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${settings?.themeMode === 'fixed' ? 'bg-white dark:bg-gray-700 shadow-sm text-amber-600' : 'text-gray-500'}`}>固定配色</button>
         </div>
+
+        {settings?.themeMode !== 'fixed' ? (
+          <>
+            <p className="text-xs font-semibold text-muted mb-2">动态策略</p>
+            <div className="grid grid-cols-2 gap-2">
+              {([
+                { key: 'most-frequent', label: '最多心情', desc: '本月频次最高的心情' },
+                { key: 'latest', label: '最新消费', desc: '最近一笔消费的心情' },
+                { key: 'neutral', label: '中性色调', desc: '始终暖奶油色' },
+                { key: 'adaptive', label: '全天适应', desc: '当日心情动态变化' },
+              ]).map(opt => (
+                <button key={opt.key} onClick={() => updateSettings?.({ colorScheme: opt.key as any })}
+                  className={`p-3 rounded-xl border text-left transition-all ${
+                    (settings?.colorScheme || 'most-frequent') === opt.key
+                      ? 'border-amber-300 bg-amber-50 dark:bg-amber-900/20 ring-1 ring-amber-300'
+                      : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 hover:border-amber-200'
+                  }`}>
+                  <p className="text-xs font-semibold">{opt.label}</p>
+                  <p className="text-[10px] text-gray-400 mt-0.5">{opt.desc}</p>
+                </button>
+              ))}
+            </div>
+          </>
+        ) : (
+          <div className="grid grid-cols-3 gap-2">
+            {([
+              { key: 'warm-amber', label: '暖琥珀', colors: ['#e6a817','#d97706','#b45309'] },
+              { key: 'forest-green', label: '森绿', colors: ['#10b981','#059669','#047857'] },
+              { key: 'ocean-blue', label: '海蓝', colors: ['#3b82f6','#2563eb','#1d4ed8'] },
+              { key: 'rose-pink', label: '玫瑰粉', colors: ['#f43f5e','#e11d48','#be123c'] },
+              { key: 'lavender', label: '薰衣草', colors: ['#8b5cf6','#7c3aed','#6d28d9'] },
+              { key: 'sunset-orange', label: '日落橙', colors: ['#fb923c','#ea580c','#c2410c'] },
+            ]).map(t => {
+              const active = (settings?.fixedTheme || 'warm-amber') === t.key
+              return (
+                <button key={t.key} onClick={() => updateSettings?.({ fixedTheme: t.key })}
+                  className={`p-3 rounded-xl border text-center transition-all ${
+                    active ? 'border-amber-300 bg-amber-50 dark:bg-amber-900/20 ring-1 ring-amber-300' : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 hover:border-amber-200'
+                  }`}>
+                  <div className="flex gap-0.5 justify-center mb-1.5">
+                    {t.colors.map((c,i) => <div key={i} className="w-5 h-5 rounded-full shadow-sm" style={{backgroundColor:c}}/>)}
+                  </div>
+                  <p className="text-[10px] font-semibold">{t.label}</p>
+                </button>
+              )
+            })}
+          </div>
+        )}
       </div>
 
       {/* Categories */}
@@ -131,7 +167,7 @@ export default function Settings() {
           <div className="p-4 border-b border-gray-100 dark:border-gray-800 space-y-3 bg-gray-50 dark:bg-gray-800/50">
             <div className="flex gap-2"><button onClick={() => setNewCatType('expense')} className={`flex-1 py-1.5 rounded-lg text-xs font-semibold ${newCatType === 'expense' ? 'bg-red-100 text-red-600 dark:bg-red-900/30' : 'bg-white dark:bg-gray-800 text-gray-500'}`}>支出</button><button onClick={() => setNewCatType('income')} className={`flex-1 py-1.5 rounded-lg text-xs font-semibold ${newCatType === 'income' ? 'bg-green-100 text-green-600 dark:bg-green-900/30' : 'bg-white dark:bg-gray-800 text-gray-500'}`}>收入</button></div>
             <div><label className="text-xs text-gray-400 mb-1 block">图标</label><LucideIconPicker value={newCatIcon} onChange={setNewCatIcon} /></div>
-            <div className="flex gap-2"><input type="text" value={newCatName} onChange={e => setNewCatName(e.target.value)} placeholder="分类名称" className="flex-1 px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm" onKeyDown={e => e.key === 'Enter' && handleAddCategory()} /><button onClick={handleAddCategory} disabled={!newCatName.trim()} className="px-4 py-2 rounded-xl bg-amber-500 text-white text-sm font-semibold disabled:opacity-50">添加</button></div>
+            <div className="flex gap-2"><input type="text" value={newCatName} onChange={e => setNewCatName(e.target.value)} placeholder="分类名称" className="flex-1 px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm" onKeyDown={e => e.key === 'Enter' && handleAddCategory()} /><button onClick={handleAddCategory} disabled={!newCatName.trim()} className="px-4 py-2 rounded-xl bg-[var(--c-primary)] text-white text-sm font-semibold disabled:opacity-50">添加</button></div>
           </div>
         )}
         <div className="px-5 py-3"><p className="text-xs text-muted font-medium mb-2">支出分类</p>
@@ -214,7 +250,7 @@ export default function Settings() {
           <div className="p-4 border-b border-gray-100 dark:border-gray-800 space-y-2 bg-gray-50 dark:bg-gray-800/50">
             <div className="flex gap-1 flex-wrap">{PROJ_ICONS_LIST.map(p => { const Icon = PROJECT_ICON_MAP[p.key] || MoreHorizontal; return <button key={p.key} onClick={() => setNewProjectIcon(p.key)} className={`w-7 h-7 flex items-center justify-center rounded-lg transition-all ${newProjectIcon === p.key ? 'bg-amber-100 dark:bg-amber-900/50 ring-1 ring-amber-400' : 'hover:bg-white dark:hover:bg-gray-700'}`}><Icon size={16} strokeWidth={1.8} className="text-gray-600 dark:text-gray-400" /></button> })}</div>
             <div className="flex gap-1.5">{ALL_COLORS.map(c => <button key={c} onClick={() => setNewProjectColor(c)} className="w-6 h-6 rounded-full border-2" style={{ backgroundColor: c, borderColor: newProjectColor === c ? '#1f2937' : 'transparent' }} />)}</div>
-            <div className="flex gap-2"><input type="text" value={newProjectName} onChange={e => setNewProjectName(e.target.value)} placeholder="如：春节旅游、游戏开支" className="flex-1 px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm" onKeyDown={e => e.key === 'Enter' && handleAddProject()} /><button onClick={handleAddProject} disabled={!newProjectName.trim()} className="px-4 py-2 rounded-xl bg-amber-500 text-white text-sm font-semibold disabled:opacity-50">创建</button></div>
+            <div className="flex gap-2"><input type="text" value={newProjectName} onChange={e => setNewProjectName(e.target.value)} placeholder="如：春节旅游、游戏开支" className="flex-1 px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm" onKeyDown={e => e.key === 'Enter' && handleAddProject()} /><button onClick={handleAddProject} disabled={!newProjectName.trim()} className="px-4 py-2 rounded-xl bg-[var(--c-primary)] text-white text-sm font-semibold disabled:opacity-50">创建</button></div>
           </div>
         )}
         {projects.length === 0 && !showAddProject ? <div className="px-5 py-4 text-center text-sm text-gray-400">暂无分账单</div> : projects.map(p => { const Icon = PROJECT_ICON_MAP[p.icon] || MoreHorizontal; return <div key={p.id} className="flex items-center gap-3 px-5 py-2.5 border-b border-gray-50 dark:border-gray-800/30 last:border-0 group"><div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: p.color + '18' }}><Icon size={18} strokeWidth={1.8} color={p.color} /></div><span className="flex-1 text-sm font-medium">{p.name}</span><button onClick={() => deleteProject(p.id)} className="text-xs text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100">删除</button></div> })}

@@ -14,7 +14,7 @@ export default function ProjectSwitcher({ selectedId, onChange }: ProjectSwitche
     <div className="flex items-center gap-2 overflow-x-auto pb-1">
       <button onClick={() => onChange(null)}
         className={`flex-shrink-0 px-3 py-1.5 rounded-2xl text-xs font-medium transition-all ${
-          !selectedId ? 'bg-gradient-to-r from-amber-400 to-amber-600 text-white shadow-sm' : 'bg-white/60 dark:bg-gray-800/60 text-gray-500 hover:bg-white'
+          !selectedId ? 'bg-[var(--c-primary-gradient)] text-white shadow-sm' : 'bg-white/60 dark:bg-gray-800/60 text-gray-500 hover:bg-white'
         }`}>
         全部
       </button>

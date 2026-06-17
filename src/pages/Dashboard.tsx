@@ -11,7 +11,6 @@ import type { Transaction } from '@/types'
 import { PieChart as RPie, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, LineChart, Line, AreaChart, Area } from 'recharts'
 
 const BANNER: Record<string, string> = { happy:'banner-happy',calm:'banner-calm',neutral:'banner-neutral',sad:'banner-sad',anxious:'banner-anxious',angry:'banner-angry',excited:'banner-excited',tired:'banner-tired' }
-const PAGE: Record<string, string> = { happy:'page-happy',calm:'page-calm',neutral:'page-neutral',sad:'page-sad',anxious:'page-anxious',angry:'page-angry',excited:'page-excited',tired:'page-tired' }
 type FilterType = 'all'|'expense'|'income'
 const CHART_COLORS = ['#3b82f6','#10b981','#f43f5e','#f59e0b','#f97316','#ec4899','#06b6d4','#84cc16','#d97706','#14b8a6','#eab308','#78716c']
 
@@ -101,7 +100,14 @@ export default function Dashboard() {
 
   const hr=new Date().getHours();const greet=hr<6?'夜深了':hr<12?'早上好':hr<18?'下午好':'晚上好'
   const quotes:Record<string,string>={happy:'开心的消费是给自己的礼物',calm:'平静的日子，理性的支出',sad:'难过的日子也要对自己温柔',anxious:'焦虑时停一停，深呼吸',angry:'愤怒时别做决定，先冷静',excited:'兴奋是好事，也别忘了理性',tired:'累了就休息，别用购物犒劳自己',neutral:'记录心情，认识自己'}
-  useEffect(()=>{document.body.className=PAGE[moodKey]||PAGE.neutral;return()=>{document.body.className=''}},[moodKey])
+  useEffect(()=>{
+    if (settings?.themeMode !== 'dynamic') return
+    const root = document.documentElement
+    const moods = ['happy','calm','neutral','sad','anxious','angry','excited','tired']
+    moods.forEach(m => root.classList.remove(`theme-dynamic-${m}`))
+    root.classList.add(`theme-dynamic-${moodKey}`)
+    return () => { moods.forEach(m => root.classList.remove(`theme-dynamic-${m}`)) }
+  },[moodKey, settings?.themeMode])
   const DomIcon=dom?.Icon
 
   const incomeChange = prevStats.totalIncome > 0 ? Math.round(((stats.totalIncome - prevStats.totalIncome) / prevStats.totalIncome) * 100) : 0
@@ -269,7 +275,7 @@ export default function Dashboard() {
 
           <div className="flex flex-wrap items-center gap-1.5">
             <div className="flex rounded-full border border-gray-200/40 overflow-hidden bg-white/40 backdrop-blur">
-              {(['all','expense','income']as FilterType[]).map(t=><button key={t} onClick={()=>setFilterType(t)} className={`px-3 py-1.5 text-xs font-medium transition-all ${filterType===t?'bg-amber-500 text-white shadow-sm':'text-gray-500 hover:bg-white/60'}`}>{t==='all'?'全部':t==='expense'?'支出':'收入'}</button>)}
+              {(['all','expense','income']as FilterType[]).map(t=><button key={t} onClick={()=>setFilterType(t)} className={`px-3 py-1.5 text-xs font-medium transition-all ${filterType===t?'bg-[var(--c-primary)] text-white shadow-sm':'text-gray-500 hover:bg-white/60'}`}>{t==='all'?'全部':t==='expense'?'支出':'收入'}</button>)}
             </div>
             <select value={filterMood} onChange={e=>setFilterMood(e.target.value)} className="px-2 py-1.5 rounded-full border border-gray-200/40 bg-white/40 backdrop-blur text-xs font-medium"><option value="">全部心情</option>{MOOD_LIST.map(m=><option key={m.value} value={m.value}>{m.label}</option>)}</select>
             <select value={filterCategory} onChange={e=>setFilterCategory(e.target.value)} className="px-2 py-1.5 rounded-full border border-gray-200/40 bg-white/40 backdrop-blur text-xs font-medium"><option value="">全部分类</option>{categories.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select>

@@ -37,4 +37,6 @@ export const DEFAULT_SETTINGS: Settings = {
   speechSecretKey: '',
   speechProvider: 'none',
   colorScheme: 'most-frequent',
+  themeMode: 'dynamic',
+  fixedTheme: 'warm-amber',
 }

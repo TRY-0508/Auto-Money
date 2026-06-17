@@ -1,10 +1,27 @@
+import { useEffect } from 'react'
 import { Outlet } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import BottomNav from './BottomNav'
 import Header from './Header'
 import ParticleNetwork from '@/components/ParticleNetwork'
+import { useSettings } from '@/db/hooks'
+
+const FIXED_THEMES = ['warm-amber','forest-green','ocean-blue','rose-pink','lavender','sunset-orange']
 
 export default function AppLayout() {
+  const { settings } = useSettings()
+
+  useEffect(() => {
+    const root = document.documentElement
+    FIXED_THEMES.forEach(t => root.classList.remove(`theme-${t}`))
+    ;['happy','calm','neutral','sad','anxious','angry','excited','tired'].forEach(m =>
+      root.classList.remove(`theme-dynamic-${m}`))
+
+    if (settings?.themeMode === 'fixed' && settings?.fixedTheme) {
+      root.classList.add(`theme-${settings.fixedTheme}`)
+    }
+  }, [settings?.themeMode, settings?.fixedTheme])
+
   return (
     <div className="flex h-screen aurora-bg relative">
       <ParticleNetwork />

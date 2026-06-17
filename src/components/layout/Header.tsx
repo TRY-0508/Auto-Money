@@ -18,7 +18,7 @@ export default function Header() {
           <button onClick={toggleSidebar} className="md:hidden p-1 -ml-1 text-gray-500"><Menu size={22} /></button>
           <h1 className="font-semibold text-lg">{title}</h1>
         </div>
-        <button onClick={() => setShowAdd(true)} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-400 to-amber-600 text-white text-sm rounded-2xl hover:from-amber-500 hover:to-amber-700 transition-all shadow-sm">
+        <button onClick={() => setShowAdd(true)} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[var(--c-primary-gradient)] text-white text-sm rounded-2xl hover:brightness-110 transition-all shadow-sm">
           <Plus size={16} strokeWidth={2} />记一笔
         </button>
       </header>

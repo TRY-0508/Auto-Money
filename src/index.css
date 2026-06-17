@@ -15,6 +15,7 @@
   --c-primary: #d97706;
   --c-primary-hover: #b45309;
   --c-primary-soft: rgba(217, 119, 6, 0.08);
+  --c-primary-gradient: linear-gradient(135deg, #e6a817, #d97706, #b45309);
   /* Data */  
   --c-income: #10b981;
   --c-expense: #f43f5e;
@@ -46,6 +47,60 @@
   --s-card-hover: rgba(41,37,36,0.75);
   --s-input: rgba(41,37,36,0.45);
 }
+
+/* ── Fixed Color Themes ── */
+.theme-warm-amber {
+  --c-primary: #d97706;
+  --c-primary-hover: #b45309;
+  --c-primary-soft: rgba(217,119,6,0.08);
+  --c-primary-gradient: linear-gradient(135deg, #e6a817, #d97706, #b45309);
+  --c-balance: #d97706;
+}
+.theme-forest-green {
+  --c-primary: #059669;
+  --c-primary-hover: #047857;
+  --c-primary-soft: rgba(16,185,129,0.08);
+  --c-primary-gradient: linear-gradient(135deg, #10b981, #059669, #047857);
+  --c-balance: #059669;
+}
+.theme-ocean-blue {
+  --c-primary: #2563eb;
+  --c-primary-hover: #1d4ed8;
+  --c-primary-soft: rgba(37,99,235,0.08);
+  --c-primary-gradient: linear-gradient(135deg, #3b82f6, #2563eb, #1d4ed8);
+  --c-balance: #2563eb;
+}
+.theme-rose-pink {
+  --c-primary: #e11d48;
+  --c-primary-hover: #be123c;
+  --c-primary-soft: rgba(225,29,72,0.08);
+  --c-primary-gradient: linear-gradient(135deg, #f43f5e, #e11d48, #be123c);
+  --c-balance: #e11d48;
+}
+.theme-lavender {
+  --c-primary: #7c3aed;
+  --c-primary-hover: #6d28d9;
+  --c-primary-soft: rgba(124,58,237,0.08);
+  --c-primary-gradient: linear-gradient(135deg, #8b5cf6, #7c3aed, #6d28d9);
+  --c-balance: #7c3aed;
+}
+.theme-sunset-orange {
+  --c-primary: #ea580c;
+  --c-primary-hover: #c2410c;
+  --c-primary-soft: rgba(234,88,12,0.08);
+  --c-primary-gradient: linear-gradient(135deg, #fb923c, #ea580c, #c2410c);
+  --c-balance: #ea580c;
+}
+
+/* ── Dynamic Theme: let --c-primary follow mood ── */
+.theme-dynamic-happy    { --c-primary: #f59e0b; --c-primary-hover: #d97706; --c-primary-soft: rgba(245,158,11,0.08); --c-primary-gradient: linear-gradient(135deg,#fbbf24,#f59e0b,#d97706); --c-balance: #f59e0b; }
+.theme-dynamic-calm     { --c-primary: #14b8a6; --c-primary-hover: #0d9488; --c-primary-soft: rgba(20,184,166,0.08); --c-primary-gradient: linear-gradient(135deg,#2dd4bf,#14b8a6,#0d9488); --c-balance: #14b8a6; }
+.theme-dynamic-neutral  { --c-primary: #d97706; --c-primary-hover: #b45309; --c-primary-soft: rgba(217,119,6,0.08); --c-primary-gradient: linear-gradient(135deg,#e6a817,#d97706,#b45309); --c-balance: #d97706; }
+.theme-dynamic-sad      { --c-primary: #8b5cf6; --c-primary-hover: #6d28d9; --c-primary-soft: rgba(139,92,246,0.08); --c-primary-gradient: linear-gradient(135deg,#a78bfa,#8b5cf6,#6d28d9); --c-balance: #8b5cf6; }
+.theme-dynamic-anxious  { --c-primary: #f97316; --c-primary-hover: #ea580c; --c-primary-soft: rgba(249,115,22,0.08); --c-primary-gradient: linear-gradient(135deg,#fb923c,#f97316,#ea580c); --c-balance: #f97316; }
+.theme-dynamic-angry    { --c-primary: #ef4444; --c-primary-hover: #dc2626; --c-primary-soft: rgba(239,68,68,0.08); --c-primary-gradient: linear-gradient(135deg,#f87171,#ef4444,#dc2626); --c-balance: #ef4444; }
+.theme-dynamic-excited  { --c-primary: #f59e0b; --c-primary-hover: #d97706; --c-primary-soft: rgba(245,158,11,0.08); --c-primary-gradient: linear-gradient(135deg,#fbbf24,#f59e0b,#d97706); --c-balance: #f59e0b; }
+.theme-dynamic-tired    { --c-primary: #a8a29e; --c-primary-hover: #78716c; --c-primary-soft: rgba(168,162,158,0.08); --c-primary-gradient: linear-gradient(135deg,#d6d3d1,#a8a29e,#78716c); --c-balance: #a8a29e; }
 
 /* ── Base ── */
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -173,7 +228,7 @@ body {
 .btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .btn-primary {
-  background: linear-gradient(135deg, #e6a817, #d97706, #b45309);
+  background: var(--c-primary-gradient);
   color: var(--t-inverse);
   box-shadow: 0 2px 8px rgba(217,119,6,0.25);
 }
@@ -430,7 +485,7 @@ body {
 /* ── FAB Enhance ── */
 .fab {
   width: 3.5rem; height: 3.5rem;
-  background: linear-gradient(135deg, #fcd34d, #f59e0b, #d97706);
+  background: var(--c-primary-gradient);
   background-size: 200% 200%;
   animation: fabShine 3s ease-in-out infinite;
   box-shadow: 0 4px 24px rgba(217,119,6,0.4), 0 0 0 0 rgba(217,119,6,0.4);
@@ -471,3 +526,15 @@ body {
   opacity: 0.2;
   animation: dotFloat 6s ease-in-out infinite;
 }
+
+/* ── Chart Styles (rounded, soft) ── */
+.recharts-surface { overflow: visible; }
+.recharts-sector { stroke-linejoin: round; }
+.recharts-tooltip-wrapper .recharts-default-tooltip {
+  border-radius: 14px !important;
+  border: none !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08) !important;
+  padding: 8px 12px !important;
+}
+.recharts-bar-rectangle { transition: opacity 0.2s ease; }
+.recharts-rectangle + .recharts-rectangle { border-radius: 0 8px 8px 0; }

@@ -138,7 +138,7 @@ function ReportTab() {
       {/* Generate button */}
       {error && <div className="mb-4 p-3 rounded-2xl bg-red-50 dark:bg-red-900/20 text-red-500 text-sm flex items-center gap-2"><AlertTriangle size={14} />{error}</div>}
       <button onClick={handleGenerate} disabled={loading || stats.count === 0}
-        className="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold disabled:opacity-50 hover:from-amber-600 hover:to-orange-600 transition-all shadow-lg shadow-amber-500/20">
+        className="w-full py-3 rounded-2xl bg-[var(--c-primary-gradient)] text-white text-sm font-semibold disabled:opacity-50 hover:brightness-110 transition-all shadow-lg">
         {loading ? '分析中...' : stats.count === 0 ? '暂无数据' : '生成财务报告'}
       </button>
 
@@ -214,7 +214,7 @@ function PsychTab() {
 
       {error && <div className="mb-4 p-3 rounded-2xl bg-red-50 dark:bg-red-900/20 text-red-500 text-sm flex items-center gap-2"><AlertTriangle size={14} />{error}</div>}
       <button onClick={handleGenerate} disabled={loading || moodData.length === 0}
-        className="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 text-white text-sm font-semibold disabled:opacity-50 hover:from-amber-600 hover:to-amber-700 transition-all shadow-lg shadow-amber-500/20">
+        className="w-full py-3 rounded-2xl bg-[var(--c-primary-gradient)] text-white text-sm font-semibold disabled:opacity-50 hover:brightness-110 transition-all shadow-lg">
         {loading ? 'AI 分析中...' : moodData.length === 0 ? '请先记录带心情的消费' : '生成心理分析报告'}
       </button>
 
@@ -279,7 +279,7 @@ function ChatTab() {
           </div>
         ) : messages.map(msg => (
           <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm ${msg.role === 'user' ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-br-md' : 'bg-gray-100 dark:bg-gray-800 rounded-bl-md'}`}>{msg.content}</div>
+            <div className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm ${msg.role === 'user' ? 'bg-[var(--c-primary-gradient)] text-white rounded-br-md' : 'bg-gray-100 dark:bg-gray-800 rounded-bl-md'}`}>{msg.content}</div>
           </div>
         ))}
         {loading && <div className="flex justify-start"><div className="bg-gray-100 dark:bg-gray-800 rounded-2xl rounded-bl-md px-4 py-3"><div className="flex gap-1.5">{[0,1,2].map(i => <div key={i} className="w-2 h-2 bg-gray-400 rounded-full pulse-dot" style={{ animationDelay: `${i*0.2}s` }} />)}</div></div></div>}
@@ -289,7 +289,7 @@ function ChatTab() {
       {error && <div className="mb-2 p-2 rounded-2xl bg-red-50 dark:bg-red-900/20 text-red-500 text-xs flex items-center gap-1"><AlertTriangle size={12} />{error}</div>}
       <div className="flex gap-2">
         <input type="text" value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSend()} placeholder="问点什么..." className="flex-1 px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur text-sm focus:outline-none focus:ring-2 focus:ring-amber-300" />
-        <button onClick={handleSend} disabled={!input.trim() || loading} className="px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold disabled:opacity-50 shadow-lg shadow-amber-500/20">发送</button>
+        <button onClick={handleSend} disabled={!input.trim() || loading} className="px-5 py-3 rounded-2xl bg-[var(--c-primary-gradient)] text-white text-sm font-semibold disabled:opacity-50 shadow-lg">发送</button>
       </div>
       {messages.length > 0 && <button onClick={clearMessages} className="mt-2 text-xs text-gray-400 hover:text-gray-600 self-center flex items-center gap-1"><Trash2 size={12} />清除对话</button>}
     </div>

@@ -40,15 +40,29 @@ export const PRESET_CAT_ICONS: Record<string, IconKey> = {
   '红包': 'gift', '其他': 'more-horizontal',
 }
 
-export const CAT_ICON_OPTIONS: { key: IconKey; label: string; Icon: LucideIcon }[] = Object.entries({
-  utensils: '餐饮', coffee: '咖啡', pizza: '美食', car: '汽车', bus: '公交',
-  train: '火车', plane: '飞机', 'shopping-bag': '购物', 'gamepad-2': '游戏',
-  home: '住房', pill: '医疗', 'book-open': '教育', smartphone: '通讯',
-  package: '日用', briefcase: '工作', gift: '礼物', cat: '宠物', camera: '摄影',
-  music: '音乐', dumbbell: '健身', shirt: '服饰', makeup: '美妆', beer: '聚会',
-  lightbulb: '灵感', stethoscope: '健康', wrench: '维修', heart: '情绪', zap: '冲动',
-  'more-horizontal': '其他',
-}).map(([key, label]) => ({ key, label, Icon: CATEGORY_ICON_MAP[key] || MoreHorizontal }))
+export const CAT_ICON_OPTIONS: { key: IconKey; label: string; Icon: LucideIcon }[] = [
+  { key: 'home', label: '住所', Icon: Home },
+  { key: 'utensils', label: '饮食', Icon: UtensilsCrossed },
+  { key: 'stethoscope', label: '健康', Icon: Stethoscope },
+  { key: 'wrench', label: '修缮', Icon: Wrench },
+  { key: 'car', label: '出行', Icon: Car },
+  { key: 'book-open', label: '学习', Icon: BookOpen },
+  { key: 'dumbbell', label: '成长', Icon: Dumbbell },
+  { key: 'heart', label: '情感', Icon: Heart },
+  { key: 'lightbulb', label: '灵感', Icon: Lightbulb },
+  { key: 'camera', label: '纪念', Icon: Camera },
+  { key: 'zap', label: '冲动', Icon: Zap },
+  { key: 'alert-triangle', label: '意外', Icon: AlertTriangle },
+  { key: 'trending-up', label: '投资', Icon: TrendingUp },
+  { key: 'briefcase', label: '工作', Icon: Briefcase },
+  { key: 'gift', label: '礼物', Icon: Gift },
+  { key: 'banknote', label: '现金', Icon: Banknote },
+  { key: 'music', label: '爱好', Icon: Music },
+  { key: 'coffee', label: '小憩', Icon: Coffee },
+  { key: 'package', label: '日用', Icon: Package },
+  { key: 'smartphone', label: '数码', Icon: Smartphone },
+  { key: 'more-horizontal', label: '其他', Icon: MoreHorizontal },
+]
 
 // ── Mood Icons ──
 export const MOOD_LIST: { value: string; label: string; Icon: LucideIcon; color: string }[] = [

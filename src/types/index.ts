@@ -50,6 +50,8 @@ export interface Settings {
   speechSecretKey: string
   speechProvider: 'baidu' | 'none'
   colorScheme: 'most-frequent' | 'latest' | 'neutral' | 'adaptive'
+  themeMode: 'dynamic' | 'fixed'
+  fixedTheme: string
 }
 
 export interface Deficit {
