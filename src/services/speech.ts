@@ -2,12 +2,17 @@ import { db } from '@/db'
 
 let mediaRecorder: MediaRecorder | null = null
 let audioChunks: Blob[] = []
-let _onResult: ((text: string) => void) | null = null
-let _onEnd: (() => void) | null = null
-let _onError: ((msg: string) => void) | null = null
+let currentStream: MediaStream | null = null
 
 export function isSpeechSupported(): boolean {
   return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
+}
+
+function releaseStream() {
+  if (currentStream) {
+    currentStream.getTracks().forEach(t => t.stop())
+    currentStream = null
+  }
 }
 
 export async function startRecognition(
@@ -15,7 +20,11 @@ export async function startRecognition(
   onEnd: () => void,
   onError: (msg: string) => void
 ) {
+  // 强制清理上一次录音的所有资源
   stopRecognition()
+  releaseStream()
+  mediaRecorder = null
+  audioChunks = []
 
   const settings = await db.settings.get('default')
   if (!settings?.speechApiKey || !settings?.speechSecretKey) {
@@ -23,44 +32,54 @@ export async function startRecognition(
     return
   }
 
-  _onResult = onResult; _onEnd = onEnd; _onError = onError
-
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+    currentStream = stream
     const mime = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : 'audio/webm'
     mediaRecorder = new MediaRecorder(stream, { mimeType: mime })
-    audioChunks = []
 
     mediaRecorder.ondataavailable = (e) => {
       if (e.data.size > 0) audioChunks.push(e.data)
     }
 
+    // 将回调捕获到闭包中，避免被后续调用覆盖
+    const capturedOnResult = onResult
+    const capturedOnEnd = onEnd
+    const capturedOnError = onError
+
     mediaRecorder.onstop = async () => {
-      stream.getTracks().forEach(t => t.stop())
-      if (audioChunks.length === 0) { _onEnd?.(); return }
+      const chunks = [...audioChunks]
+      releaseStream()
+      audioChunks = []
+
+      if (chunks.length === 0) {
+        capturedOnEnd()
+        return
+      }
 
       let text = ''
       try {
-        const blob = new Blob(audioChunks, { type: mime })
+        const blob = new Blob(chunks, { type: mime })
         text = await recognize(blob, settings)
       } catch (err: any) {
-        _onError?.(err.message || '识别失败')
+        capturedOnError(err.message || '识别失败')
       }
 
-      if (text) _onResult?.(text)
-      _onEnd?.()
+      if (text) capturedOnResult(text)
+      capturedOnEnd()
     }
 
     mediaRecorder.start()
   } catch (err: any) {
+    releaseStream()
     if (err.name === 'NotAllowedError') onError('麦克风权限被拒绝')
-    else onError('无法启动录音')
+    else onError('无法启动录音：' + (err.message || ''))
     onEnd()
   }
 }
 
 export function stopRecognition() {
-  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+  if (mediaRecorder && mediaRecorder.state === 'recording') {
     mediaRecorder.stop()
   }
 }
