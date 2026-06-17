@@ -2,9 +2,9 @@ import { useState, useMemo, useRef } from 'react'
 import { useTransactions, useCategories, useProjects, useBudgets, useSettings } from '@/db/hooks'
 import { getMonthlyStats, getCategoryBreakdown, getDailyTrend } from '@/lib/stats'
 import { getCurrentYearMonth, formatAmount, formatDate } from '@/lib/utils'
-import { MOOD_LIST, MOOD_ICON_MAP, MOOD_COLOR_MAP, CATEGORY_ICON_MAP, MoreHorizontal, BarChart3, Trash2, PieChart, List, Calendar as CalendarIcon, Check, ArrowUpRight, ArrowDownRight, TrendingUp, Wallet } from '@/lib/icons'
+import { CATEGORY_DESCRIPTIONS } from '@/lib/constants'
+import { MOOD_LIST, MOOD_ICON_MAP, MOOD_COLOR_MAP, CATEGORY_ICON_MAP, MoreHorizontal, BarChart3, Trash2, PieChart, List, Calendar as CalendarIcon, Check, ArrowUpRight, ArrowDownRight, TrendingUp, Wallet, Plus } from '@/lib/icons'
 import CategoryIcon from '@/components/CategoryIcon'
-import EmptyState from '@/components/EmptyState'
 import AddModal from '@/components/AddModal'
 import ProjectSwitcher from '@/components/ProjectSwitcher'
 import type { Transaction } from '@/types'
@@ -119,8 +119,23 @@ export default function Dashboard() {
       </div>
 
       {txs.length===0?(
-        <div className="card card-soft p-10 text-center">
-          <EmptyState icon={<BarChart3 size={48} strokeWidth={1.2} className="text-accent"/>} title="开始认识自己" description="记下第一笔账，同步记录心情" action={{label:'记一笔',onClick:()=>setShowAdd(true)}}/>
+        <div className="space-y-4">
+          <div className="card card-accent p-6 text-center">
+            <BarChart3 size={48} strokeWidth={1.2} className="text-accent mx-auto mb-4"/>
+            <h3 className="text-lg font-bold mb-2">欢迎来到心情收支簿</h3>
+            <p className="text-sm text-muted mb-6">基于消费心理学理论的智能记账工具，帮你看见自己的消费心理模式</p>
+            <div className="grid grid-cols-2 gap-3 text-left mb-6">
+              <div className="bg-white/60 dark:bg-gray-800/60 rounded-2xl p-3">
+                <p className="text-xs font-semibold mb-1">💰 支出 · 消费心理五型</p>
+                <p className="text-[10px] text-muted leading-relaxed">必要消费、价值消费、情绪消费、冲动消费、意外消费</p>
+              </div>
+              <div className="bg-white/60 dark:bg-gray-800/60 rounded-2xl p-3">
+                <p className="text-xs font-semibold mb-1">💎 收入 · 来源心理五型</p>
+                <p className="text-[10px] text-muted leading-relaxed">劳动收入、增值收入、馈赠收入、惊喜收入、回流收入</p>
+              </div>
+            </div>
+            <button onClick={()=>setShowAdd(true)} className="btn btn-primary mx-auto"><Plus size={16}/>记第一笔</button>
+          </div>
         </div>
       ):(
         <>

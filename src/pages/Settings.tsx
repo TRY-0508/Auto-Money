@@ -6,6 +6,7 @@ import { db } from '@/db'
 import { getCurrentYearMonth, formatAmount } from '@/lib/utils'
 import { getMonthlyStats, getCategoryBreakdown } from '@/lib/stats'
 import { CAT_ICON_OPTIONS, CATEGORY_ICON_MAP, PROJECT_ICON_MAP, PROJECT_ICONS as PROJ_ICONS_LIST, MoreHorizontal, Settings as SettingsIcon, Tag, FolderOpen, Database, Download, Upload, Trash2, Edit3, Check, X, Mic, Palette, Wallet, Plus } from '@/lib/icons'
+import { CATEGORY_DESCRIPTIONS } from '@/lib/constants'
 
 const ALL_COLORS = ['#3b82f6', '#22c55e', '#ef4444', '#eab308', '#a855f7', '#f97316', '#ec4899', '#06b6d4', '#6366f1', '#14b8a6', '#84cc16', '#f59e0b', '#78716c']
 
@@ -170,19 +171,21 @@ export default function Settings() {
           </div>
         )}
         <div className="px-5 py-3"><p className="text-xs text-muted font-medium mb-2">支出分类</p>
-          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">{expenseCats.map((cat, idx) => { const Icon = CATEGORY_ICON_MAP[cat.icon] || MoreHorizontal; const bg = ICON_COLORS_SM[idx % ICON_COLORS_SM.length]; return (
-            <button key={cat.id} className="flex flex-col items-center gap-1 p-2 sm:p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 group relative active:scale-95 transition-transform">
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">{expenseCats.map((cat, idx) => { const Icon = CATEGORY_ICON_MAP[cat.icon] || MoreHorizontal; const bg = ICON_COLORS_SM[idx % ICON_COLORS_SM.length]; const info = CATEGORY_DESCRIPTIONS[cat.name]; return (
+            <button key={cat.id} title={info?.desc} className="flex flex-col items-center gap-1 p-2 sm:p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 group relative active:scale-95 transition-transform">
               <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: bg }}><Icon size={20} strokeWidth={2} color="#fff"/></div>
               <span className="text-[10px] sm:text-[11px] font-semibold text-center leading-tight truncate w-full">{cat.name}</span>
+              {info && <span className="text-[8px] text-muted leading-tight text-center hidden group-hover:block">{info.desc}</span>}
               {!cat.isSystem && <button onClick={(e) => { e.stopPropagation(); deleteCategory(cat.id) }} className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-400 text-white text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">×</button>}
             </button>
           )})}</div>
         </div>
         <div className="px-5 py-3 border-t border-gray-50 dark:border-gray-800/50"><p className="text-xs text-muted font-medium mb-2">收入分类</p>
-          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">{incomeCats.map((cat, idx) => { const Icon = CATEGORY_ICON_MAP[cat.icon] || MoreHorizontal; const bg = ICON_COLORS_SM[(idx + expenseCats.length) % ICON_COLORS_SM.length]; return (
-            <button key={cat.id} className="flex flex-col items-center gap-1 p-2 sm:p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 group relative active:scale-95 transition-transform">
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">{incomeCats.map((cat, idx) => { const Icon = CATEGORY_ICON_MAP[cat.icon] || MoreHorizontal; const bg = ICON_COLORS_SM[(idx + expenseCats.length) % ICON_COLORS_SM.length]; const info = CATEGORY_DESCRIPTIONS[cat.name]; return (
+            <button key={cat.id} title={info?.desc} className="flex flex-col items-center gap-1 p-2 sm:p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 group relative active:scale-95 transition-transform">
               <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: bg }}><Icon size={20} strokeWidth={2} color="#fff"/></div>
               <span className="text-[10px] sm:text-[11px] font-semibold text-center leading-tight truncate w-full">{cat.name}</span>
+              {info && <span className="text-[8px] text-muted leading-tight text-center hidden group-hover:block">{info.desc}</span>}
               {!cat.isSystem && <button onClick={(e) => { e.stopPropagation(); deleteCategory(cat.id) }} className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-400 text-white text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">×</button>}
             </button>
           )})}</div>
