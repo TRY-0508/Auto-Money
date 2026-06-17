@@ -22,11 +22,9 @@ function LucideIconPicker({ value, onChange }: { value: string; onChange: (k: st
   )
 }
 
-const ICON_COLORS_SM = ['#f59e0b','#3b82f6','#ec4899','#8b5cf6','#10b981','#f43f5e','#06b6d4','#84cc16','#f97316','#6366f1','#14b8a6','#eab308']
-
 function CategoryBadge({ cat, idx }: { cat: any; idx: number }) {
   const Icon = CATEGORY_ICON_MAP[cat.icon] || MoreHorizontal
-  const bg = ICON_COLORS_SM[idx % ICON_COLORS_SM.length]
+  const bg = cat.color || '#6b7280'
   return <div className="w-9 h-9 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: bg }}><Icon size={18} strokeWidth={2} color="#fff" /></div>
 }
 
@@ -171,7 +169,7 @@ export default function Settings() {
           </div>
         )}
         <div className="px-5 py-3"><p className="text-xs text-muted font-medium mb-2">支出分类</p>
-          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">{expenseCats.map((cat, idx) => { const Icon = CATEGORY_ICON_MAP[cat.icon] || MoreHorizontal; const bg = ICON_COLORS_SM[idx % ICON_COLORS_SM.length]; const info = CATEGORY_DESCRIPTIONS[cat.name]; return (
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">{expenseCats.map((cat, idx) => { const Icon = CATEGORY_ICON_MAP[cat.icon] || MoreHorizontal; const bg = cat.color || '#6b7280'; const info = CATEGORY_DESCRIPTIONS[cat.name]; return (
             <div key={cat.id} className="relative group">
               <div title={info?.desc} className="flex flex-col items-center gap-1 p-2 sm:p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 active:scale-95 transition-transform cursor-default">
                 <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: bg }}><Icon size={20} strokeWidth={2} color="#fff"/></div>
@@ -188,7 +186,7 @@ export default function Settings() {
           )})}</div>
         </div>
         <div className="px-5 py-3 border-t border-gray-50 dark:border-gray-800/50"><p className="text-xs text-muted font-medium mb-2">收入分类</p>
-          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">{incomeCats.map((cat, idx) => { const Icon = CATEGORY_ICON_MAP[cat.icon] || MoreHorizontal; const bg = ICON_COLORS_SM[(idx + expenseCats.length) % ICON_COLORS_SM.length]; const info = CATEGORY_DESCRIPTIONS[cat.name]; return (
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">{incomeCats.map((cat, idx) => { const Icon = CATEGORY_ICON_MAP[cat.icon] || MoreHorizontal; const bg = cat.color || '#6b7280'; const info = CATEGORY_DESCRIPTIONS[cat.name]; return (
             <div key={cat.id} className="relative group">
               <div title={info?.desc} className="flex flex-col items-center gap-1 p-2 sm:p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 active:scale-95 transition-transform cursor-default">
                 <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: bg }}><Icon size={20} strokeWidth={2} color="#fff"/></div>

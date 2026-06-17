@@ -253,13 +253,20 @@ function ChatTab() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-13rem)]">
-      {/* Data overview bar */}
-      <div className="flex items-center gap-3 px-3 py-2 mb-3 rounded-2xl bg-amber-50/60 dark:bg-amber-900/10 border border-amber-100/60 dark:border-amber-800/30 text-xs">
-        <span className="text-emerald-500 font-medium">收{formatAmount(stats.totalIncome)}</span>
-        <span className="text-muted">|</span>
-        <span className="text-rose-400 font-medium">支{formatAmount(stats.totalExpense)}</span>
-        <span className="text-muted">|</span>
-        <span className="font-medium">余{formatAmount(stats.balance)}</span>
+      {/* Data overview — 3 compact cards */}
+      <div className="grid grid-cols-3 gap-2 mb-3">
+        <div className="rounded-xl bg-emerald-50 dark:bg-emerald-900/20 p-2 text-center">
+          <p className="text-[9px] text-muted">收入</p>
+          <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400">{formatAmount(stats.totalIncome)}</p>
+        </div>
+        <div className="rounded-xl bg-rose-50 dark:bg-rose-900/20 p-2 text-center">
+          <p className="text-[9px] text-muted">支出</p>
+          <p className="text-xs font-bold text-rose-500 dark:text-rose-400">{formatAmount(stats.totalExpense)}</p>
+        </div>
+        <div className="rounded-xl bg-gray-50 dark:bg-gray-800 p-2 text-center">
+          <p className="text-[9px] text-muted">结余</p>
+          <p className={`text-xs font-bold ${stats.balance<0?'text-red-400':''}`}>{formatAmount(stats.balance)}</p>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto space-y-3 mb-3">

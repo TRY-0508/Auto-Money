@@ -1,8 +1,6 @@
 import { useCategories } from '@/db/hooks'
 import { CATEGORY_ICON_MAP, MoreHorizontal } from '@/lib/icons'
 
-const ICON_COLORS = ['#f59e0b','#3b82f6','#10b981','#f43f5e','#ec4899','#06b6d4','#84cc16','#f97316','#d97706','#14b8a6','#eab308','#78716c']
-
 interface CategoryIconProps {
   categoryId: string
   size?: number
@@ -10,11 +8,10 @@ interface CategoryIconProps {
 
 export default function CategoryIcon({ categoryId, size = 18 }: CategoryIconProps) {
   const { categories } = useCategories()
-  const idx = categories.findIndex(c => c.id === categoryId)
-  const cat = categories[idx]
+  const cat = categories.find(c => c.id === categoryId)
   const icon = cat?.icon || ''
   const Icon = CATEGORY_ICON_MAP[icon] || MoreHorizontal
-  const bg = ICON_COLORS[idx % ICON_COLORS.length]
+  const bg = cat?.color || '#6b7280'
 
   return (
     <div className="rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm" style={{ width: size + 12, height: size + 12, backgroundColor: bg }}>

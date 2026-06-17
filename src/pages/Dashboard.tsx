@@ -8,7 +8,7 @@ import CategoryIcon from '@/components/CategoryIcon'
 import AddModal from '@/components/AddModal'
 import ProjectSwitcher from '@/components/ProjectSwitcher'
 import type { Transaction } from '@/types'
-import { PieChart as RPie, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, AreaChart, Area } from 'recharts'
+import { PieChart as RPie, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts'
 
 const BANNER: Record<string, string> = { happy:'banner-happy',calm:'banner-calm',neutral:'banner-neutral',sad:'banner-sad',anxious:'banner-anxious',angry:'banner-angry',excited:'banner-excited',tired:'banner-tired' }
 type FilterType = 'all'|'expense'|'income'
@@ -246,31 +246,25 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Daily Trend Line Chart */}
-          <div className="card card-chart card-hover overflow-hidden">
-            <div className="card-header"><TrendingUp size={18} strokeWidth={1.8} className="text-accent"/>30日收支趋势</div>
-            <div className="card-body">
-              <div className="h-44">
-                <ResponsiveContainer>
-                  <AreaChart data={dailyTrend} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#10b981" stopOpacity={0.2}/>
-                        <stop offset="100%" stopColor="#10b981" stopOpacity={0}/>
-                      </linearGradient>
-                      <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#f43f5e" stopOpacity={0.15}/>
-                        <stop offset="100%" stopColor="#f43f5e" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <XAxis dataKey="date" tick={{fontSize:10,fill:'#a8a29e'}} axisLine={false} tickLine={false} interval={5} />
-                    <YAxis tick={{fontSize:10,fill:'#a8a29e'}} axisLine={false} tickLine={false} width={44} tickFormatter={(v:number)=>v>0?'¥'+(v/1000).toFixed(0)+'k':''} />
-                    <Tooltip cursor={{stroke:'rgba(0,0,0,0.06)',strokeWidth:1}} contentStyle={{borderRadius:'14px',border:'none',boxShadow:'0 8px 32px rgba(0,0,0,0.1)',fontSize:'12px',padding:'8px 14px'}} />
-                    <Area type="monotone" dataKey="income" stroke="#10b981" strokeWidth={2} fill="url(#colorIncome)" dot={false} activeDot={{r:4,fill:'#10b981',stroke:'#fff',strokeWidth:2}} />
-                    <Area type="monotone" dataKey="expense" stroke="#f43f5e" strokeWidth={2} fill="url(#colorExpense)" dot={false} activeDot={{r:4,fill:'#f43f5e',stroke:'#fff',strokeWidth:2}} />
-                  </AreaChart>
-                </ResponsiveContainer>
+          {/* Weekly Trend — compact bar chart */}
+          <div className="card card-chart overflow-hidden">
+            <div className="flex items-center justify-between px-3 sm:px-4 pt-3 sm:pt-4">
+              <div className="flex items-center gap-1.5"><TrendingUp size={14} strokeWidth={1.8} className="text-accent"/><span className="text-[10px] sm:text-xs font-semibold">本周趋势</span></div>
+              <div className="flex items-center gap-2 text-[9px]">
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-emerald-400"/><span className="text-muted">收入</span></span>
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-rose-400"/><span className="text-muted">支出</span></span>
               </div>
+            </div>
+            <div className="p-2 sm:p-3 h-32">
+              <ResponsiveContainer>
+                <BarChart data={dailyTrend.slice(-7)} margin={{ top: 4, right: 4, left: 0, bottom: 0 }} barCategoryGap="40%">
+                  <XAxis dataKey="date" tick={{fontSize:9,fill:'#a8a29e'}} axisLine={false} tickLine={false} tickFormatter={(v:string)=>v.slice(3)} />
+                  <YAxis tick={{fontSize:9,fill:'#a8a29e'}} axisLine={false} tickLine={false} width={36} />
+                  <Tooltip cursor={{fill:'rgba(0,0,0,0.03)',rx:6}} contentStyle={{borderRadius:'12px',border:'none',boxShadow:'0 4px 20px rgba(0,0,0,0.1)',fontSize:'11px',padding:'6px 10px'}} />
+                  <Bar dataKey="income" name="收入" radius={[4,4,0,0]} barSize={10} fill="#10b981" fillOpacity={0.85} />
+                  <Bar dataKey="expense" name="支出" radius={[4,4,0,0]} barSize={10} fill="#f43f5e" fillOpacity={0.75} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </div>
 
