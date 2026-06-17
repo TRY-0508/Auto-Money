@@ -59,6 +59,7 @@ export default function JarPage() {
   const [evtAILoading, setEvtAILoading] = useState(false)
   const [evtAIResult, setEvtAIResult] = useState<CoolDownAIAnalysis | null>(null)
   const [evtAIError, setEvtAIError] = useState('')
+  const [evtGoalId, setEvtGoalId] = useState('')
   const [evtCooldownHours, setEvtCooldownHours] = useState(24)
 
   // Re-evaluation
@@ -132,6 +133,7 @@ export default function JarPage() {
     const now = Date.now()
     const cooldown = evtCooldownHours
     await addEvent({
+      goalId: evtGoalId || undefined,
       description: evtDesc.trim(),
       amount: parseFloat(evtAmount) || 0,
       desireLevel: analysis?.suggestedDesire ?? 3,
@@ -147,7 +149,7 @@ export default function JarPage() {
     })
     setShowNewEvent(false)
     setEvtDesc(''); setEvtAmount(''); setEvtAIResult(null); setEvtAIError('')
-    setEvtCooldownHours(24)
+    setEvtGoalId(''); setEvtCooldownHours(24)
   }
 
   // ── Re-evaluation ──
@@ -161,6 +163,10 @@ export default function JarPage() {
       goalId: goalId || reviewEvent.goalId,
     })
     if (goalId) {
+      const goal = goals.find(g => g.id === goalId)
+      if (goal) {
+        await updateGoal(goalId, { currentAmount: goal.currentAmount + (reviewEvent.amount || 0) })
+      }
       await updateSettings?.({ totalStars: (settings?.totalStars || 0) + 1 })
     }
     setReviewEvent(null); setReviewNote(''); setShowPurchaseOptions(false)
@@ -466,6 +472,13 @@ export default function JarPage() {
                   <AlertTriangle size={14} />{evtAIError}
                   <button onClick={() => setEvtAIError('')} className="ml-auto text-xs underline">关闭</button>
                 </div>
+              )}
+
+              {goals.length > 0 && (
+                <select value={evtGoalId} onChange={e => setEvtGoalId(e.target.value)} className="input text-sm">
+                  <option value="">不关联心愿</option>
+                  {goals.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
+                </select>
               )}
 
               <div>
