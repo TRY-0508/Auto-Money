@@ -2,11 +2,10 @@ import { useState, useMemo, useRef, useEffect } from 'react'
 import { useTransactions, useCategories, useBudgets, useChatMessages } from '@/db/hooks'
 import { generateReport, chatQuery } from '@/services/llm'
 import { getMonthlyStats, getCategoryBreakdown } from '@/lib/stats'
-import { formatAmount, getCurrentYearMonth } from '@/lib/utils'
+import { formatAmount, getCurrentYearMonth, generateColors } from '@/lib/utils'
 import { MOOD_LIST, BarChart3, Brain, MessageCircle, Copy, AlertTriangle, Trash2 } from '@/lib/icons'
 import { BarChart, Bar, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 
-const CHART_COLORS = ['#3b82f6','#10b981','#f43f5e','#f59e0b','#f97316','#ec4899','#06b6d4','#84cc16','#d97706','#14b8a6','#eab308','#78716c','#6366f1','#22d3ee','#fb7185','#a3e635','#c084fc','#fbbf24','#34d399','#e879f9','#38bdf8','#fb923c','#4ade80','#f472b6']
 const SUGGESTIONS = ['我这个月开心的时候花了多少？', '焦虑时我最常买什么？', '帮我分析情绪和消费的关系', '给我一些改善消费习惯的建议']
 
 export default function AIAssistant() {
@@ -37,6 +36,7 @@ function ReportTab() {
   const { categories } = useCategories(); const { budgets } = useBudgets()
   const stats = useMemo(() => getMonthlyStats(transactions, yearMonth), [transactions, yearMonth])
   const breakdown = useMemo(() => getCategoryBreakdown(transactions, categories, 'expense', yearMonth), [transactions, categories, yearMonth])
+  const chartColors = useMemo(() => generateColors(Math.max(breakdown.length, 5)), [breakdown.length])
   const [year, month] = yearMonth.split('-')
   const currentBudget = useMemo(() => budgets.find(b => b.yearMonth === yearMonth && b.categoryId === null), [budgets, yearMonth])
   const budgetPct = currentBudget && currentBudget.amount > 0 ? Math.min((stats.totalExpense / currentBudget.amount) * 100, 100) : 0
@@ -100,7 +100,7 @@ function ReportTab() {
                 <YAxis tick={{fontSize:10,fill:'#a8a29e'}} axisLine={false} tickLine={false} width={44} />
                 <Tooltip cursor={{fill:'rgba(0,0,0,0.03)',rx:8}} contentStyle={{borderRadius:'14px',border:'none',boxShadow:'0 8px 32px rgba(0,0,0,0.1)',fontSize:'12px',padding:'8px 14px'}} formatter={(v:number)=>(['¥'+v.toFixed(2),'金额'])} />
                 <Bar dataKey="amount" radius={[6,6,0,0]} barSize={32} fillOpacity={0.85}>
-                  {breakdown.slice(0,5).map((d,i)=>(<Cell key={d.categoryId} fill={CHART_COLORS[i%CHART_COLORS.length]} />))}
+                  {breakdown.slice(0,5).map((d,i)=>(<Cell key={d.categoryId} fill={chartColors[i]} />))}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>

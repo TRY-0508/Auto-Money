@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef } from 'react'
 import { useTransactions, useCategories, useProjects, useBudgets, useSettings } from '@/db/hooks'
 import { getMonthlyStats, getCategoryBreakdown, getDailyTrend } from '@/lib/stats'
-import { getCurrentYearMonth, formatAmount, formatDate } from '@/lib/utils'
+import { getCurrentYearMonth, formatAmount, formatDate, generateColors } from '@/lib/utils'
 import { CATEGORY_DESCRIPTIONS } from '@/lib/constants'
 import { MOOD_LIST, MOOD_ICON_MAP, MOOD_COLOR_MAP, CATEGORY_ICON_MAP, MoreHorizontal, BarChart3, Trash2, Calendar as CalendarIcon, Check, ArrowUpRight, TrendingUp, Plus } from '@/lib/icons'
 import CategoryIcon from '@/components/CategoryIcon'
@@ -12,7 +12,6 @@ import { PieChart as RPie, Pie, Cell, ResponsiveContainer, AreaChart, Area } fro
 
 const BANNER: Record<string, string> = { happy:'banner-happy',calm:'banner-calm',neutral:'banner-neutral',sad:'banner-sad',anxious:'banner-anxious',angry:'banner-angry',excited:'banner-excited',tired:'banner-tired' }
 type FilterType = 'all'|'expense'|'income'
-const CHART_COLORS = ['#3b82f6','#10b981','#f43f5e','#f59e0b','#f97316','#ec4899','#06b6d4','#84cc16','#d97706','#14b8a6','#eab308','#78716c','#6366f1','#22d3ee','#fb7185','#a3e635','#c084fc','#fbbf24','#34d399','#e879f9','#38bdf8','#fb923c','#4ade80','#f472b6']
 
 function CalendarHeatmap({ transactions, yearMonth, selectedDay, onSelectDay, onMonthChange, view }: { transactions: Transaction[]; yearMonth: string; selectedDay: string|null; onSelectDay:(d:string|null)=>void; onMonthChange:(ym:string)=>void; view: 'expense'|'income' }) {
   const [y,m]=yearMonth.split('-').map(Number); const dim=new Date(y,m,0).getDate(); const fd=new Date(y,m-1,1).getDay(); const today=new Date().toISOString().slice(0,10)
@@ -78,6 +77,7 @@ export default function Dashboard() {
   const txs=useMemo(()=>projectId?all.filter(t=>t.projectId===projectId):all,[all,projectId])
   const stats=useMemo(()=>getMonthlyStats(txs,yearMonth),[txs,yearMonth])
   const expBrk=useMemo(()=>getCategoryBreakdown(txs,categories,'expense',yearMonth),[txs,categories,yearMonth])
+  const chartColors=useMemo(()=>generateColors(Math.max(expBrk.length,5)),[expBrk.length])
   const dailyTrend=useMemo(()=>getDailyTrend(txs,14),[txs])
   const flowData=useMemo(()=>dailyTrend.map(d=>({date:d.date.slice(5),支出:-d.expense,收入:d.income})),[dailyTrend])
   const prevStats=useMemo(()=>{const [y,m]=yearMonth.split('-').map(Number);let py=y,pm=m-1;if(pm===0){pm=12;py--};return getMonthlyStats(all,`${py}-${String(pm).padStart(2,'0')}`)},[all,yearMonth])
@@ -224,7 +224,7 @@ export default function Dashboard() {
           {/* Donut row — 消费类型 + 消费心情 */}
           <div className="grid grid-cols-2 gap-2 sm:gap-3">
             <div className="card card-chart p-2 sm:p-3"><span className="text-[9px] sm:text-[10px] font-semibold">消费类型</span>
-              {expBrk.length>0?<div className="flex flex-col items-center gap-1 mt-1"><div className="w-20 h-20 sm:w-24 sm:h-24 relative"><ResponsiveContainer><RPie><Pie data={expBrk} cx="50%" cy="50%" innerRadius={26} outerRadius={38} paddingAngle={2} dataKey="amount" stroke="#fff" strokeWidth={1.5}>{expBrk.map((e,i)=><Cell key={e.categoryId} fill={CHART_COLORS[i%CHART_COLORS.length]}/>)}</Pie></RPie></ResponsiveContainer><div className="absolute inset-0 flex items-center justify-center pointer-events-none"><span className="text-sm font-bold">{formatAmount(stats.totalExpense)}</span></div></div><div className="flex flex-wrap justify-center gap-x-1.5 gap-y-0.5">{expBrk.slice(0,4).map((item,i)=><span key={item.categoryId} className="text-[9px] text-muted flex items-center gap-0.5"><span className="w-1.5 h-1.5 rounded-sm flex-shrink-0" style={{backgroundColor:CHART_COLORS[i%CHART_COLORS.length]}}/>{item.categoryName}</span>)}</div></div>:<p className="text-xs text-muted py-8">—</p>}
+              {expBrk.length>0?<div className="flex flex-col items-center gap-1 mt-1"><div className="w-20 h-20 sm:w-24 sm:h-24 relative"><ResponsiveContainer><RPie><Pie data={expBrk} cx="50%" cy="50%" innerRadius={26} outerRadius={38} paddingAngle={2} dataKey="amount" stroke="#fff" strokeWidth={1.5}>{expBrk.map((e,i)=><Cell key={e.categoryId} fill={chartColors[i]}/>)}</Pie></RPie></ResponsiveContainer><div className="absolute inset-0 flex items-center justify-center pointer-events-none"><span className="text-sm font-bold">{formatAmount(stats.totalExpense)}</span></div></div><div className="flex flex-wrap justify-center gap-x-1.5 gap-y-0.5">{expBrk.slice(0,4).map((item,i)=><span key={item.categoryId} className="text-[9px] text-muted flex items-center gap-0.5"><span className="w-1.5 h-1.5 rounded-sm flex-shrink-0" style={{backgroundColor:chartColors[i]}}/>{item.categoryName}</span>)}</div></div>:<p className="text-xs text-muted py-8">—</p>}
             </div>
             <div className="card card-chart p-2 sm:p-3"><span className="text-[9px] sm:text-[10px] font-semibold">消费心情</span>
               {expMoodData.length>0?<div className="flex flex-col items-center gap-1 mt-1"><div className="w-20 h-20 sm:w-24 sm:h-24"><ResponsiveContainer><RPie><Pie data={expMoodData} cx="50%" cy="50%" innerRadius={0} outerRadius={38} paddingAngle={1} dataKey="value" stroke="#fff" strokeWidth={1.5}>{expMoodData.map((e,i)=><Cell key={i} fill={e.color}/>)}</Pie></RPie></ResponsiveContainer></div><div className="flex flex-wrap justify-center gap-x-1.5 gap-y-0.5 mt-1">{expMoodData.slice(0,4).map(e=><span key={e.name} className="text-[9px] text-muted flex items-center gap-0.5"><span className="w-1.5 h-1.5 rounded-sm flex-shrink-0" style={{backgroundColor:e.color}}/>{e.name}</span>)}</div></div>:<p className="text-xs text-muted py-8">—</p>}

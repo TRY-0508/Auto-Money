@@ -31,3 +31,14 @@ export function getCurrentYearMonth(): string {
   const d = new Date()
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
 }
+
+export function generateColors(n: number): string[] {
+  const colors: string[] = []
+  for (let i = 0; i < n; i++) {
+    const hue = (i * 360 / n + 15) % 360
+    const sat = 65 + (i % 3) * 10
+    const light = 55 + (i % 2) * 8
+    colors.push(`hsl(${Math.round(hue)},${sat}%,${light}%)`)
+  }
+  return colors
+}
