@@ -1,7 +1,7 @@
 import { useLocation } from 'react-router-dom'
 import { useState } from 'react'
 import { useUIStore } from '@/stores/uiStore'
-import { LayoutDashboard, Brain, Settings, Menu, Plus } from '@/lib/icons'
+import { Menu, Plus } from '@/lib/icons'
 import AddModal from '@/components/AddModal'
 
 const TITLES: Record<string, string> = { '/': '心情收支簿', '/ai': 'AI 助手', '/jar': '心愿', '/settings': '设置' }

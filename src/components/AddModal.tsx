@@ -2,7 +2,7 @@ import { useState, useMemo, useRef } from 'react'
 import { useTransactions, useCategories, useProjects } from '@/db/hooks'
 import { parseTransaction } from '@/services/llm'
 import { startRecognition, isSpeechSupported, stopRecognition } from '@/services/speech'
-import { MOOD_LIST, MOOD_COLOR_MAP, CATEGORY_ICON_MAP, CAT_ICON_OPTIONS, MoreHorizontal, AlertTriangle, Check } from '@/lib/icons'
+import { MOOD_LIST, CATEGORY_ICON_MAP, CAT_ICON_OPTIONS, MoreHorizontal, AlertTriangle, Check } from '@/lib/icons'
 import { CATEGORY_DESCRIPTIONS } from '@/lib/constants'
 import type { ParsedTransaction } from '@/types'
 

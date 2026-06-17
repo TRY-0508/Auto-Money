@@ -4,7 +4,6 @@ import { encryptApiKey, decryptApiKey } from '@/lib/crypto'
 import { exportAllData, importAllData, exportCSV, downloadFile } from '@/services/export'
 import { db } from '@/db'
 import { getCurrentYearMonth, formatAmount } from '@/lib/utils'
-import { getMonthlyStats, getCategoryBreakdown } from '@/lib/stats'
 import { CAT_ICON_OPTIONS, CATEGORY_ICON_MAP, PROJECT_ICON_MAP, PROJECT_ICONS as PROJ_ICONS_LIST, MoreHorizontal, Settings as SettingsIcon, Tag, FolderOpen, Database, Download, Upload, Trash2, Edit3, Check, X, Mic, Palette, Wallet, Plus } from '@/lib/icons'
 import { CATEGORY_DESCRIPTIONS } from '@/lib/constants'
 

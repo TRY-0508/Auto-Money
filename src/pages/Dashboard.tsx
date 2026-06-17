@@ -3,7 +3,7 @@ import { useTransactions, useCategories, useProjects, useBudgets, useSettings } 
 import { getMonthlyStats, getCategoryBreakdown, getDailyTrend } from '@/lib/stats'
 import { getCurrentYearMonth, formatAmount, formatDate } from '@/lib/utils'
 import { CATEGORY_DESCRIPTIONS } from '@/lib/constants'
-import { MOOD_LIST, MOOD_ICON_MAP, MOOD_COLOR_MAP, CATEGORY_ICON_MAP, MoreHorizontal, BarChart3, Trash2, PieChart, Calendar as CalendarIcon, Check, ArrowUpRight, TrendingUp, Plus } from '@/lib/icons'
+import { MOOD_LIST, MOOD_ICON_MAP, MOOD_COLOR_MAP, CATEGORY_ICON_MAP, MoreHorizontal, BarChart3, Trash2, Calendar as CalendarIcon, Check, ArrowUpRight, TrendingUp, Plus } from '@/lib/icons'
 import CategoryIcon from '@/components/CategoryIcon'
 import AddModal from '@/components/AddModal'
 import ProjectSwitcher from '@/components/ProjectSwitcher'
