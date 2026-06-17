@@ -227,16 +227,18 @@ function ChatTab() {
   const { messages, addMessage, clearMessages } = useChatMessages()
   const [input, setInput] = useState(''); const [loading, setLoading] = useState(false); const [error, setError] = useState('')
   const ref = useRef<HTMLDivElement>(null)
-  const yearMonth = getCurrentYearMonth(); const { transactions } = useTransactions({ month: yearMonth }); const { categories } = useCategories()
+  const yearMonth = getCurrentYearMonth(); const { transactions } = useTransactions({ month: yearMonth }); const { categories } = useCategories(); const { budgets } = useBudgets()
   useEffect(() => { ref.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
 
   const stats = useMemo(() => getMonthlyStats(transactions, yearMonth), [transactions, yearMonth])
+  const currentBudget = useMemo(() => budgets.find(b => b.yearMonth === yearMonth && b.categoryId === null), [budgets, yearMonth])
+  const budgetRemaining = currentBudget ? currentBudget.amount - stats.totalExpense : 0
 
   const ctx = () => {
-    const s = getMonthlyStats(transactions, yearMonth); const b = getCategoryBreakdown(transactions, categories, 'expense', yearMonth); const ib = getCategoryBreakdown(transactions, categories, 'income', yearMonth)
+    const s = getMonthlyStats(transactions, yearMonth); const b = getCategoryBreakdown(transactions, categories, 'expense', yearMonth)
     const moodInfo = MOOD_LIST.filter(m => transactions.some(t => t.mood === m.value)).map(m => `${m.label}: ${transactions.filter(t => t.mood === m.value).length}次`).join('，')
     const [y, mm] = yearMonth.split('-')
-    return `${y}年${mm}月 | 收入 ${formatAmount(s.totalIncome)} | 支出 ${formatAmount(s.totalExpense)} | 结余 ${formatAmount(s.balance)}\n支出: ${b.map(x => `${x.categoryName} ${formatAmount(x.amount)}(${x.percentage}%)`).join('，')}\n心情: ${moodInfo || '无'}`
+    return `${y}年${mm}月 | 支出 ${formatAmount(s.totalExpense)} ${currentBudget?`| 预算 ${formatAmount(currentBudget.amount)}(剩余${formatAmount(Math.max(budgetRemaining,0))})`:''}\n支出: ${b.map(x => `${x.categoryName} ${formatAmount(x.amount)}(${x.percentage}%)`).join('，')}\n心情: ${moodInfo || '无'}`
   }
 
   const handleSend = async () => {
@@ -249,19 +251,19 @@ function ChatTab() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-13rem)]">
-      {/* Data overview — 3 compact cards */}
+      {/* Data overview — budget-focused */}
       <div className="grid grid-cols-3 gap-2 mb-3">
-        <div className="rounded-xl bg-emerald-50 dark:bg-emerald-900/20 p-2 text-center">
-          <p className="text-[9px] text-muted">收入</p>
-          <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400">{formatAmount(stats.totalIncome)}</p>
-        </div>
         <div className="rounded-xl bg-rose-50 dark:bg-rose-900/20 p-2 text-center">
           <p className="text-[9px] text-muted">支出</p>
           <p className="text-xs font-bold text-rose-500 dark:text-rose-400">{formatAmount(stats.totalExpense)}</p>
         </div>
+        <div className="rounded-xl bg-emerald-50 dark:bg-emerald-900/20 p-2 text-center">
+          <p className="text-[9px] text-muted">收入</p>
+          <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400">{formatAmount(stats.totalIncome)}</p>
+        </div>
         <div className="rounded-xl bg-gray-50 dark:bg-gray-800 p-2 text-center">
-          <p className="text-[9px] text-muted">结余</p>
-          <p className={`text-xs font-bold ${stats.balance<0?'text-red-400':''}`}>{formatAmount(stats.balance)}</p>
+          <p className="text-[9px] text-muted">预算剩余</p>
+          <p className={`text-xs font-bold ${budgetRemaining<0?'text-red-400':''}`}>{currentBudget?formatAmount(Math.max(budgetRemaining,0)):'—'}</p>
         </div>
       </div>
 
