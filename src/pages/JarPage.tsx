@@ -165,7 +165,6 @@ export default function JarPage() {
       const goal = goals.find(g => g.id === goalId)
       if (goal) {
         await updateGoal(goalId, {
-          currentAmount: goal.currentAmount + (reviewEvent.amount || 0),
           starCount: goal.starCount + 1,
         })
       }

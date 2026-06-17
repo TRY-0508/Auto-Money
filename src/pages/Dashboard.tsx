@@ -222,11 +222,14 @@ export default function Dashboard() {
                 <p className="text-[10px] text-muted mb-0.5">今日结余</p>
                 {todayBalance!==0?<>
                   <p className={`text-base sm:text-lg font-bold amount truncate ${todayBalance<0?'text-red-400':''}`}>{formatAmount(todayBalance)}</p>
-                  {goals.length>0&&(
-                    <select onChange={async(e)=>{const gid=e.target.value;if(!gid)return;const g=goals.find(x=>x.id===gid);if(!g)return;await updateGoal(gid,{currentAmount:g.currentAmount+Math.max(todayBalance,0),starCount:g.starCount+(todayBalance>0?1:0)});e.target.value=''}} className="mt-1 text-[9px] bg-gray-50 dark:bg-gray-800 rounded-lg px-1 py-0.5 w-full">
-                      <option value="">{todayBalance>0?'存入心愿':'记录亏空'}</option>
-                      {goals.map(g=><option key={g.id} value={g.id}>{g.name}</option>)}
-                    </select>
+                  {goals.length>0&&todayBalance!==0&&(
+                    <div className="flex gap-1 mt-1">
+                      <select id="goalSelect" className="text-[9px] bg-gray-50 dark:bg-gray-800 rounded-lg px-1 py-0.5 flex-1 min-w-0">
+                        <option value="">选择心愿</option>
+                        {goals.map(g=><option key={g.id} value={g.id}>{g.name}</option>)}
+                      </select>
+                      <button onClick={async()=>{const sel=document.getElementById('goalSelect')as HTMLSelectElement;const gid=sel?.value;if(!gid)return;const g=goals.find(x=>x.id===gid);if(!g)return;await updateGoal(gid,{currentAmount:g.currentAmount+Math.max(0,todayBalance)});sel.value=''}} className="text-[9px] bg-primary-gradient text-white rounded-lg px-2 py-0.5 font-medium whitespace-nowrap">{todayBalance>0?'存入':'记录'}</button>
+                    </div>
                   )}
                 </>:<p className="text-sm text-muted">—</p>}
               </div>
