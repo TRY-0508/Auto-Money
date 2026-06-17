@@ -86,6 +86,7 @@ export default function Dashboard() {
   const expBrk=useMemo(()=>getCategoryBreakdown(txs,categories,'expense',yearMonth),[txs,categories,yearMonth])
   const incBrk=useMemo(()=>getCategoryBreakdown(txs,categories,'income',yearMonth),[txs,categories,yearMonth])
   const dailyTrend=useMemo(()=>getDailyTrend(txs,30),[txs])
+  const flowData=useMemo(()=>dailyTrend.map(d=>({date:d.date.slice(5),收入:d.income,支出:-d.expense})),[dailyTrend])
   const prevStats=useMemo(()=>{const [y,m]=yearMonth.split('-').map(Number);let py=y,pm=m-1;if(pm===0){pm=12;py--};return getMonthlyStats(all,`${py}-${String(pm).padStart(2,'0')}`)},[all,yearMonth])
 
   const moodStats=useMemo(()=>{const m:Record<string,{count:number;totalSpent:number}>={};for(const t of txs){if(!t.mood||t.type!=='expense')continue;if(!m[t.mood])m[t.mood]={count:0,totalSpent:0};m[t.mood].count++;m[t.mood].totalSpent+=t.amount};return MOOD_LIST.filter(x=>m[x.value]).map(x=>({...x,...m[x.value]})).sort((a,b)=>b.count-a.count)},[txs])
@@ -272,31 +273,31 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* 30-Day Trend — two compact sparkline cards */}
-          <div className="grid grid-cols-2 gap-2 sm:gap-3">
-            <div className="card card-chart p-2 sm:p-3 overflow-hidden">
-              <p className="text-[9px] sm:text-[10px] text-muted mb-0.5">30日收入趋势</p>
-              <p className="text-sm font-bold text-emerald-500 amount">{formatAmount(stats.totalIncome)}</p>
-              <div className="h-10 sm:h-12 -mx-1">
-                <ResponsiveContainer>
-                  <AreaChart data={dailyTrend} margin={{top:2,right:0,left:0,bottom:0}}>
-                    <defs><linearGradient id="sparkIncome" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#10b981" stopOpacity={0.3}/><stop offset="100%" stopColor="#10b981" stopOpacity={0}/></linearGradient></defs>
-                    <Area type="monotone" dataKey="income" stroke="#10b981" strokeWidth={1.5} fill="url(#sparkIncome)" dot={false} />
-                  </AreaChart>
-                </ResponsiveContainer>
+          {/* 30-Day Flow — single diverging chart, income up / expense down */}
+          <div className="card card-chart overflow-hidden p-2 sm:p-3">
+            <div className="flex items-center justify-between px-1 mb-1">
+              <span className="text-[10px] sm:text-xs font-semibold">30日收支流</span>
+              <div className="flex items-center gap-2 text-[9px]">
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-emerald-400"/><span className="text-muted">收入</span></span>
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-rose-400"/><span className="text-muted">支出</span></span>
               </div>
             </div>
-            <div className="card card-chart p-2 sm:p-3 overflow-hidden">
-              <p className="text-[9px] sm:text-[10px] text-muted mb-0.5">30日支出趋势</p>
-              <p className="text-sm font-bold text-rose-400 amount">{formatAmount(stats.totalExpense)}</p>
-              <div className="h-10 sm:h-12 -mx-1">
-                <ResponsiveContainer>
-                  <AreaChart data={dailyTrend} margin={{top:2,right:0,left:0,bottom:0}}>
-                    <defs><linearGradient id="sparkExpense" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f43f5e" stopOpacity={0.25}/><stop offset="100%" stopColor="#f43f5e" stopOpacity={0}/></linearGradient></defs>
-                    <Area type="monotone" dataKey="expense" stroke="#f43f5e" strokeWidth={1.5} fill="url(#sparkExpense)" dot={false} />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
+            <div className="h-20 sm:h-24">
+              <ResponsiveContainer>
+                <AreaChart data={flowData} margin={{top:4,right:4,left:0,bottom:0}}>
+                  <defs>
+                    <linearGradient id="flowIncome" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#10b981" stopOpacity={0.35}/><stop offset="100%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
+                    <linearGradient id="flowExpense" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stopColor="#f43f5e" stopOpacity={0.30}/><stop offset="100%" stopColor="#f43f5e" stopOpacity={0}/></linearGradient>
+                  </defs>
+                  <Area type="monotone" dataKey="收入" stroke="#10b981" strokeWidth={1.5} fill="url(#flowIncome)" dot={false} />
+                  <Area type="monotone" dataKey="支出" stroke="#f43f5e" strokeWidth={1.5} fill="url(#flowExpense)" dot={false} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="flex justify-between text-[9px] text-muted px-1 mt-0.5">
+              <span>收 {formatAmount(stats.totalIncome)}</span>
+              <span>支 {formatAmount(stats.totalExpense)}</span>
+              <span className={stats.balance<0?'text-red-400':''}>余 {formatAmount(stats.balance)}</span>
             </div>
           </div>
 
