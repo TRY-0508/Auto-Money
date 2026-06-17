@@ -73,7 +73,7 @@ export const MOOD_LIST: { value: string; label: string; Icon: LucideIcon; color:
   { value: 'sad', label: '难过', Icon: Frown, color: '#6366f1' },
   { value: 'anxious', label: '焦虑', Icon: AlertTriangle, color: '#f97316' },
   { value: 'angry', label: '愤怒', Icon: Angry, color: '#ef4444' },
-  { value: 'excited', label: '兴奋', Icon: Star, color: '#f59e0b' },
+  { value: 'excited', label: '兴奋', Icon: Star, color: '#ec4899' },
   { value: 'tired', label: '疲惫', Icon: Moon, color: '#a8a29e' },
 ]
 
