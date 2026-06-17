@@ -50,26 +50,6 @@ class AutoMoneyDB extends Dexie {
       coolDownEvents: 'id, goalId, status, cooldownEndsAt, createdAt',
       deficits: 'id, yearMonth, status',
     }).upgrade(async tx => {
-      // Remove old traditional income categories, now using psychology model
-      const OLD_INCOME = ['工资', '兼职', '理财', '红包', '其他']
-      const allCats = await tx.table('categories').toArray()
-      for (const cat of allCats) {
-        if (OLD_INCOME.includes(cat.name) && cat.type === 'income' && cat.isSystem !== false) {
-          await tx.table('categories').delete(cat.id)
-        }
-      }
-    })
-    this.version(7).stores({
-      transactions: 'id, date, type, categoryId, projectId, mood',
-      categories: 'id, type',
-      budgets: 'id, categoryId, yearMonth',
-      settings: 'id',
-      chatMessages: 'id, timestamp',
-      projects: 'id',
-      jarGoals: 'id',
-      coolDownEvents: 'id, goalId, status, cooldownEndsAt, createdAt',
-      deficits: 'id, yearMonth, status',
-    }).upgrade(async tx => {
       // Force-clean: delete ALL categories, then re-seed with psychology-only model
       const VALID_EXPENSE = ['必要消费', '价值消费', '情绪消费', '冲动消费', '意外消费']
       const VALID_INCOME = ['工资', '兼职', '理财', '红包', '其他']

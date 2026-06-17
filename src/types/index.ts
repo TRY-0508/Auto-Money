@@ -9,7 +9,7 @@ export interface Transaction {
   updatedAt: number
   aiParsed?: boolean
   projectId?: string
-  mood?: string       // emoji: 😊😐😢😡🤩😰😴
+  mood?: string       // key: happy/calm/neutral/sad/anxious/angry/excited/tired
   moodNote?: string   // 心情备注
 }
 
@@ -49,7 +49,7 @@ export interface Settings {
   speechApiKey: string
   speechSecretKey: string
   speechProvider: 'baidu' | 'none'
-  colorScheme: 'most-frequent' | 'latest' | 'neutral' | 'adaptive'
+  colorScheme: 'most-frequent' | 'latest' | 'adaptive'
   themeMode: 'dynamic' | 'fixed'
   fixedTheme: string
   totalStars: number

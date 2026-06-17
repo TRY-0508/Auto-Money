@@ -10,7 +10,6 @@ import ProjectSwitcher from '@/components/ProjectSwitcher'
 import type { Transaction } from '@/types'
 import { PieChart as RPie, Pie, Cell, ResponsiveContainer, AreaChart, Area } from 'recharts'
 
-const BANNER: Record<string, string> = { happy:'banner-happy',calm:'banner-calm',neutral:'banner-neutral',sad:'banner-sad',anxious:'banner-anxious',angry:'banner-angry',excited:'banner-excited',tired:'banner-tired' }
 type FilterType = 'all'|'expense'|'income'
 
 function CalendarHeatmap({ transactions, yearMonth, selectedDay, onSelectDay, onMonthChange, view }: { transactions: Transaction[]; yearMonth: string; selectedDay: string|null; onSelectDay:(d:string|null)=>void; onMonthChange:(ym:string)=>void; view: 'expense'|'income' }) {

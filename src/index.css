@@ -473,35 +473,6 @@ body {
 .dark .input { border-color: rgba(255,255,255,0.08); }
 .input-lg { padding: 0.875rem 1rem; font-size: 1.125rem; font-weight: 600; text-align: center; border-radius: 1rem; }
 
-/* ── Mood Banner Gradients (warmer palette) ── */
-.banner-happy    { background: linear-gradient(135deg, #fcd34d, #f59e0b, #d97706); }
-.banner-calm     { background: linear-gradient(135deg, #5eead4, #14b8a6, #0d9488); }
-.banner-neutral  { background: linear-gradient(135deg, #e6a817, #d97706, #b45309); }
-.banner-sad      { background: linear-gradient(135deg, #a78bfa, #8b5cf6, #6d28d9); }
-.banner-anxious  { background: linear-gradient(135deg, #fb923c, #f97316, #ea580c); }
-.banner-angry    { background: linear-gradient(135deg, #f87171, #ef4444, #dc2626); }
-.banner-excited  { background: linear-gradient(135deg, #fbbf24, #f59e0b, #ea580c); }
-.banner-tired    { background: linear-gradient(135deg, #c4b5fd, #a8a29e, #78716c); }
-
-/* ── Page Mood Backgrounds (warm) ── */
-.page-happy    { background: linear-gradient(160deg, #fffbeb 0%, #fef3c7 40%, #fef9c3 100%); }
-.page-calm     { background: linear-gradient(160deg, #f0fdfa 0%, #ccfbf1 40%, #99f6e4 100%); }
-.page-neutral  { background: linear-gradient(160deg, #fefcf8 0%, #fef7ed 40%, #fef9f0 100%); }
-.page-sad      { background: linear-gradient(160deg, #f5f3ff 0%, #ede9fe 40%, #ddd6fe 100%); }
-.page-anxious  { background: linear-gradient(160deg, #fff7ed 0%, #ffedd5 40%, #fed7aa 100%); }
-.page-angry    { background: linear-gradient(160deg, #fef5f5 0%, #fee2e2 40%, #fecaca 100%); }
-.page-excited  { background: linear-gradient(160deg, #fffbeb 0%, #fef3c7 40%, #fde68a 100%); }
-.page-tired    { background: linear-gradient(160deg, #fafaf9 0%, #f5f5f4 40%, #e7e5e4 100%); }
-
-.dark .page-happy    { background: linear-gradient(160deg, #1a1200, #422006, #1a0e00); }
-.dark .page-calm     { background: linear-gradient(160deg, #0a2018, #134e4a, #0a2018); }
-.dark .page-neutral  { background: linear-gradient(160deg, #1c1917, #191510, #1a1612); }
-.dark .page-sad      { background: linear-gradient(160deg, #0f0a1a, #1e1840, #0f0a1a); }
-.dark .page-anxious  { background: linear-gradient(160deg, #1a0e00, #431407, #1a0e00); }
-.dark .page-angry    { background: linear-gradient(160deg, #1a0505, #450a0a, #1a0505); }
-.dark .page-excited  { background: linear-gradient(160deg, #1a1000, #452a03, #1a0e00); }
-.dark .page-tired    { background: linear-gradient(160deg, #141210, #1c1917, #141210); }
-
 /* ── Animation ── */
 @keyframes slideUp { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:translateY(0) } }
 @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
