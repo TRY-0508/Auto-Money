@@ -85,7 +85,7 @@ export default function Dashboard() {
   const stats=useMemo(()=>getMonthlyStats(txs,yearMonth),[txs,yearMonth])
   const expBrk=useMemo(()=>getCategoryBreakdown(txs,categories,'expense',yearMonth),[txs,categories,yearMonth])
   const dailyTrend=useMemo(()=>getDailyTrend(txs,14),[txs])
-  const flowData=useMemo(()=>dailyTrend.map(d=>({date:d.date.slice(5),支出:-d.expense})),[dailyTrend])
+  const flowData=useMemo(()=>dailyTrend.map(d=>({date:d.date.slice(5),支出:-d.expense,收入:d.income})),[dailyTrend])
   const prevStats=useMemo(()=>{const [y,m]=yearMonth.split('-').map(Number);let py=y,pm=m-1;if(pm===0){pm=12;py--};return getMonthlyStats(all,`${py}-${String(pm).padStart(2,'0')}`)},[all,yearMonth])
 
   const expMoodStats=useMemo(()=>{const m:Record<string,number>={};for(const t of txs){if(!t.mood||t.type!=='expense')continue;m[t.mood]=(m[t.mood]||0)+1};const top=Object.entries(m).sort((a,b)=>b[1]-a[1]);return top.length>0?MOOD_LIST.find(x=>x.value===top[0][0]):undefined},[txs])
@@ -149,7 +149,7 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left mb-8">
               <div className="bg-white/70 dark:bg-gray-800/70 rounded-2xl p-5">
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-7 h-7 rounded-lg bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center"><TrendingUp size={14} className="text-rose-400"/></div>
+                  <div className="w-7 h-7 rounded-lg bg-[var(--c-primary-soft)] flex items-center justify-center"><TrendingUp size={14} className="text-accent"/></div>
                   <span className="text-sm font-semibold">支出 · 消费心理五型</span>
                 </div>
                 <div className="space-y-1.5 text-xs text-muted">
@@ -162,15 +162,15 @@ export default function Dashboard() {
               </div>
               <div className="bg-white/70 dark:bg-gray-800/70 rounded-2xl p-5">
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center"><ArrowUpRight size={14} className="text-emerald-400"/></div>
-                  <span className="text-sm font-semibold">收入 · 来源心理五型</span>
+                  <div className="w-7 h-7 rounded-lg bg-[var(--c-primary-soft)] flex items-center justify-center"><ArrowUpRight size={14} className="text-accent"/></div>
+                  <span className="text-sm font-semibold">收入 · 常见分类</span>
                 </div>
                 <div className="space-y-1.5 text-xs text-muted">
-                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0"/> 劳动 — 技能时间换酬</div>
-                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-blue-400 flex-shrink-0"/> 增值 — 资产被动回报</div>
-                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-pink-400 flex-shrink-0"/> 馈赠 — 他人情感给予</div>
-                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0"/> 惊喜 — 不期而遇</div>
-                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-purple-400 flex-shrink-0"/> 回流 — 支出反向流回</div>
+                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0"/> 工资 — 固定劳动报酬</div>
+                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-teal-400 flex-shrink-0"/> 兼职 — 额外劳动所得</div>
+                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-blue-400 flex-shrink-0"/> 理财 — 被动投资收益</div>
+                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-pink-400 flex-shrink-0"/> 红包 — 赠送性收入</div>
+                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-gray-400 flex-shrink-0"/> 其他 — 其他来源</div>
                 </div>
               </div>
             </div>
@@ -238,18 +238,23 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* 14-Day Flow — expense only */}
+          {/* 14-Day Flow */}
           <div className="card card-chart overflow-hidden p-2 sm:p-3">
             <div className="flex items-center justify-between px-1 mb-1">
-              <span className="text-[10px] sm:text-xs font-semibold">14日支出流</span>
-              {currentBudget&&<span className="text-[9px] text-muted">预算 {formatAmount(currentBudget.amount)}</span>}
+              <span className="text-[10px] sm:text-xs font-semibold">14日收支流</span>
+              <div className="flex items-center gap-2 text-[9px]">
+                <span className="flex items-center gap-1"><span className="w-2 h-0.5 bg-emerald-400 rounded"/><span className="text-muted">收入</span></span>
+                <span className="flex items-center gap-1"><span className="w-2 h-0.5 bg-rose-400 rounded"/><span className="text-muted">支出</span></span>
+              </div>
             </div>
             <div className="h-20 sm:h-24">
               <ResponsiveContainer>
                 <AreaChart data={flowData} margin={{top:4,right:4,left:0,bottom:0}}>
                   <defs>
-                    <linearGradient id="fEx" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f43f5e" stopOpacity={0.25}/><stop offset="100%" stopColor="#f43f5e" stopOpacity={0}/></linearGradient>
+                    <linearGradient id="fIn" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#10b981" stopOpacity={0.2}/><stop offset="100%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
+                    <linearGradient id="fEx" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f43f5e" stopOpacity={0.2}/><stop offset="100%" stopColor="#f43f5e" stopOpacity={0}/></linearGradient>
                   </defs>
+                  <Area type="monotone" dataKey="收入" stroke="#10b981" strokeWidth={1.5} fill="url(#fIn)" dot={false} />
                   <Area type="monotone" dataKey="支出" stroke="#f43f5e" strokeWidth={1.5} fill="url(#fEx)" dot={false} />
                 </AreaChart>
               </ResponsiveContainer>

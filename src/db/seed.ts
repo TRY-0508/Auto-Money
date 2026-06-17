@@ -12,11 +12,11 @@ const EXPENSE_CATEGORIES: Omit<Category, 'id'>[] = [
 ]
 
 const INCOME_CATEGORIES: Omit<Category, 'id'>[] = [
-  { name: '劳动收入', type: 'income', icon: 'briefcase', color: '#10b981', isSystem: true },
-  { name: '增值收入', type: 'income', icon: 'trending-up', color: '#3b82f6', isSystem: true },
-  { name: '馈赠收入', type: 'income', icon: 'gift', color: '#ec4899', isSystem: true },
-  { name: '惊喜收入', type: 'income', icon: 'sparkles', color: '#f59e0b', isSystem: true },
-  { name: '回流收入', type: 'income', icon: 'rotate-ccw', color: '#8b5cf6', isSystem: true },
+  { name: '工资', type: 'income', icon: 'banknote', color: '#22c55e', isSystem: true },
+  { name: '兼职', type: 'income', icon: 'briefcase', color: '#14b8a6', isSystem: true },
+  { name: '理财', type: 'income', icon: 'trending-up', color: '#3b82f6', isSystem: true },
+  { name: '红包', type: 'income', icon: 'gift', color: '#ef4444', isSystem: true },
+  { name: '其他', type: 'income', icon: 'more-horizontal', color: '#6b7280', isSystem: true },
 ]
 
 export async function seedDatabase() {

@@ -6,6 +6,8 @@ export function useCategories() {
   const categories = useLiveQuery(async () => {
     const cats = await db.categories.toArray()
     return cats.sort((a, b) => {
+      if (a.name === '其他') return 1
+      if (b.name === '其他') return -1
       if (a.isSystem !== b.isSystem) return a.isSystem ? -1 : 1
       return 0
     })

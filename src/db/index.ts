@@ -39,7 +39,7 @@ class AutoMoneyDB extends Dexie {
         }
       }
     })
-    this.version(6).stores({
+    this.version(7).stores({
       transactions: 'id, date, type, categoryId, projectId, mood',
       categories: 'id, type',
       budgets: 'id, categoryId, yearMonth',
@@ -72,11 +72,30 @@ class AutoMoneyDB extends Dexie {
     }).upgrade(async tx => {
       // Force-clean: delete ALL categories, then re-seed with psychology-only model
       const VALID_EXPENSE = ['必要消费', '价值消费', '情绪消费', '冲动消费', '意外消费']
-      const VALID_INCOME = ['劳动收入', '增值收入', '馈赠收入', '惊喜收入', '回流收入']
+      const VALID_INCOME = ['工资', '兼职', '理财', '红包', '其他']
       const VALID = [...VALID_EXPENSE, ...VALID_INCOME]
       const allCats = await tx.table('categories').toArray()
       for (const cat of allCats) {
         if (!VALID.includes(cat.name) && cat.isSystem !== false) {
+          await tx.table('categories').delete(cat.id)
+        }
+      }
+    })
+    this.version(8).stores({
+      transactions: 'id, date, type, categoryId, projectId, mood',
+      categories: 'id, type',
+      budgets: 'id, categoryId, yearMonth',
+      settings: 'id',
+      chatMessages: 'id, timestamp',
+      projects: 'id',
+      jarGoals: 'id',
+      coolDownEvents: 'id, goalId, status, cooldownEndsAt, createdAt',
+      deficits: 'id, yearMonth, status',
+    }).upgrade(async tx => {
+      const OLD_PSYCH_INCOME = ['劳动收入', '增值收入', '馈赠收入', '惊喜收入', '回流收入']
+      const allCats = await tx.table('categories').toArray()
+      for (const cat of allCats) {
+        if (OLD_PSYCH_INCOME.includes(cat.name) && cat.type === 'income' && cat.isSystem !== false) {
           await tx.table('categories').delete(cat.id)
         }
       }

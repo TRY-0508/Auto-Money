@@ -38,7 +38,8 @@ export const PRESET_CAT_ICONS: Record<string, IconKey> = {
   '必要消费': 'home', '价值消费': 'trending-up', '情绪消费': 'sparkles',
   '冲动消费': 'zap', '意外消费': 'alert-triangle',
   '劳动收入': 'briefcase', '增值收入': 'trending-up', '馈赠收入': 'gift',
-  '惊喜收入': 'sparkles', '回流收入': 'rotate-ccw',
+  '工资': 'banknote', '兼职': 'briefcase', '理财': 'trending-up',
+  '红包': 'gift', '其他': 'more-horizontal',
 }
 
 export const CAT_ICON_OPTIONS: { key: IconKey; label: string; Icon: LucideIcon }[] = [
