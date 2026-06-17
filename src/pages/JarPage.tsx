@@ -222,7 +222,7 @@ export default function JarPage() {
   }
 
   return (
-    <div className="max-w-lg mx-auto space-y-5 slide-up pb-safe">
+    <div className="max-w-lg mx-auto space-y-3 sm:space-y-5 slide-up pb-safe">
       {/* ── Tab bar ── */}
       <div className="flex bg-white/40 dark:bg-gray-800/30 rounded-2xl p-1 gap-1">
         {([
@@ -521,18 +521,20 @@ export default function JarPage() {
       {/* ═══════════ TAB 3: HISTORY ═══════════ */}
       {tab === 'history' && (
         <div className="space-y-4">
-          <div className="grid grid-cols-3 gap-3">
-            <div className="card card-stat p-3 text-center">
-              <p className="text-2xl font-bold text-green-500">{successRate}%</p>
-              <p className="text-xs text-muted mt-1">守住率</p>
-            </div>
-            <div className="card card-stat p-3 text-center">
-              <p className="text-2xl font-bold text-accent">{formatAmount(totalResistedAmount)}</p>
-              <p className="text-xs text-muted mt-1">守住金额</p>
-            </div>
-            <div className="card card-stat p-3 text-center">
-              <p className="text-2xl font-bold text-accent">{totalStars}</p>
-              <p className="text-xs text-muted mt-1">星光总数</p>
+          <div className="card card-stat overflow-hidden">
+            <div className="grid grid-cols-3 divide-x divide-gray-100 dark:divide-gray-800">
+              <div className="p-3 text-center">
+                <p className="text-lg font-bold text-green-500">{successRate}%</p>
+                <p className="text-[10px] text-muted mt-0.5">守住率</p>
+              </div>
+              <div className="p-3 text-center">
+                <p className="text-lg font-bold text-accent">{formatAmount(totalResistedAmount)}</p>
+                <p className="text-[10px] text-muted mt-0.5">守住金额</p>
+              </div>
+              <div className="p-3 text-center">
+                <p className="text-lg font-bold text-accent">{totalStars}</p>
+                <p className="text-[10px] text-muted mt-0.5">星光总数</p>
+              </div>
             </div>
           </div>
 

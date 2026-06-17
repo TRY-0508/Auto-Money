@@ -3,7 +3,7 @@ import { useTransactions, useCategories, useBudgets, useChatMessages } from '@/d
 import { generateReport, chatQuery } from '@/services/llm'
 import { getMonthlyStats, getCategoryBreakdown } from '@/lib/stats'
 import { formatAmount, getCurrentYearMonth } from '@/lib/utils'
-import { MOOD_LIST, BarChart3, Brain, MessageCircle, Copy, AlertTriangle, Trash2, ArrowUpRight, ArrowDownRight, TrendingUp, Wallet } from '@/lib/icons'
+import { MOOD_LIST, BarChart3, Brain, MessageCircle, Copy, AlertTriangle, Trash2 } from '@/lib/icons'
 import { BarChart, Bar, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 
 const CHART_COLORS = ['#3b82f6','#10b981','#f43f5e','#f59e0b','#f97316','#ec4899','#06b6d4','#84cc16','#d97706','#14b8a6','#eab308','#78716c']
@@ -68,24 +68,26 @@ function ReportTab() {
   }).join('')
 
   return (
-    <div className="space-y-5">
-      {/* Stats Overview Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="card card-stat p-3">
-          <div className="flex items-center gap-1.5 mb-1"><ArrowUpRight size={14} className="text-emerald-400"/><span className="text-[10px] text-muted">收入</span></div>
-          <p className="text-sm font-bold">{formatAmount(stats.totalIncome)}</p>
-        </div>
-        <div className="card card-stat p-3">
-          <div className="flex items-center gap-1.5 mb-1"><ArrowDownRight size={14} className="text-rose-400"/><span className="text-[10px] text-muted">支出</span></div>
-          <p className="text-sm font-bold">{formatAmount(stats.totalExpense)}</p>
-        </div>
-        <div className="card card-stat p-3">
-          <div className="flex items-center gap-1.5 mb-1"><Wallet size={14} className="text-purple-400"/><span className="text-[10px] text-muted">预算</span></div>
-          <p className="text-sm font-bold">{currentBudget ? formatAmount(budgetRemaining) : '—'}</p>
-        </div>
-        <div className="card card-stat p-3">
-          <div className="flex items-center gap-1.5 mb-1"><TrendingUp size={14} className="text-accent"/><span className="text-[10px] text-muted">结余</span></div>
-          <p className={`text-sm font-bold ${stats.balance < 0 ? 'text-red-400' : ''}`}>{formatAmount(stats.balance)}</p>
+    <div className="space-y-3 sm:space-y-5">
+      {/* Stats — nested inline */}
+      <div className="card card-stat overflow-hidden">
+        <div className="grid grid-cols-4 divide-x divide-gray-100 dark:divide-gray-800">
+          <div className="p-2.5 sm:p-3 text-center">
+            <p className="text-[10px] text-muted">收入</p>
+            <p className="text-sm font-bold mt-0.5">{formatAmount(stats.totalIncome)}</p>
+          </div>
+          <div className="p-2.5 sm:p-3 text-center">
+            <p className="text-[10px] text-muted">支出</p>
+            <p className="text-sm font-bold mt-0.5">{formatAmount(stats.totalExpense)}</p>
+          </div>
+          <div className="p-2.5 sm:p-3 text-center">
+            <p className="text-[10px] text-muted">预算</p>
+            <p className="text-sm font-bold mt-0.5">{currentBudget ? formatAmount(budgetRemaining) : '—'}</p>
+          </div>
+          <div className="p-2.5 sm:p-3 text-center">
+            <p className="text-[10px] text-muted">结余</p>
+            <p className={`text-sm font-bold mt-0.5 ${stats.balance < 0 ? 'text-red-400' : ''}`}>{formatAmount(stats.balance)}</p>
+          </div>
         </div>
       </div>
 
@@ -163,7 +165,7 @@ function PsychTab() {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-3 sm:space-y-5">
       {/* Mood Bar Chart — vertical bars with custom colors */}
       <div className="card card-chart p-5">
         <h3 className="text-xs font-semibold text-muted mb-3">心情×消费金额</h3>

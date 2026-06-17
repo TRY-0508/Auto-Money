@@ -3,7 +3,7 @@ import { useTransactions, useCategories, useProjects, useBudgets, useSettings } 
 import { getMonthlyStats, getCategoryBreakdown, getDailyTrend } from '@/lib/stats'
 import { getCurrentYearMonth, formatAmount, formatDate } from '@/lib/utils'
 import { CATEGORY_DESCRIPTIONS } from '@/lib/constants'
-import { MOOD_LIST, MOOD_ICON_MAP, MOOD_COLOR_MAP, CATEGORY_ICON_MAP, MoreHorizontal, BarChart3, Trash2, PieChart, List, Calendar as CalendarIcon, Check, ArrowUpRight, ArrowDownRight, TrendingUp, Wallet, Plus, Target, Zap, Brain } from '@/lib/icons'
+import { MOOD_LIST, MOOD_ICON_MAP, MOOD_COLOR_MAP, CATEGORY_ICON_MAP, MoreHorizontal, BarChart3, Trash2, PieChart, List, Calendar as CalendarIcon, Check, ArrowUpRight, TrendingUp, Plus } from '@/lib/icons'
 import CategoryIcon from '@/components/CategoryIcon'
 import AddModal from '@/components/AddModal'
 import ProjectSwitcher from '@/components/ProjectSwitcher'
@@ -96,7 +96,7 @@ export default function Dashboard() {
   }).sort((a,b) => b.value - a.value), [moodStats])
 
   return (
-    <div className="max-w-4xl mx-auto space-y-5 slide-up pb-safe">
+    <div className="max-w-4xl mx-auto space-y-3 sm:space-y-5 slide-up pb-safe">
       <ProjectSwitcher selectedId={projectId} onChange={setProjectId}/>
 
       <select value={yearMonth} onChange={e=>setYearMonth(e.target.value)} className="card px-4 py-2 text-sm font-semibold focus:outline-none cursor-pointer w-auto">
@@ -181,90 +181,68 @@ export default function Dashboard() {
         </div>
       ):(
         <>
-          {/* Stats Row — compact */}
-          <div className="bento stagger">
-            <div className="card card-stat card-hover bento-col-1 p-3">
-              <div className="flex items-center gap-1.5 mb-0.5"><ArrowUpRight size={14} className="text-emerald-400"/><span className="text-[10px] text-muted">收入</span></div>
-              <p className="text-lg font-bold amount truncate">{formatAmount(stats.totalIncome)}</p>
-              {incomeChange!==0&&<p className={`text-[10px] ${incomeChange>0?'text-emerald-500':'text-red-400'}`}>{incomeChange>0?'+':''}{incomeChange}%</p>}
-            </div>
-            <div className="card card-stat card-hover bento-col-1 p-3">
-              <div className="flex items-center gap-1.5 mb-0.5"><ArrowDownRight size={14} className="text-rose-400"/><span className="text-[10px] text-muted">支出</span></div>
-              <p className="text-lg font-bold amount truncate">{formatAmount(stats.totalExpense)}</p>
-              {expenseChange!==0&&<p className={`text-[10px] ${expenseChange>0?'text-red-400':'text-emerald-500'}`}>{expenseChange>0?'+':''}{expenseChange}%</p>}
-            </div>
-            <div className="card card-stat card-hover bento-col-1 p-3">
-              <div className="flex items-center gap-1.5 mb-0.5"><TrendingUp size={14} className="text-accent"/><span className="text-[10px] text-muted">结余</span></div>
-              <p className={`text-lg font-bold amount truncate ${stats.balance<0?'text-red-400':''}`}>{formatAmount(stats.balance)}</p>
-              <p className="text-[10px] text-muted">{stats.count}笔</p>
-            </div>
-            <div className="card card-stat card-hover bento-col-1 p-3">
-              <div className="flex items-center gap-1.5 mb-0.5"><Wallet size={14} className="text-purple-400"/><span className="text-[10px] text-muted">预算</span></div>
-              {currentBudget?<>
-                <p className="text-lg font-bold amount truncate">{Math.round(budgetPct)}%</p>
-                <div className="mt-1 h-1.5 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden"><div className={`h-full rounded-full transition-all duration-700 ${budgetPct>90?'bg-red-400':budgetPct>70?'bg-amber-400':'bg-emerald-400'}`} style={{width:`${budgetPct}%`}}/></div>
-              </>:<p className="text-sm text-muted">—</p>}
+          {/* Stats Card — nested quad layout */}
+          <div className="card card-stat overflow-hidden">
+            <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-gray-100 dark:divide-gray-800">
+              <div className="p-3 sm:p-4">
+                <p className="text-[10px] text-muted mb-0.5">收入</p>
+                <p className="text-base sm:text-lg font-bold amount truncate">{formatAmount(stats.totalIncome)}</p>
+                {incomeChange!==0&&<p className={`text-[10px] mt-0.5 ${incomeChange>0?'text-emerald-500':'text-red-400'}`}>{incomeChange>0?'+':''}{incomeChange}%</p>}
+              </div>
+              <div className="p-3 sm:p-4">
+                <p className="text-[10px] text-muted mb-0.5">支出</p>
+                <p className="text-base sm:text-lg font-bold amount truncate">{formatAmount(stats.totalExpense)}</p>
+                {expenseChange!==0&&<p className={`text-[10px] mt-0.5 ${expenseChange>0?'text-red-400':'text-emerald-500'}`}>{expenseChange>0?'+':''}{expenseChange}%</p>}
+              </div>
+              <div className="p-3 sm:p-4">
+                <p className="text-[10px] text-muted mb-0.5">结余</p>
+                <p className={`text-base sm:text-lg font-bold amount truncate ${stats.balance<0?'text-red-400':''}`}>{formatAmount(stats.balance)}</p>
+                <p className="text-[10px] text-muted mt-0.5">{stats.count}笔</p>
+              </div>
+              <div className="p-3 sm:p-4">
+                <p className="text-[10px] text-muted mb-0.5">预算</p>
+                {currentBudget?<>
+                  <p className="text-base sm:text-lg font-bold amount truncate">{Math.round(budgetPct)}%</p>
+                  <div className="mt-1 h-1 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden"><div className={`h-full rounded-full ${budgetPct>90?'bg-red-400':budgetPct>70?'bg-amber-400':'bg-emerald-400'}`} style={{width:`${budgetPct}%`}}/></div>
+                </>:<p className="text-sm text-muted">—</p>}
+              </div>
             </div>
           </div>
 
-          {/* Charts Row — two donuts side by side */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="card card-chart">
-              <div className="card-header"><PieChart size={16} strokeWidth={1.8} className="text-accent"/>五型消费分布</div>
-              <div className="card-body flex items-center justify-center">
-                {expBrk.length>0?(
-                  <div className="w-full max-w-[200px] aspect-square relative">
+          {/* Charts Row — two compact donuts */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <div className="card card-chart p-3 sm:p-4">
+              <div className="flex items-center gap-2 mb-2 px-1"><PieChart size={14} strokeWidth={1.8} className="text-accent"/><span className="text-xs font-semibold">五型消费</span></div>
+              {expBrk.length>0?(
+                <div className="flex items-center gap-3">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 relative">
                     <ResponsiveContainer>
-                      <RPie>
-                        <Pie data={expBrk} cx="50%" cy="50%" innerRadius={42} outerRadius={64} paddingAngle={2} dataKey="amount" stroke="#fff" strokeWidth={2}>
-                          {expBrk.map((e,i)=><Cell key={e.categoryId} fill={CHART_COLORS[i%CHART_COLORS.length]}/>)}
-                        </Pie>
-                      </RPie>
+                      <RPie><Pie data={expBrk} cx="50%" cy="50%" innerRadius={28} outerRadius={42} paddingAngle={2} dataKey="amount" stroke="#fff" strokeWidth={1.5}>{expBrk.map((e,i)=><Cell key={e.categoryId} fill={CHART_COLORS[i%CHART_COLORS.length]}/>)}</Pie></RPie>
                     </ResponsiveContainer>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                      <span className="text-[10px] text-muted">总支出</span>
-                      <span className="text-sm font-bold amount">{formatAmount(stats.totalExpense)}</span>
-                    </div>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"><span className="text-[9px] text-muted">总</span><span className="text-[10px] font-bold amount">{formatAmount(stats.totalExpense)}</span></div>
                   </div>
-                ):<p className="text-sm text-muted py-8">暂无支出</p>}
-              </div>
-              <div className="px-4 pb-4 flex flex-wrap justify-center gap-x-3 gap-y-1">
-                {expBrk.slice(0,5).map((item,i)=>
-                  <span key={item.categoryId} className="flex items-center gap-1 text-[10px] text-muted">
-                    <span className="w-2 h-2 rounded-sm flex-shrink-0" style={{backgroundColor:CHART_COLORS[i%CHART_COLORS.length]}}/>
-                    {item.categoryName} {item.percentage}%
-                  </span>
-                )}
-              </div>
+                  <div className="flex-1 min-w-0 space-y-0.5">{expBrk.slice(0,5).map((item,i)=>
+                    <div key={item.categoryId} className="flex items-center gap-1.5 text-[10px]"><span className="w-1.5 h-1.5 rounded-sm flex-shrink-0" style={{backgroundColor:CHART_COLORS[i%CHART_COLORS.length]}}/><span className="flex-1 truncate">{item.categoryName}</span><span className="text-muted">{item.percentage}%</span></div>
+                  )}</div>
+                </div>
+              ):<p className="text-xs text-muted py-6 text-center">暂无支出</p>}
             </div>
 
-            <div className="card card-chart">
-              <div className="card-header"><PieChart size={16} strokeWidth={1.8} className="text-accent"/>心情消费比例</div>
-              <div className="card-body flex items-center justify-center">
-                {moodBarData.length>0?(
-                  <div className="w-full max-w-[200px] aspect-square relative">
+            <div className="card card-chart p-3 sm:p-4">
+              <div className="flex items-center gap-2 mb-2 px-1"><PieChart size={14} strokeWidth={1.8} className="text-accent"/><span className="text-xs font-semibold">心情比例</span></div>
+              {moodBarData.length>0?(
+                <div className="flex items-center gap-3">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 relative">
                     <ResponsiveContainer>
-                      <RPie>
-                        <Pie data={moodBarData} cx="50%" cy="50%" innerRadius={42} outerRadius={64} paddingAngle={2} dataKey="value" stroke="#fff" strokeWidth={2} nameKey="name">
-                          {moodBarData.map((entry,idx)=><Cell key={idx} fill={entry.color}/>)}
-                        </Pie>
-                      </RPie>
+                      <RPie><Pie data={moodBarData} cx="50%" cy="50%" innerRadius={28} outerRadius={42} paddingAngle={2} dataKey="value" stroke="#fff" strokeWidth={1.5} nameKey="name">{moodBarData.map((entry,idx)=><Cell key={idx} fill={entry.color}/>)}</Pie></RPie>
                     </ResponsiveContainer>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                      <span className="text-[10px] text-muted">心情支出</span>
-                      <span className="text-sm font-bold amount">{formatAmount(moodBarData.reduce((s,d)=>s+d.value,0))}</span>
-                    </div>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"><span className="text-[9px] text-muted">心情</span><span className="text-[10px] font-bold amount">{moodBarData.length}</span></div>
                   </div>
-                ):<p className="text-sm text-muted py-8">选心情记账后出现</p>}
-              </div>
-              <div className="px-4 pb-4 flex flex-wrap justify-center gap-x-3 gap-y-1">
-                {moodBarData.slice(0,5).map((entry)=>
-                  <span key={entry.name} className="flex items-center gap-1 text-[10px] text-muted">
-                    <span className="w-2 h-2 rounded-sm flex-shrink-0" style={{backgroundColor:entry.color}}/>
-                    {entry.name}
-                  </span>
-                )}
-              </div>
+                  <div className="flex-1 min-w-0 space-y-0.5">{moodBarData.map((entry)=>
+                    <div key={entry.name} className="flex items-center gap-1.5 text-[10px]"><span className="w-1.5 h-1.5 rounded-sm flex-shrink-0" style={{backgroundColor:entry.color}}/><span className="flex-1 truncate">{entry.name}</span><span className="text-muted">{formatAmount(entry.value)}</span></div>
+                  )}</div>
+                </div>
+              ):<p className="text-xs text-muted py-6 text-center">选心情记账后出现</p>}
             </div>
           </div>
 
