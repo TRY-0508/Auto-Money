@@ -13,7 +13,7 @@ import {
 const GOAL_COLORS = ['#f59e0b', '#d97706', '#10b981', '#f43f5e', '#3b82f6', '#ec4899', '#14b8a6', '#eab308', '#fb923c']
 
 function cooldownLabel(h: number): string {
-  const m: Record<number, string> = { 1: '1 小时', 6: '6 小时', 24: '1 天', 48: '2 天', 72: '3 天', 168: '7 天' }
+  const m: Record<number, string> = { 1:'1 小时',3:'3 小时',6:'6 小时',12:'12 小时',24:'1 天',48:'2 天',72:'3 天',168:'7 天',336:'14 天',720:'30 天' }
   return m[h] || `${h} 小时`
 }
 
@@ -400,7 +400,7 @@ export default function JarPage() {
               </div>
 
               <textarea value={evtDesc} onChange={e => setEvtDesc(e.target.value)}
-                placeholder="描述你想买的东西和原因" className="input resize-none h-20" autoFocus />
+                placeholder="详细描述你想买什么、为什么想买、现在的心情……描述越详细 AI 分析越准确" className="input resize-none h-24" autoFocus />
               <input type="number" value={evtAmount} onChange={e => setEvtAmount(e.target.value)}
                 placeholder="价格（可选）" className="input" />
 
@@ -474,7 +474,7 @@ export default function JarPage() {
                   <span className="text-xs font-medium text-accent">{cooldownLabel(evtCooldownHours)}</span>
                 </div>
                 <div className="flex gap-1.5 flex-wrap">
-                  {[6, 12, 24, 48, 72, 168].map(h => (
+                  {[1,3,6,12,24,48,72,168,336,720].map(h => (
                     <button key={h} onClick={() => setEvtCooldownHours(h)}
                       className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
                         evtCooldownHours === h
