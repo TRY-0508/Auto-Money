@@ -210,10 +210,10 @@ export default function JarPage() {
 
   const statusBadge = (s: CoolDownEvent['status']) => {
     const map: Record<string, { cls: string; label: string }> = {
-      cooling:     { cls: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',   label: '冷却中' },
-      pending_review: { cls: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-accent', label: '等待确认' },
-      resisted:    { cls: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400', label: '已守住' },
-      failed:      { cls: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',       label: '已释怀' },
+      cooling:     { cls: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',   label: '冷静中' },
+      pending_review: { cls: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-accent', label: '决定时刻' },
+      resisted:    { cls: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400', label: '守住了' },
+      failed:      { cls: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',       label: '放过了' },
       purchased:   { cls: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400',       label: '已购买' },
     }
     const m = map[s] || map.cooling
@@ -351,7 +351,7 @@ export default function JarPage() {
                       <p className="text-xs text-muted">剩余</p>
                     </div>
                   <button onClick={() => handleDeleteEvent(evt.id)} className="btn-icon btn-icon-danger flex-shrink-0"><X size={12} /></button>
-                  <button onClick={async()=>{const gid=evt.goalId||goals[0]?.id;await updateEvent(evt.id,{status:'resisted',earnedStar:true,earnedAt:Date.now(),reEvaluationDesire:1,reEvaluationNote:'提前守住',reEvaluationAt:Date.now(),goalId:gid||evt.goalId});if(gid){const g=goals.find(x=>x.id===gid);if(g)await updateGoal(gid,{currentAmount:g.currentAmount+(evt.amount||0)});await updateSettings?.({totalStars:(settings?.totalStars||0)+1})}}} className="btn-icon text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 flex-shrink-0" title="提前守住"><Check size={12}/></button>
+                  <button onClick={async()=>{const gid=evt.goalId||goals[0]?.id;await updateEvent(evt.id,{status:'resisted',earnedStar:true,earnedAt:Date.now(),reEvaluationDesire:1,reEvaluationNote:'清醒的选择比冲动更珍贵',reEvaluationAt:Date.now(),goalId:gid||evt.goalId});if(gid){const g=goals.find(x=>x.id===gid);if(g)await updateGoal(gid,{currentAmount:g.currentAmount+(evt.amount||0)});await updateSettings?.({totalStars:(settings?.totalStars||0)+1})}}} className="btn-icon text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 flex-shrink-0" title="不等了，现在就守住"><Check size={12}/></button>
                   </div>
                 )
               })}
