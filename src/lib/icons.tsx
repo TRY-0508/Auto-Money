@@ -35,7 +35,7 @@ export const CATEGORY_ICON_MAP: Record<IconKey, LucideIcon> = {
 }
 
 export const PRESET_CAT_ICONS: Record<string, IconKey> = {
-  '必要消费': 'home', '价值消费': 'trending-up', '情绪消费': 'sparkles',
+  '必要消费': 'home', '价值消费': 'trending-up', '情绪消费': 'heart',
   '冲动消费': 'zap', '意外消费': 'alert-triangle',
   '工资': 'banknote', '兼职': 'briefcase', '理财': 'trending-up',
   '红包': 'gift', '其他': 'more-horizontal',

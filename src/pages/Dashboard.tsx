@@ -141,7 +141,7 @@ export default function Dashboard() {
             
             {/* Category intro cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left mb-8">
-              <div className="bg-white/70 dark:bg-gray-800/70 rounded-2xl p-5">
+              <div className="bg-white/50 dark:bg-gray-800/50 rounded-2xl p-5">
                 <div className="flex items-center gap-2 mb-3">
                   <div className="w-7 h-7 rounded-lg bg-[var(--c-primary-soft)] flex items-center justify-center"><TrendingUp size={14} className="text-accent"/></div>
                   <span className="text-sm font-semibold">支出 · 消费心理五型</span>
@@ -154,7 +154,7 @@ export default function Dashboard() {
                   <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-orange-400 flex-shrink-0"/> 意外 — 突发不可控</div>
                 </div>
               </div>
-              <div className="bg-white/70 dark:bg-gray-800/70 rounded-2xl p-5">
+              <div className="bg-white/50 dark:bg-gray-800/50 rounded-2xl p-5">
                 <div className="flex items-center gap-2 mb-3">
                   <div className="w-7 h-7 rounded-lg bg-[var(--c-primary-soft)] flex items-center justify-center"><ArrowUpRight size={14} className="text-accent"/></div>
                   <span className="text-sm font-semibold">收入 · 常见分类</span>
@@ -170,7 +170,7 @@ export default function Dashboard() {
             </div>
 
             {/* Three steps */}
-            <div className="bg-white/50 dark:bg-gray-800/50 rounded-2xl p-5 text-left mb-6">
+            <div className="bg-white/40 dark:bg-gray-800/40 rounded-2xl p-5 text-left mb-6">
               <p className="text-sm font-semibold mb-4">三步开始</p>
               <div className="space-y-4">
                 <div className="flex gap-3">
@@ -292,7 +292,15 @@ export default function Dashboard() {
               {(['all','expense','income']as FilterType[]).map(t=><button key={t} onClick={()=>setFilterType(t)} className={`px-3 py-1.5 text-xs font-medium transition-all ${filterType===t?'bg-primary text-white shadow-sm':'text-gray-500 hover:bg-white/60'}`}>{t==='all'?'全部':t==='expense'?'支出':'收入'}</button>)}
             </div>
             <select value={filterMood} onChange={e=>setFilterMood(e.target.value)} className="px-2 py-1.5 rounded-full border border-gray-200/40 bg-white/40 backdrop-blur text-xs font-medium"><option value="">全部心情</option>{MOOD_LIST.map(m=><option key={m.value} value={m.value}>{m.label}</option>)}</select>
-            <select value={filterCategory} onChange={e=>setFilterCategory(e.target.value)} className="px-2 py-1.5 rounded-full border border-gray-200/40 bg-white/40 backdrop-blur text-xs font-medium"><option value="">全部分类</option>{categories.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select>
+            <select value={filterCategory} onChange={e=>setFilterCategory(e.target.value)} className="px-2 py-1.5 rounded-full border border-gray-200/40 bg-white/40 backdrop-blur text-xs font-medium">
+              <option value="">全部分类</option>
+              <optgroup label="支出">
+                {categories.filter(c=>c.type==='expense').map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
+              </optgroup>
+              <optgroup label="收入">
+                {categories.filter(c=>c.type==='income').map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
+              </optgroup>
+            </select>
             <input type="date" value={dateFrom} onChange={e=>setDateFrom(e.target.value)} className="px-2 py-1.5 rounded-full border border-gray-200/40 bg-white/40 backdrop-blur text-xs"/>
             <span className="text-xs text-gray-400">—</span>
             <input type="date" value={dateTo} onChange={e=>setDateTo(e.target.value)} className="px-2 py-1.5 rounded-full border border-gray-200/40 bg-white/40 backdrop-blur text-xs"/>
