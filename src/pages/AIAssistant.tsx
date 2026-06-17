@@ -6,7 +6,7 @@ import { formatAmount, getCurrentYearMonth } from '@/lib/utils'
 import { MOOD_LIST, BarChart3, Brain, MessageCircle, Copy, AlertTriangle, Trash2 } from '@/lib/icons'
 import { BarChart, Bar, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 
-const CHART_COLORS = ['#3b82f6','#10b981','#f43f5e','#f59e0b','#f97316','#ec4899','#06b6d4','#84cc16','#d97706','#14b8a6','#eab308','#78716c']
+const CHART_COLORS = ['#3b82f6','#10b981','#f43f5e','#f59e0b','#f97316','#ec4899','#06b6d4','#84cc16','#d97706','#14b8a6','#eab308','#78716c','#6366f1','#22d3ee','#fb7185','#a3e635','#c084fc','#fbbf24','#34d399','#e879f9','#38bdf8','#fb923c','#4ade80','#f472b6']
 const SUGGESTIONS = ['我这个月开心的时候花了多少？', '焦虑时我最常买什么？', '帮我分析情绪和消费的关系', '给我一些改善消费习惯的建议']
 
 export default function AIAssistant() {

@@ -12,7 +12,7 @@ import { PieChart as RPie, Pie, Cell, ResponsiveContainer, AreaChart, Area } fro
 
 const BANNER: Record<string, string> = { happy:'banner-happy',calm:'banner-calm',neutral:'banner-neutral',sad:'banner-sad',anxious:'banner-anxious',angry:'banner-angry',excited:'banner-excited',tired:'banner-tired' }
 type FilterType = 'all'|'expense'|'income'
-const CHART_COLORS = ['#3b82f6','#10b981','#f43f5e','#f59e0b','#f97316','#ec4899','#06b6d4','#84cc16','#d97706','#14b8a6','#eab308','#78716c']
+const CHART_COLORS = ['#3b82f6','#10b981','#f43f5e','#f59e0b','#f97316','#ec4899','#06b6d4','#84cc16','#d97706','#14b8a6','#eab308','#78716c','#6366f1','#22d3ee','#fb7185','#a3e635','#c084fc','#fbbf24','#34d399','#e879f9','#38bdf8','#fb923c','#4ade80','#f472b6']
 
 function CalendarHeatmap({ transactions, yearMonth, selectedDay, onSelectDay, onMonthChange, view }: { transactions: Transaction[]; yearMonth: string; selectedDay: string|null; onSelectDay:(d:string|null)=>void; onMonthChange:(ym:string)=>void; view: 'expense'|'income' }) {
   const [y,m]=yearMonth.split('-').map(Number); const dim=new Date(y,m,0).getDate(); const fd=new Date(y,m-1,1).getDay(); const today=new Date().toISOString().slice(0,10)
