@@ -68,7 +68,7 @@ function ReportTab() {
   }).join('')
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {/* Stats Overview Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="card card-stat p-3">
@@ -175,7 +175,7 @@ function PsychTab() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {/* Mood Bar Chart */}
       <div className="card card-chart p-4">
         <h3 className="text-xs font-semibold text-muted mb-3">心情×消费金额</h3>
@@ -272,15 +272,17 @@ function ChatTab() {
 
       <div className="flex-1 overflow-y-auto space-y-3 mb-3">
         {messages.length === 0 ? (
-          <div className="text-center py-12">
-            <MessageCircle size={48} strokeWidth={1} className="text-accent mx-auto mb-4" />
-            <p className="text-gray-500 text-sm font-medium">我是你的 AI 心理记账助手</p>
-            <p className="text-gray-400 text-xs mt-1 mb-4">可以问我收支、心情、消费习惯</p>
-            <div className="text-left text-[10px] text-muted space-y-1.5 bg-gray-50 dark:bg-gray-800 rounded-2xl p-3 max-w-xs mx-auto">
-              <p>💬 <b>试试问我：</b></p>
-              <p>&ldquo;这个月我在焦虑时花了多少？&rdquo;</p>
-              <p>&ldquo;冲动消费占总支出的比例是多少？&rdquo;</p>
-              <p>&ldquo;给我一些减少情绪消费的建议&rdquo;</p>
+          <div className="text-center py-16">
+            <div className="w-16 h-16 rounded-2xl bg-[var(--c-primary-soft)] flex items-center justify-center mx-auto mb-5">
+              <MessageCircle size={32} strokeWidth={1.2} className="text-accent" />
+            </div>
+            <p className="text-base font-semibold mb-1">我是你的 AI 心理记账助手</p>
+            <p className="text-sm text-muted mb-6">可以问我收支、心情、消费习惯</p>
+            <div className="text-left text-xs text-muted space-y-2 bg-gray-50 dark:bg-gray-800 rounded-2xl p-4 max-w-sm mx-auto">
+              <p className="font-medium text-gray-500 mb-1">试试这样问我：</p>
+              <p className="leading-relaxed">&ldquo;这个月我在焦虑情绪下花了多少？&rdquo;</p>
+              <p className="leading-relaxed">&ldquo;冲动消费占总支出的比例？&rdquo;</p>
+              <p className="leading-relaxed">&ldquo;给我减少情绪消费的建议&rdquo;</p>
             </div>
           </div>
         ) : messages.map(msg => (

@@ -3,7 +3,7 @@ import { useTransactions, useCategories, useProjects, useBudgets, useSettings } 
 import { getMonthlyStats, getCategoryBreakdown, getDailyTrend } from '@/lib/stats'
 import { getCurrentYearMonth, formatAmount, formatDate } from '@/lib/utils'
 import { CATEGORY_DESCRIPTIONS } from '@/lib/constants'
-import { MOOD_LIST, MOOD_ICON_MAP, MOOD_COLOR_MAP, CATEGORY_ICON_MAP, MoreHorizontal, BarChart3, Trash2, PieChart, List, Calendar as CalendarIcon, Check, ArrowUpRight, ArrowDownRight, TrendingUp, Wallet, Plus } from '@/lib/icons'
+import { MOOD_LIST, MOOD_ICON_MAP, MOOD_COLOR_MAP, CATEGORY_ICON_MAP, MoreHorizontal, BarChart3, Trash2, PieChart, List, Calendar as CalendarIcon, Check, ArrowUpRight, ArrowDownRight, TrendingUp, Wallet, Plus, Target, Zap, Brain } from '@/lib/icons'
 import CategoryIcon from '@/components/CategoryIcon'
 import AddModal from '@/components/AddModal'
 import ProjectSwitcher from '@/components/ProjectSwitcher'
@@ -96,7 +96,7 @@ export default function Dashboard() {
   }).sort((a,b) => b.value - a.value), [moodStats])
 
   return (
-    <div className="max-w-4xl mx-auto space-y-4 slide-up pb-24 md:pb-6">
+    <div className="max-w-4xl mx-auto space-y-5 slide-up pb-24 md:pb-6">
       <ProjectSwitcher selectedId={projectId} onChange={setProjectId}/>
 
       <select value={yearMonth} onChange={e=>setYearMonth(e.target.value)} className="card px-4 py-2 text-sm font-semibold focus:outline-none cursor-pointer w-auto">
@@ -119,30 +119,64 @@ export default function Dashboard() {
       </div>
 
       {txs.length===0?(
-        <div className="space-y-4">
-          <div className="card card-accent p-6 text-center">
-            <BarChart3 size={48} strokeWidth={1.2} className="text-accent mx-auto mb-4"/>
-            <h3 className="text-lg font-bold mb-2">欢迎来到心情收支簿</h3>
-            <p className="text-sm text-muted mb-6">基于消费心理学理论的智能记账工具<br/>帮你看见消费心理模式，学会与欲望共处</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left mb-6">
-              <div className="bg-white/60 dark:bg-gray-800/60 rounded-2xl p-3">
-                <p className="text-xs font-semibold mb-1.5">📤 支出 · 消费心理五型</p>
-                <p className="text-[10px] text-muted leading-relaxed"><b>必要</b>：维持生存 · <b>价值</b>：自我成长<br/><b>情绪</b>：情绪驱动 · <b>冲动</b>：即时决策<br/><b>意外</b>：突发不可控</p>
+        <div className="space-y-5">
+          <div className="card card-accent p-6 sm:p-8 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-[var(--c-primary-soft)] flex items-center justify-center mx-auto mb-5">
+              <BarChart3 size={32} strokeWidth={1.5} className="text-accent"/>
+            </div>
+            <h2 className="text-xl font-bold mb-2">欢迎来到心情收支簿</h2>
+            <p className="text-sm text-muted leading-relaxed max-w-sm mx-auto mb-8">基于消费心理学理论的智能记账工具<br/>帮你看见消费心理模式，学会与欲望共处</p>
+            
+            {/* Category intro cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left mb-8">
+              <div className="bg-white/70 dark:bg-gray-800/70 rounded-2xl p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-7 h-7 rounded-lg bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center"><TrendingUp size={14} className="text-rose-400"/></div>
+                  <span className="text-sm font-semibold">支出 · 消费心理五型</span>
+                </div>
+                <div className="space-y-1.5 text-xs text-muted">
+                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-blue-400 flex-shrink-0"/> 必要 — 维持生存运转</div>
+                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0"/> 价值 — 自我成长投资</div>
+                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-rose-400 flex-shrink-0"/> 情绪 — 情绪状态驱动</div>
+                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0"/> 冲动 — 无计划决策</div>
+                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-orange-400 flex-shrink-0"/> 意外 — 突发不可控</div>
+                </div>
               </div>
-              <div className="bg-white/60 dark:bg-gray-800/60 rounded-2xl p-3">
-                <p className="text-xs font-semibold mb-1.5">📥 收入 · 来源心理五型</p>
-                <p className="text-[10px] text-muted leading-relaxed"><b>劳动</b>：技能换酬 · <b>增值</b>：资产回报<br/><b>馈赠</b>：他人给予 · <b>惊喜</b>：不期而遇<br/><b>回流</b>：支出返还</p>
+              <div className="bg-white/70 dark:bg-gray-800/70 rounded-2xl p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center"><ArrowUpRight size={14} className="text-emerald-400"/></div>
+                  <span className="text-sm font-semibold">收入 · 来源心理五型</span>
+                </div>
+                <div className="space-y-1.5 text-xs text-muted">
+                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0"/> 劳动 — 技能时间换酬</div>
+                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-blue-400 flex-shrink-0"/> 增值 — 资产被动回报</div>
+                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-pink-400 flex-shrink-0"/> 馈赠 — 他人情感给予</div>
+                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0"/> 惊喜 — 不期而遇</div>
+                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-purple-400 flex-shrink-0"/> 回流 — 支出反向流回</div>
+                </div>
               </div>
             </div>
-            <div className="bg-white/40 dark:bg-gray-800/40 rounded-2xl p-4 text-left mb-4">
-              <p className="text-xs font-semibold mb-2">🚀 三步开始</p>
-              <div className="space-y-2 text-[11px] text-muted">
-                <div className="flex gap-2"><span className="font-bold text-accent">1.</span> 点击下方按钮记第一笔，选择消费类型和心情</div>
-                <div className="flex gap-2"><span className="font-bold text-accent">2.</span> 去「设置 → API 配置」填入 DeepSeek Key，解锁 AI 智能解析</div>
-                <div className="flex gap-2"><span className="font-bold text-accent">3.</span> 有想买又犹豫的东西？去「心愿 → 欲望冷却」让 AI 帮你分析</div>
+
+            {/* Three steps */}
+            <div className="bg-white/50 dark:bg-gray-800/50 rounded-2xl p-5 text-left mb-6">
+              <p className="text-sm font-semibold mb-4">三步开始</p>
+              <div className="space-y-4">
+                <div className="flex gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-[var(--c-primary-soft)] flex items-center justify-center flex-shrink-0 text-accent font-bold text-sm">1</div>
+                  <div><p className="text-sm font-medium">记第一笔</p><p className="text-xs text-muted">选择消费类型和心情，开始记录你的消费心理模式</p></div>
+                </div>
+                <div className="flex gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-[var(--c-primary-soft)] flex items-center justify-center flex-shrink-0 text-accent font-bold text-sm">2</div>
+                  <div><p className="text-sm font-medium">配置 AI</p><p className="text-xs text-muted">去设置填入 DeepSeek API Key，解锁智能解析和报告</p></div>
+                </div>
+                <div className="flex gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-[var(--c-primary-soft)] flex items-center justify-center flex-shrink-0 text-accent font-bold text-sm">3</div>
+                  <div><p className="text-sm font-medium">管理冲动</p><p className="text-xs text-muted">遇到犹豫的消费？去心愿页让 AI 帮你冷静分析</p></div>
+                </div>
               </div>
             </div>
-            <button onClick={()=>setShowAdd(true)} className="btn btn-primary mx-auto"><Plus size={16}/>记第一笔</button>
+
+            <button onClick={()=>setShowAdd(true)} className="btn btn-primary text-base px-8 py-3 mx-auto"><Plus size={18}/>记第一笔</button>
           </div>
         </div>
       ):(
