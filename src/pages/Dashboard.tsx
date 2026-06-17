@@ -86,13 +86,14 @@ export default function Dashboard() {
   const expBrk=useMemo(()=>getCategoryBreakdown(txs,categories,'expense',yearMonth),[txs,categories,yearMonth])
   const incBrk=useMemo(()=>getCategoryBreakdown(txs,categories,'income',yearMonth),[txs,categories,yearMonth])
   const dailyTrend=useMemo(()=>getDailyTrend(txs,30),[txs])
-  const flowData=useMemo(()=>dailyTrend.map(d=>({date:d.date.slice(5),收入:d.income,支出:-d.expense})),[dailyTrend])
+  const flowData=useMemo(()=>dailyTrend.map(d=>({date:d.date.slice(5),收入:d.income,支出:d.expense,结余:d.income-d.expense})),[dailyTrend])
   const prevStats=useMemo(()=>{const [y,m]=yearMonth.split('-').map(Number);let py=y,pm=m-1;if(pm===0){pm=12;py--};return getMonthlyStats(all,`${py}-${String(pm).padStart(2,'0')}`)},[all,yearMonth])
 
-  const expMoodStats=useMemo(()=>{const m:Record<string,{count:number;totalSpent:number}>={};for(const t of txs){if(!t.mood||t.type!=='expense')continue;if(!m[t.mood])m[t.mood]={count:0,totalSpent:0};m[t.mood].count++;m[t.mood].totalSpent+=t.amount};return MOOD_LIST.filter(x=>m[x.value]).map(x=>({...x,...m[x.value]})).sort((a,b)=>b.count-a.count)},[txs])
-  const allMoodData=useMemo(()=>{const m:Record<string,number>={};for(const t of txs){if(!t.mood)continue;m[t.mood]=(m[t.mood]||0)+t.amount};return MOOD_LIST.filter(x=>m[x.value]).map(x=>({name:x.label,value:m[x.value]||0,color:x.color})).sort((a,b)=>b.value-a.value)},[txs])
+  const expMoodStats=useMemo(()=>{const m:Record<string,number>={};for(const t of txs){if(!t.mood||t.type!=='expense')continue;m[t.mood]=(m[t.mood]||0)+1};const top=Object.entries(m).sort((a,b)=>b[1]-a[1]);return top.length>0?MOOD_LIST.find(x=>x.value===top[0][0]):undefined},[txs])
+  const expMoodData=useMemo(()=>{const m:Record<string,number>={};for(const t of txs){if(!t.mood||t.type!=='expense')continue;m[t.mood]=(m[t.mood]||0)+t.amount};return MOOD_LIST.filter(x=>m[x.value]).map(x=>({name:x.label,value:m[x.value]||0,color:x.color})).sort((a,b)=>b.value-a.value)},[txs])
+  const incMoodData=useMemo(()=>{const m:Record<string,number>={};for(const t of txs){if(!t.mood||t.type!=='income')continue;m[t.mood]=(m[t.mood]||0)+t.amount};return MOOD_LIST.filter(x=>m[x.value]).map(x=>({name:x.label,value:m[x.value]||0,color:x.color})).sort((a,b)=>b.value-a.value)},[txs])
 
-  const dom=expMoodStats[0];const moodKey=dom?.value||'neutral'
+  const dom=expMoodStats;const moodKey=dom?.value||'neutral'
 
   const moodTimeline=useMemo(()=>{const today=new Date();return Array.from({length:14},(_,i)=>{const d=new Date(today);d.setDate(d.getDate()-(13-i));const ds=d.toISOString().slice(0,10);const dayTxs=txs.filter(t=>t.date===ds);const lm=dayTxs.filter(t=>t.mood).pop();return{date:ds,label:i===13?'今天':i===12?'昨天':`${d.getMonth()+1}/${d.getDate()}`,moodVal:lm?.mood||null,spent:dayTxs.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0)}})},[txs])
 
@@ -232,55 +233,51 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Charts — 3 compact donuts: 消费 / 收入 / 心情 */}
-          <div className="grid grid-cols-3 gap-2 sm:gap-3">
-            <div className="card card-chart p-2 sm:p-3">
-              <span className="text-[9px] sm:text-[10px] font-semibold">消费</span>
-              {expBrk.length>0?<div className="flex flex-col items-center gap-1 mt-1">
-                <div className="w-14 h-14 sm:w-20 sm:h-20 relative"><ResponsiveContainer><RPie><Pie data={expBrk} cx="50%" cy="50%" innerRadius={16} outerRadius={26} paddingAngle={2} dataKey="amount" stroke="#fff" strokeWidth={1}>{expBrk.map((e,i)=><Cell key={e.categoryId} fill={CHART_COLORS[i%CHART_COLORS.length]}/>)}</Pie></RPie></ResponsiveContainer><div className="absolute inset-0 flex items-center justify-center pointer-events-none"><span className="text-[8px] sm:text-[10px] font-bold amount">{formatAmount(stats.totalExpense)}</span></div></div>
-                <div className="flex flex-wrap justify-center gap-x-1.5 gap-y-0.5">{expBrk.slice(0,4).map((item,i)=><span key={item.categoryId} className="text-[8px] text-muted flex items-center gap-0.5"><span className="w-1 h-1 rounded-sm flex-shrink-0" style={{backgroundColor:CHART_COLORS[i%CHART_COLORS.length]}}/>{item.categoryName}</span>)}</div>
-              </div>:<p className="text-[9px] text-muted py-4 text-center">—</p>}
-            </div>
-            <div className="card card-chart p-2 sm:p-3">
-              <span className="text-[9px] sm:text-[10px] font-semibold">收入</span>
-              {incBrk.length>0?<div className="flex flex-col items-center gap-1 mt-1">
-                <div className="w-14 h-14 sm:w-20 sm:h-20 relative"><ResponsiveContainer><RPie><Pie data={incBrk} cx="50%" cy="50%" innerRadius={16} outerRadius={26} paddingAngle={2} dataKey="amount" stroke="#fff" strokeWidth={1}>{incBrk.map((e,i)=><Cell key={e.categoryId} fill={CHART_COLORS[(i+5)%CHART_COLORS.length]}/>)}</Pie></RPie></ResponsiveContainer><div className="absolute inset-0 flex items-center justify-center pointer-events-none"><span className="text-[8px] sm:text-[10px] font-bold amount">{formatAmount(stats.totalIncome)}</span></div></div>
-                <div className="flex flex-wrap justify-center gap-x-1.5 gap-y-0.5">{incBrk.slice(0,4).map((item,i)=><span key={item.categoryId} className="text-[8px] text-muted flex items-center gap-0.5"><span className="w-1 h-1 rounded-sm flex-shrink-0" style={{backgroundColor:CHART_COLORS[(i+5)%CHART_COLORS.length]}}/>{item.categoryName}</span>)}</div>
-              </div>:<p className="text-[9px] text-muted py-4 text-center">—</p>}
-            </div>
-            <div className="card card-chart p-2 sm:p-3">
-              <span className="text-[9px] sm:text-[10px] font-semibold">心情</span>
-              {allMoodData.length>0?<div className="flex flex-col items-center gap-1 mt-1">
-                <div className="w-14 h-14 sm:w-20 sm:h-20 relative"><ResponsiveContainer><RPie><Pie data={allMoodData} cx="50%" cy="50%" innerRadius={16} outerRadius={26} paddingAngle={2} dataKey="value" stroke="#fff" strokeWidth={1} nameKey="name">{allMoodData.map((entry,idx)=><Cell key={idx} fill={entry.color}/>)}</Pie></RPie></ResponsiveContainer><div className="absolute inset-0 flex items-center justify-center pointer-events-none"><span className="text-[8px] sm:text-[10px] font-bold amount">{allMoodData.length}</span></div></div>
-                <div className="flex flex-wrap justify-center gap-x-1.5 gap-y-0.5">{allMoodData.slice(0,4).map((entry)=><span key={entry.name} className="text-[8px] text-muted flex items-center gap-0.5"><span className="w-1 h-1 rounded-sm flex-shrink-0" style={{backgroundColor:entry.color}}/>{entry.name}</span>)}</div>
-              </div>:<p className="text-[9px] text-muted py-4 text-center">—</p>}
+          {/* 2x2 Donut Grid */}
+          <div className="space-y-2 sm:space-y-3">
+            <p className="text-[10px] text-muted px-1">{year}年{month}月</p>
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
+              <div className="card card-chart p-2 sm:p-3"><span className="text-[9px] sm:text-[10px] font-semibold">消费类型</span>
+                {expBrk.length>0?<div className="flex flex-col items-center gap-1 mt-1"><div className="w-16 h-16 sm:w-20 sm:h-20 relative"><ResponsiveContainer><RPie><Pie data={expBrk} cx="50%" cy="50%" innerRadius={18} outerRadius={28} paddingAngle={2} dataKey="amount" stroke="#fff" strokeWidth={1}>{expBrk.map((e,i)=><Cell key={e.categoryId} fill={CHART_COLORS[i%CHART_COLORS.length]}/>)}</Pie></RPie></ResponsiveContainer><div className="absolute inset-0 flex items-center justify-center pointer-events-none"><span className="text-[9px] sm:text-[10px] font-bold">{formatAmount(stats.totalExpense)}</span></div></div><div className="flex flex-wrap justify-center gap-x-1.5 gap-y-0.5">{expBrk.slice(0,4).map((item,i)=><span key={item.categoryId} className="text-[8px] text-muted flex items-center gap-0.5"><span className="w-1 h-1 rounded-sm flex-shrink-0" style={{backgroundColor:CHART_COLORS[i%CHART_COLORS.length]}}/>{item.categoryName}</span>)}</div></div>:<p className="text-[9px] text-muted py-6">—</p>}
+              </div>
+              <div className="card card-chart p-2 sm:p-3"><span className="text-[9px] sm:text-[10px] font-semibold">消费心情</span>
+                {expMoodData.length>0?<div className="flex flex-col items-center gap-1 mt-1"><div className="w-16 h-16 sm:w-20 sm:h-20 relative"><ResponsiveContainer><RPie><Pie data={expMoodData} cx="50%" cy="50%" innerRadius={18} outerRadius={28} paddingAngle={2} dataKey="value" stroke="#fff" strokeWidth={1} nameKey="name">{expMoodData.map((e,i)=><Cell key={i} fill={e.color}/>)}</Pie></RPie></ResponsiveContainer><div className="absolute inset-0 flex items-center justify-center pointer-events-none"><span className="text-[9px] sm:text-[10px] font-bold">{expMoodData.length}种</span></div></div><div className="flex flex-wrap justify-center gap-x-1.5 gap-y-0.5">{expMoodData.slice(0,4).map(e=><span key={e.name} className="text-[8px] text-muted flex items-center gap-0.5"><span className="w-1 h-1 rounded-sm flex-shrink-0" style={{backgroundColor:e.color}}/>{e.name}</span>)}</div></div>:<p className="text-[9px] text-muted py-6">—</p>}
+              </div>
+              <div className="card card-chart p-2 sm:p-3"><span className="text-[9px] sm:text-[10px] font-semibold">收入类型</span>
+                {incBrk.length>0?<div className="flex flex-col items-center gap-1 mt-1"><div className="w-16 h-16 sm:w-20 sm:h-20 relative"><ResponsiveContainer><RPie><Pie data={incBrk} cx="50%" cy="50%" innerRadius={18} outerRadius={28} paddingAngle={2} dataKey="amount" stroke="#fff" strokeWidth={1}>{incBrk.map((e,i)=><Cell key={e.categoryId} fill={CHART_COLORS[(i+5)%CHART_COLORS.length]}/>)}</Pie></RPie></ResponsiveContainer><div className="absolute inset-0 flex items-center justify-center pointer-events-none"><span className="text-[9px] sm:text-[10px] font-bold">{formatAmount(stats.totalIncome)}</span></div></div><div className="flex flex-wrap justify-center gap-x-1.5 gap-y-0.5">{incBrk.slice(0,4).map((item,i)=><span key={item.categoryId} className="text-[8px] text-muted flex items-center gap-0.5"><span className="w-1 h-1 rounded-sm flex-shrink-0" style={{backgroundColor:CHART_COLORS[(i+5)%CHART_COLORS.length]}}/>{item.categoryName}</span>)}</div></div>:<p className="text-[9px] text-muted py-6">—</p>}
+              </div>
+              <div className="card card-chart p-2 sm:p-3"><span className="text-[9px] sm:text-[10px] font-semibold">收入心情</span>
+                {incMoodData.length>0?<div className="flex flex-col items-center gap-1 mt-1"><div className="w-16 h-16 sm:w-20 sm:h-20 relative"><ResponsiveContainer><RPie><Pie data={incMoodData} cx="50%" cy="50%" innerRadius={18} outerRadius={28} paddingAngle={2} dataKey="value" stroke="#fff" strokeWidth={1} nameKey="name">{incMoodData.map((e,i)=><Cell key={i} fill={e.color}/>)}</Pie></RPie></ResponsiveContainer><div className="absolute inset-0 flex items-center justify-center pointer-events-none"><span className="text-[9px] sm:text-[10px] font-bold">{incMoodData.length}种</span></div></div><div className="flex flex-wrap justify-center gap-x-1.5 gap-y-0.5">{incMoodData.slice(0,4).map(e=><span key={e.name} className="text-[8px] text-muted flex items-center gap-0.5"><span className="w-1 h-1 rounded-sm flex-shrink-0" style={{backgroundColor:e.color}}/>{e.name}</span>)}</div></div>:<p className="text-[9px] text-muted py-6">—</p>}
+              </div>
             </div>
           </div>
 
-          {/* 30-Day Flow — single diverging chart, income up / expense down */}
+          {/* 30-Day Flow — dual fill + balance line */}
           <div className="card card-chart overflow-hidden p-2 sm:p-3">
             <div className="flex items-center justify-between px-1 mb-1">
               <span className="text-[10px] sm:text-xs font-semibold">30日收支流</span>
               <div className="flex items-center gap-2 text-[9px]">
-                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-emerald-400"/><span className="text-muted">收入</span></span>
-                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-rose-400"/><span className="text-muted">支出</span></span>
+                <span className="flex items-center gap-1"><span className="w-2 h-0.5 bg-emerald-400 rounded"/><span className="text-muted">收入</span></span>
+                <span className="flex items-center gap-1"><span className="w-2 h-0.5 bg-rose-400 rounded"/><span className="text-muted">支出</span></span>
+                <span className="flex items-center gap-1"><span className="w-2 h-0.5 bg-amber-400 rounded"/><span className="text-muted">结余</span></span>
               </div>
             </div>
-            <div className="h-20 sm:h-24">
+            <div className="h-24 sm:h-28">
               <ResponsiveContainer>
                 <AreaChart data={flowData} margin={{top:4,right:4,left:0,bottom:0}}>
                   <defs>
-                    <linearGradient id="flowIncome" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#10b981" stopOpacity={0.35}/><stop offset="100%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
-                    <linearGradient id="flowExpense" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stopColor="#f43f5e" stopOpacity={0.30}/><stop offset="100%" stopColor="#f43f5e" stopOpacity={0}/></linearGradient>
+                    <linearGradient id="fIn" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#10b981" stopOpacity={0.25}/><stop offset="100%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
+                    <linearGradient id="fEx" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f43f5e" stopOpacity={0.2}/><stop offset="100%" stopColor="#f43f5e" stopOpacity={0}/></linearGradient>
                   </defs>
-                  <Area type="monotone" dataKey="收入" stroke="#10b981" strokeWidth={1.5} fill="url(#flowIncome)" dot={false} />
-                  <Area type="monotone" dataKey="支出" stroke="#f43f5e" strokeWidth={1.5} fill="url(#flowExpense)" dot={false} />
+                  <Area type="monotone" dataKey="收入" stroke="#10b981" strokeWidth={1.5} fill="url(#fIn)" dot={false} />
+                  <Area type="monotone" dataKey="支出" stroke="#f43f5e" strokeWidth={1.5} fill="url(#fEx)" dot={false} />
+                  <Area type="monotone" dataKey="结余" stroke="#f59e0b" strokeWidth={2} fill="none" dot={false} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
             <div className="flex justify-between text-[9px] text-muted px-1 mt-0.5">
               <span>收 {formatAmount(stats.totalIncome)}</span>
-              <span>支 {formatAmount(stats.totalExpense)}</span>
+              {currentBudget&&<span>预算 {formatAmount(currentBudget.amount)} ({Math.round(budgetPct)}%)</span>}
               <span className={stats.balance<0?'text-red-400':''}>余 {formatAmount(stats.balance)}</span>
             </div>
           </div>
