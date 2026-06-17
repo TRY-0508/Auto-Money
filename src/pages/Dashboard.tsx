@@ -221,14 +221,29 @@ export default function Dashboard() {
               <div className="card-body">
                 {expBrk.length>0?(
                   <div className="flex items-center gap-4">
-                    <div className="w-32 h-32 flex-shrink-0"><ResponsiveContainer><RPie><Pie data={expBrk} cx="50%" cy="50%" innerRadius={30} outerRadius={52} paddingAngle={4} dataKey="amount">{expBrk.map((e,i)=><Cell key={e.categoryId} fill={CHART_COLORS[i%CHART_COLORS.length]} strokeWidth={0}/>)}</Pie></RPie></ResponsiveContainer></div>
-                    <div className="flex-1 space-y-1.5 min-w-0">{expBrk.slice(0,6).map((item,i)=>{
+                    <div className="w-36 h-36 flex-shrink-0 relative">
+                      <ResponsiveContainer>
+                        <RPie>
+                          <defs>
+                            {CHART_COLORS.map((c,i)=><filter key={i} id={`shadow-${i}`}><feDropShadow dx="0" dy="1" stdDeviation="2" floodOpacity="0.15"/></filter>)}
+                          </defs>
+                          <Pie data={expBrk} cx="50%" cy="50%" innerRadius={38} outerRadius={58} paddingAngle={3} dataKey="amount" stroke="none">
+                            {expBrk.map((e,i)=><Cell key={e.categoryId} fill={CHART_COLORS[i%CHART_COLORS.length]} filter={`url(#shadow-${i})`}/>)}
+                          </Pie>
+                        </RPie>
+                      </ResponsiveContainer>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                        <span className="text-[10px] text-muted">总支出</span>
+                        <span className="text-sm font-bold amount">{formatAmount(stats.totalExpense)}</span>
+                      </div>
+                    </div>
+                    <div className="flex-1 space-y-1.5 min-w-0">{expBrk.slice(0,5).map((item,i)=>{
                       const dotColor = CHART_COLORS[i % CHART_COLORS.length]
                       const cat = categories.find(c => c.id === item.categoryId)
                       const Icon = cat ? (CATEGORY_ICON_MAP[cat.icon] || MoreHorizontal) : MoreHorizontal
                       return (
                         <div key={item.categoryId} className="flex items-center gap-2 text-xs group cursor-default">
-                          <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: dotColor }} />
+                          <span className="w-2.5 h-2.5 rounded-full flex-shrink-0 shadow-sm" style={{ backgroundColor: dotColor }} />
                           {cat && <Icon size={14} strokeWidth={1.8} className="text-gray-400 flex-shrink-0" />}
                           <span className="flex-1 font-medium truncate">{item.categoryName}</span>
                           <span className="text-muted amount text-[11px]">{item.percentage}%</span>
@@ -236,7 +251,7 @@ export default function Dashboard() {
                       )
                     })}</div>
                   </div>
-                ):<p className="body-sm text-gray-400 text-center py-6">暂无支出</p>}
+                ):<p className="text-sm text-muted text-center py-8">暂无支出</p>}
               </div>
             </div>
 
@@ -246,17 +261,25 @@ export default function Dashboard() {
                 {moodBarData.length>0?(
                   <div className="h-44">
                     <ResponsiveContainer>
-                      <BarChart data={moodBarData} layout="vertical" margin={{ top: 0, right: 20, left: 0, bottom: 0 }}>
+                      <BarChart data={moodBarData} layout="vertical" margin={{ top: 4, right: 28, left: 0, bottom: 4 }} barCategoryGap="25%">
+                        <defs>
+                          {moodBarData.map((entry,idx) => (
+                            <linearGradient key={idx} id={`barGrad-${idx}`} x1="0" y1="0" x2="1" y2="0">
+                              <stop offset="0%" stopColor={entry.color} stopOpacity={0.55}/>
+                              <stop offset="100%" stopColor={entry.color} stopOpacity={0.85}/>
+                            </linearGradient>
+                          ))}
+                        </defs>
                         <XAxis type="number" hide />
-                        <YAxis type="category" dataKey="name" tick={{fontSize:11,fill:'#a8a29e'}} axisLine={false} tickLine={false} width={32} />
-                        <Tooltip contentStyle={{borderRadius:'12px',border:'none',boxShadow:'0 4px 20px rgba(0,0,0,0.1)',fontSize:'12px'}} formatter={(v:number)=>(['¥'+v.toFixed(2),'消费金额'])} />
-                        <Bar dataKey="value" radius={[0,8,8,0]} barSize={16}>
-                          {moodBarData.map((entry,idx) => <Cell key={idx} fill={entry.color} fillOpacity={0.7} />)}
+                        <YAxis type="category" dataKey="name" tick={{fontSize:11,fill:'#a8a29e',fontWeight:500}} axisLine={false} tickLine={false} width={32} />
+                        <Tooltip cursor={{fill:'rgba(0,0,0,0.03)',rx:8}} contentStyle={{borderRadius:'14px',border:'none',boxShadow:'0 8px 32px rgba(0,0,0,0.1)',fontSize:'12px',padding:'8px 14px'}} formatter={(v:number)=>(['¥'+v.toFixed(2),'消费金额'])} />
+                        <Bar dataKey="value" radius={[4,8,8,4]} barSize={18} animationBegin={200} animationDuration={800}>
+                          {moodBarData.map((entry,idx) => <Cell key={idx} fill={`url(#barGrad-${idx})`} />)}
                         </Bar>
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
-                ):<p className="body-sm text-gray-400 text-center py-6">记账时选心情，这里就会出现统计</p>}
+                ):<p className="text-sm text-muted text-center py-8">记账时选心情，这里就会出现统计</p>}
               </div>
             </div>
           </div>
@@ -265,24 +288,24 @@ export default function Dashboard() {
           <div className="card card-chart card-hover overflow-hidden">
             <div className="card-header"><TrendingUp size={18} strokeWidth={1.8} className="text-accent"/>30日收支趋势</div>
             <div className="card-body">
-              <div className="h-40">
+              <div className="h-44">
                 <ResponsiveContainer>
-                  <AreaChart data={dailyTrend} margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
+                  <AreaChart data={dailyTrend} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                     <defs>
                       <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.15}/>
-                        <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                        <stop offset="0%" stopColor="#10b981" stopOpacity={0.2}/>
+                        <stop offset="100%" stopColor="#10b981" stopOpacity={0}/>
                       </linearGradient>
                       <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.12}/>
-                        <stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/>
+                        <stop offset="0%" stopColor="#f43f5e" stopOpacity={0.15}/>
+                        <stop offset="100%" stopColor="#f43f5e" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
-                    <XAxis dataKey="date" tick={{fontSize:9,fill:'#a8a29e'}} axisLine={false} tickLine={false} interval={6} />
-                    <YAxis tick={{fontSize:9,fill:'#a8a29e'}} axisLine={false} tickLine={false} width={40} />
-                    <Tooltip contentStyle={{borderRadius:'12px',border:'none',boxShadow:'0 4px 20px rgba(0,0,0,0.1)',fontSize:'12px'}} />
-                    <Area type="monotone" dataKey="income" stroke="#10b981" strokeWidth={1.5} fill="url(#colorIncome)" name="收入" />
-                    <Area type="monotone" dataKey="expense" stroke="#f43f5e" strokeWidth={1.5} fill="url(#colorExpense)" name="支出" />
+                    <XAxis dataKey="date" tick={{fontSize:10,fill:'#a8a29e'}} axisLine={false} tickLine={false} interval={5} />
+                    <YAxis tick={{fontSize:10,fill:'#a8a29e'}} axisLine={false} tickLine={false} width={44} tickFormatter={(v:number)=>v>0?'¥'+(v/1000).toFixed(0)+'k':''} />
+                    <Tooltip cursor={{stroke:'rgba(0,0,0,0.06)',strokeWidth:1}} contentStyle={{borderRadius:'14px',border:'none',boxShadow:'0 8px 32px rgba(0,0,0,0.1)',fontSize:'12px',padding:'8px 14px'}} />
+                    <Area type="monotone" dataKey="income" stroke="#10b981" strokeWidth={2} fill="url(#colorIncome)" dot={false} activeDot={{r:4,fill:'#10b981',stroke:'#fff',strokeWidth:2}} />
+                    <Area type="monotone" dataKey="expense" stroke="#f43f5e" strokeWidth={2} fill="url(#colorExpense)" dot={false} activeDot={{r:4,fill:'#f43f5e',stroke:'#fff',strokeWidth:2}} />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
