@@ -273,6 +273,10 @@
 /* ── Base ── */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+/* Suppress browser focus rings, use hover effects instead */
+button:focus, button:focus-visible, select:focus, input:focus { outline: none; }
+button:focus-visible { outline: 2px solid var(--c-primary); outline-offset: 2px; }
+
 /* WeChat & in-app browser SVG fix */
 svg { overflow: visible; shape-rendering: geometricPrecision; }
 @supports not (backdrop-filter: blur(1px)) {

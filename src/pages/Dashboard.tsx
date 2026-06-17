@@ -209,40 +209,40 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Charts Row — two compact donuts */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-            <div className="card card-chart p-3 sm:p-4">
-              <div className="flex items-center gap-2 mb-2 px-1"><PieChart size={14} strokeWidth={1.8} className="text-accent"/><span className="text-xs font-semibold">五型消费</span></div>
+          {/* Charts Row — two compact donuts side by side */}
+          <div className="grid grid-cols-2 gap-2 sm:gap-4">
+            <div className="card card-chart p-2 sm:p-4">
+              <div className="flex items-center gap-1.5 mb-1.5 px-0.5"><PieChart size={13} strokeWidth={1.8} className="text-accent"/><span className="text-[10px] sm:text-xs font-semibold">五型消费</span></div>
               {expBrk.length>0?(
-                <div className="flex items-center gap-3">
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 relative">
+                <div className="flex items-center gap-1.5 sm:gap-3">
+                  <div className="w-14 h-14 sm:w-24 sm:h-24 flex-shrink-0 relative">
                     <ResponsiveContainer>
-                      <RPie><Pie data={expBrk} cx="50%" cy="50%" innerRadius={28} outerRadius={42} paddingAngle={2} dataKey="amount" stroke="#fff" strokeWidth={1.5}>{expBrk.map((e,i)=><Cell key={e.categoryId} fill={CHART_COLORS[i%CHART_COLORS.length]}/>)}</Pie></RPie>
+                      <RPie><Pie data={expBrk} cx="50%" cy="50%" innerRadius={18} outerRadius={28} paddingAngle={2} dataKey="amount" stroke="#fff" strokeWidth={1.5}>{expBrk.map((e,i)=><Cell key={e.categoryId} fill={CHART_COLORS[i%CHART_COLORS.length]}/>)}</Pie></RPie>
                     </ResponsiveContainer>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"><span className="text-[9px] text-muted">总</span><span className="text-[10px] font-bold amount">{formatAmount(stats.totalExpense)}</span></div>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"><span className="text-[8px] sm:text-[10px] text-muted">总</span><span className="text-[9px] sm:text-xs font-bold amount">{formatAmount(stats.totalExpense)}</span></div>
                   </div>
                   <div className="flex-1 min-w-0 space-y-0.5">{expBrk.slice(0,5).map((item,i)=>
-                    <div key={item.categoryId} className="flex items-center gap-1.5 text-[10px]"><span className="w-1.5 h-1.5 rounded-sm flex-shrink-0" style={{backgroundColor:CHART_COLORS[i%CHART_COLORS.length]}}/><span className="flex-1 truncate">{item.categoryName}</span><span className="text-muted">{item.percentage}%</span></div>
+                    <div key={item.categoryId} className="flex items-center gap-1 text-[9px] sm:text-[10px]"><span className="w-1.5 h-1.5 rounded-sm flex-shrink-0" style={{backgroundColor:CHART_COLORS[i%CHART_COLORS.length]}}/><span className="flex-1 truncate">{item.categoryName}</span><span className="text-muted">{item.percentage}%</span></div>
                   )}</div>
                 </div>
-              ):<p className="text-xs text-muted py-6 text-center">暂无支出</p>}
+              ):<p className="text-[10px] text-muted py-4 text-center">暂无支出</p>}
             </div>
 
-            <div className="card card-chart p-3 sm:p-4">
-              <div className="flex items-center gap-2 mb-2 px-1"><PieChart size={14} strokeWidth={1.8} className="text-accent"/><span className="text-xs font-semibold">心情比例</span></div>
+            <div className="card card-chart p-2 sm:p-4">
+              <div className="flex items-center gap-1.5 mb-1.5 px-0.5"><PieChart size={13} strokeWidth={1.8} className="text-accent"/><span className="text-[10px] sm:text-xs font-semibold">心情比例</span></div>
               {moodBarData.length>0?(
-                <div className="flex items-center gap-3">
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 relative">
+                <div className="flex items-center gap-1.5 sm:gap-3">
+                  <div className="w-14 h-14 sm:w-24 sm:h-24 flex-shrink-0 relative">
                     <ResponsiveContainer>
-                      <RPie><Pie data={moodBarData} cx="50%" cy="50%" innerRadius={28} outerRadius={42} paddingAngle={2} dataKey="value" stroke="#fff" strokeWidth={1.5} nameKey="name">{moodBarData.map((entry,idx)=><Cell key={idx} fill={entry.color}/>)}</Pie></RPie>
+                      <RPie><Pie data={moodBarData} cx="50%" cy="50%" innerRadius={18} outerRadius={28} paddingAngle={2} dataKey="value" stroke="#fff" strokeWidth={1.5} nameKey="name">{moodBarData.map((entry,idx)=><Cell key={idx} fill={entry.color}/>)}</Pie></RPie>
                     </ResponsiveContainer>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"><span className="text-[9px] text-muted">心情</span><span className="text-[10px] font-bold amount">{moodBarData.length}</span></div>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"><span className="text-[8px] sm:text-[10px] text-muted">心情</span><span className="text-[9px] sm:text-xs font-bold amount">{moodBarData.length}</span></div>
                   </div>
-                  <div className="flex-1 min-w-0 space-y-0.5">{moodBarData.map((entry)=>
-                    <div key={entry.name} className="flex items-center gap-1.5 text-[10px]"><span className="w-1.5 h-1.5 rounded-sm flex-shrink-0" style={{backgroundColor:entry.color}}/><span className="flex-1 truncate">{entry.name}</span><span className="text-muted">{formatAmount(entry.value)}</span></div>
+                  <div className="flex-1 min-w-0 space-y-0.5">{moodBarData.slice(0,4).map((entry)=>
+                    <div key={entry.name} className="flex items-center gap-1 text-[9px] sm:text-[10px]"><span className="w-1.5 h-1.5 rounded-sm flex-shrink-0" style={{backgroundColor:entry.color}}/><span className="flex-1 truncate">{entry.name}</span><span className="text-muted">{formatAmount(entry.value)}</span></div>
                   )}</div>
                 </div>
-              ):<p className="text-xs text-muted py-6 text-center">选心情记账后出现</p>}
+              ):<p className="text-[10px] text-muted py-4 text-center">选心情记账后出现</p>}
             </div>
           </div>
 
