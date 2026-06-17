@@ -3,7 +3,7 @@ import { LayoutDashboard, Brain, Settings, Star } from '@/lib/icons'
 
 export default function BottomNav() {
   return (
-    <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-t border-gray-200/50 flex items-center justify-around h-16">
+    <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-t border-gray-200/50 flex items-center justify-around h-16" style={{paddingBottom:'env(safe-area-inset-bottom, 0px)'}}>
       <NavLink to="/" className={({ isActive }) => `flex flex-col items-center gap-0.5 text-xs ${isActive ? 'text-accent dark:text-accent font-medium' : 'text-gray-400'}`}>
         <LayoutDashboard size={22} strokeWidth={1.8} /><span>首页</span>
       </NavLink>

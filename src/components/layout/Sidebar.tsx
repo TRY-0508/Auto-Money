@@ -6,8 +6,8 @@ export default function Sidebar() {
   const { sidebarOpen, setSidebarOpen } = useUIStore()
   return (
     <>
-      {sidebarOpen && <div className="fixed inset-0 bg-black/30 z-40 md:hidden" onClick={() => setSidebarOpen(false)} />}
-      <aside className={`fixed md:static inset-y-0 left-0 z-40 w-56 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-r border-gray-200/50 dark:border-gray-800/50 transform transition-transform duration-200 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}>
+      {sidebarOpen && <div className="fixed inset-0 bg-black/30 z-50 md:hidden" onClick={() => setSidebarOpen(false)} />}
+      <aside className={`fixed md:static inset-y-0 left-0 z-50 w-56 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-r border-gray-200/50 dark:border-gray-800/50 transform transition-transform duration-200 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}>
         <div className="flex items-center gap-2 h-14 px-4 border-b border-gray-200/50 dark:border-gray-800/50">
           <LayoutDashboard size={22} strokeWidth={1.8} className="text-accent" />
           <span className="font-semibold text-lg">心情收支簿</span>

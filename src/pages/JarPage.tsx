@@ -222,7 +222,7 @@ export default function JarPage() {
   }
 
   return (
-    <div className="max-w-lg mx-auto space-y-5 slide-up pb-24 md:pb-4">
+    <div className="max-w-lg mx-auto space-y-5 slide-up pb-safe">
       {/* ── Tab bar ── */}
       <div className="flex bg-white/40 dark:bg-gray-800/30 rounded-2xl p-1 gap-1">
         {([

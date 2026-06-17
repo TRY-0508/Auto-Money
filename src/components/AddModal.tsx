@@ -145,7 +145,7 @@ export default function AddModal({ open, onClose }: Props) {
           <button onClick={handleClose} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
         </div>
 
-        <div className="p-5 overflow-y-auto flex-1 pb-24 md:pb-5">
+        <div className="p-5 overflow-y-auto flex-1 pb-safe">
           {error && <div className="mb-4 p-3 rounded-2xl bg-red-50 dark:bg-red-900/20 text-red-500 text-sm flex items-center gap-2"><AlertTriangle size={14} />{error}<button onClick={() => setError('')} className="ml-auto text-xs underline">关闭</button></div>}
 
           {step === 'input' && (
@@ -252,7 +252,7 @@ export default function AddModal({ open, onClose }: Props) {
                     <button key={cat.id} onClick={() => setManualCategoryId(cat.id)}
                       className={`flex flex-col items-center gap-1 p-2.5 rounded-2xl text-xs transition-all ${manualCategoryId === cat.id ? 'bg-amber-50 dark:bg-amber-900/30 ring-2 ring-amber-400 scale-105' : 'bg-gray-50 dark:bg-gray-800'}`}>
                       <Icon size={22} strokeWidth={1.8} color={manualCategoryId === cat.id ? 'var(--c-primary)' : '#6b7280'} />
-                      <span className="text-[10px]">{cat.name}</span>
+                      <span className="text-[10px] truncate w-full text-center">{cat.name}</span>
                     </button>
                   )
                 })}

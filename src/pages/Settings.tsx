@@ -64,7 +64,7 @@ export default function Settings() {
   const expenseCats = categories.filter((c) => c.type === 'expense'); const incomeCats = categories.filter((c) => c.type === 'income')
 
   return (
-    <div className="max-w-lg mx-auto space-y-5 slide-up pb-24 md:pb-4">
+    <div className="max-w-lg mx-auto space-y-5 slide-up pb-safe">
       {/* API */}
       <div className="glow-card p-5">
         <h3 className="text-sm font-bold tracking-tight mb-4 flex items-center gap-2"><SettingsIcon size={18} strokeWidth={1.8} className="text-accent" />API 配置</h3>

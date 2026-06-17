@@ -99,7 +99,7 @@ export default function SplashScreen({ onEnter }: Props) {
   }, [])
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden" style={{background:'var(--c-primary-gradient)'}}>
+    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden" style={{background:'var(--c-primary-gradient)', paddingBottom:'env(safe-area-inset-bottom, 0px)'}}>
       {/* Physics floating icons container */}
       <div ref={containerRef} className="absolute inset-0" />
 

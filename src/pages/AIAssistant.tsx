@@ -12,7 +12,7 @@ const SUGGESTIONS = ['我这个月开心的时候花了多少？', '焦虑时我
 export default function AIAssistant() {
   const [tab, setTab] = useState<'report' | 'chat' | 'psych'>('report')
   return (
-    <div className="max-w-2xl mx-auto slide-up pb-24 md:pb-4">
+    <div className="max-w-2xl mx-auto slide-up pb-safe">
       <div className="flex rounded-2xl bg-gray-100/80 dark:bg-gray-800/80 backdrop-blur p-1.5 mb-4">
         {[
           { key: 'report', Icon: BarChart3, label: '财务报告' },

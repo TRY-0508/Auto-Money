@@ -96,7 +96,7 @@ export default function Dashboard() {
   }).sort((a,b) => b.value - a.value), [moodStats])
 
   return (
-    <div className="max-w-4xl mx-auto space-y-5 slide-up pb-24 md:pb-6">
+    <div className="max-w-4xl mx-auto space-y-5 slide-up pb-safe">
       <ProjectSwitcher selectedId={projectId} onChange={setProjectId}/>
 
       <select value={yearMonth} onChange={e=>setYearMonth(e.target.value)} className="card px-4 py-2 text-sm font-semibold focus:outline-none cursor-pointer w-auto">
@@ -185,24 +185,24 @@ export default function Dashboard() {
           <div className="bento stagger">
             <div className="card card-stat card-hover bento-col-2 md:bento-col-2 p-4">
               <div className="flex items-center gap-2 mb-1"><div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center"><ArrowUpRight size={16} className="text-emerald-500"/></div><span className="text-xs text-muted">本月收入</span></div>
-              <p className="text-xl font-bold amount">{formatAmount(stats.totalIncome)}</p>
+              <p className="text-xl font-bold amount truncate">{formatAmount(stats.totalIncome)}</p>
               {incomeChange !== 0 && <p className={`text-xs mt-0.5 ${incomeChange > 0 ? 'text-emerald-500' : 'text-red-400'}`}>{incomeChange > 0 ? '+' : ''}{incomeChange}% 环比</p>}
             </div>
             <div className="card card-stat card-hover bento-col-2 md:bento-col-2 p-4">
               <div className="flex items-center gap-2 mb-1"><div className="w-8 h-8 rounded-xl bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center"><ArrowDownRight size={16} className="text-rose-400"/></div><span className="text-xs text-muted">本月支出</span></div>
-              <p className="text-xl font-bold amount">{formatAmount(stats.totalExpense)}</p>
+              <p className="text-xl font-bold amount truncate">{formatAmount(stats.totalExpense)}</p>
               {expenseChange !== 0 && <p className={`text-xs mt-0.5 ${expenseChange > 0 ? 'text-red-400' : 'text-emerald-500'}`}>{expenseChange > 0 ? '+' : ''}{expenseChange}% 环比</p>}
             </div>
             <div className="card card-stat card-hover bento-col-2 md:bento-col-2 p-4">
               <div className="flex items-center gap-2 mb-1"><div className="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center"><TrendingUp size={16} className="text-accent"/></div><span className="text-xs text-muted">本月结余</span></div>
-              <p className={`text-xl font-bold amount ${stats.balance < 0 ? 'text-red-400' : ''}`}>{formatAmount(stats.balance)}</p>
+              <p className={`text-xl font-bold amount truncate ${stats.balance < 0 ? 'text-red-400' : ''}`}>{formatAmount(stats.balance)}</p>
               <p className="text-xs text-muted mt-0.5">{stats.count} 笔交易</p>
             </div>
             <div className="card card-stat card-hover bento-col-2 md:bento-col-2 p-4">
               <div className="flex items-center gap-2 mb-1"><div className="w-8 h-8 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center"><Wallet size={16} className="text-purple-500"/></div><span className="text-xs text-muted">本月预算</span></div>
               {currentBudget ? (
                 <>
-                  <p className="text-xl font-bold amount">{formatAmount(budgetRemaining)}<span className="text-sm font-normal text-muted"> / {formatAmount(currentBudget.amount)}</span></p>
+                  <p className="text-xl font-bold amount truncate">{formatAmount(budgetRemaining)}<span className="text-sm font-normal text-muted"> / {formatAmount(currentBudget.amount)}</span></p>
                   <div className="mt-2 h-2 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
                     <div className={`h-full rounded-full transition-all duration-700 ${budgetPct > 90 ? 'bg-red-400' : budgetPct > 70 ? 'bg-amber-400' : 'bg-emerald-400'}`} style={{width:`${budgetPct}%`}}/>
                   </div>
@@ -343,13 +343,13 @@ export default function Dashboard() {
       )}
 
       {editing&&(
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 fade-in backdrop-blur-sm" onClick={()=>setEditing(null)}>
-          <div className="bg-white dark:bg-gray-900 rounded-3xl p-5 w-full max-w-sm shadow-2xl max-h-[90vh] overflow-y-auto" onClick={e=>e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-end md:items-center justify-center p-4 fade-in backdrop-blur-sm" onClick={()=>setEditing(null)}>
+          <div className="bg-white dark:bg-gray-900 rounded-t-3xl md:rounded-3xl p-5 w-full max-w-sm shadow-2xl max-h-[90vh] overflow-y-auto" onClick={e=>e.stopPropagation()}>
             <h3 className="font-bold text-lg mb-4 tracking-tight">编辑记录</h3>
             <div className="space-y-3">
               <div className="flex gap-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-2xl">{['expense','income'].map(t=><button key={t} onClick={()=>setEType(t as any)} className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${eType===t?(t==='expense'?'bg-red-400 text-white shadow-sm':'bg-emerald-400 text-white shadow-sm'):'text-gray-500'}`}>{t==='expense'?'支出':'收入'}</button>)}</div>
               <input type="number" value={eAmt} onChange={e=>setEAmt(e.target.value)} placeholder="0.00" className="input input-lg"/>
-              <div className="grid grid-cols-4 gap-2">{curCats.map(c=>{const Icon=CATEGORY_ICON_MAP[c.icon]||MoreHorizontal;return<button key={c.id} onClick={()=>setECat(c.id)} className={`flex flex-col items-center gap-1 p-2.5 rounded-2xl text-xs transition-all ${eCat===c.id?'bg-amber-50 dark:bg-amber-900/30 ring-2 ring-amber-400 scale-105 shadow-sm':'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100'}`}><Icon size={20} strokeWidth={1.8} className={eCat===c.id?'text-accent':'text-gray-400'}/><span className="font-medium">{c.name}</span></button>})}</div>
+              <div className="grid grid-cols-4 gap-2">{curCats.map(c=>{const Icon=CATEGORY_ICON_MAP[c.icon]||MoreHorizontal;return<button key={c.id} onClick={()=>setECat(c.id)} className={`flex flex-col items-center gap-1 p-2.5 rounded-2xl text-xs transition-all ${eCat===c.id?'bg-amber-50 dark:bg-amber-900/30 ring-2 ring-amber-400 scale-105 shadow-sm':'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100'}`}><Icon size={20} strokeWidth={1.8} className={eCat===c.id?'text-accent':'text-gray-400'}/><span className="text-[10px] truncate w-full text-center">{c.name}</span></button>})}</div>
               <input type="date" value={eDate} onChange={e=>setEDate(e.target.value)} className="input"/>
               <input type="text" value={eDesc} onChange={e=>setEDesc(e.target.value)} placeholder="备注" className="input"/>
               <div><p className="label mb-2">心情</p><div className="flex flex-wrap gap-1.5">{MOOD_LIST.map(m=>{const MI=m.Icon;return<button key={m.value} onClick={()=>setEMood(eMood===m.value?'':m.value)} className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-sm font-medium transition-all ${eMood===m.value?'bg-amber-50 dark:bg-amber-900/30 ring-2 ring-amber-400 scale-105 shadow-sm':'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100'}`}><MI size={15} strokeWidth={1.8}/><span>{m.label}</span></button>})}</div></div>
@@ -369,7 +369,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      <button onClick={()=>setShowAdd(true)} className="fab fixed bottom-20 md:bottom-8 right-6 rounded-2xl text-white text-2xl z-40 flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-200 font-light shadow-2xl">+</button>
+      <button onClick={()=>setShowAdd(true)} className="fab fixed bottom-safe right-6 rounded-2xl text-white text-2xl z-40 flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-200 font-light shadow-2xl">+</button>
       <AddModal open={showAdd} onClose={()=>setShowAdd(false)}/>
     </div>
   )

@@ -59,7 +59,7 @@ export default function AppLayout() {
       <Sidebar />
       <div className="flex flex-1 flex-col min-w-0 z-10 relative">
         <Header />
-        <main className="flex-1 overflow-y-auto p-4 pb-20 md:pb-4">
+        <main className="flex-1 overflow-y-auto p-4 pb-safe">
           <Outlet />
         </main>
       </div>
