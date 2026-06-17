@@ -171,7 +171,7 @@ export default function AddModal({ open, onClose }: Props) {
                       <div className="flex items-center justify-center gap-1">
                         {[0,1,2].map(i => <div key={i} className="w-2.5 h-2.5 bg-amber-400 rounded-full animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />)}
                       </div>
-                      <p className="text-amber-500 text-sm font-medium">正在识别...</p>
+                      <p className="text-accent text-sm font-medium">正在识别...</p>
                       <p className="text-xs text-muted">录音已停止，正在转文字</p>
                     </div>
                   ) : (
@@ -179,7 +179,7 @@ export default function AddModal({ open, onClose }: Props) {
                       {voiceListening ? (
                         <div className="space-y-4">
                           <div className="flex items-center justify-center gap-1.5">{[1,2,3,4,5].map(i => <div key={i} className="w-1.5 bg-gradient-to-t from-amber-300 to-amber-500 rounded-full animate-pulse" style={{ height: `${14+i*8}px`, animationDelay: `${i*0.12}s`, animationDuration: '0.8s' }} />)}</div>
-                          <p className="text-amber-500 font-medium animate-pulse">正在聆听...</p>
+                          <p className="text-accent font-medium animate-pulse">正在聆听...</p>
                           <p className="text-xs text-muted font-mono">{voiceSeconds}s</p>
                         </div>
                       ) : (
@@ -281,12 +281,12 @@ export default function AddModal({ open, onClose }: Props) {
               <input type="text" value={manualDesc} onChange={e => setManualDesc(e.target.value)} placeholder="备注（可选）" className="w-full px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300" />
 
               <div>
-                <p className="text-sm font-medium text-amber-600 dark:text-amber-400 mb-2">此刻心情</p>
+                <p className="text-sm font-medium text-accent dark:text-amber-400 mb-2">此刻心情</p>
                 <div className="grid grid-cols-4 gap-2">
                   {MOOD_LIST.map(m => (
                     <button key={m.value} onClick={() => setManualMood(manualMood === m.value ? '' : m.value)}
                       className={`flex flex-col items-center gap-1 p-2.5 rounded-2xl text-xs transition-all ${manualMood === m.value ? 'bg-amber-50 dark:bg-amber-900/30 ring-2 ring-amber-400 scale-105' : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
-                      <m.Icon size={24} strokeWidth={1.6} className={manualMood === m.value ? 'text-amber-500' : 'text-gray-500'} />
+                      <m.Icon size={24} strokeWidth={1.6} className={manualMood === m.value ? 'text-accent' : 'text-gray-500'} />
                       <span className="text-[10px]">{m.label}</span>
                     </button>
                   ))}

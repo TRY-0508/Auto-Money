@@ -212,7 +212,7 @@ export default function JarPage() {
   const statusBadge = (s: CoolDownEvent['status']) => {
     const map: Record<string, { cls: string; label: string }> = {
       cooling:     { cls: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',   label: '冷却中' },
-      pending_review: { cls: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400', label: '等待确认' },
+      pending_review: { cls: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-accent', label: '等待确认' },
       resisted:    { cls: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400', label: '已守住' },
       failed:      { cls: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',       label: '已释怀' },
       purchased:   { cls: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400',       label: '已购买' },
@@ -232,7 +232,7 @@ export default function JarPage() {
         ]).map(t => (
           <button key={t.key} onClick={() => switchTab(t.key)}
             className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 ${
-              tab === t.key ? 'bg-white dark:bg-gray-700 shadow-sm text-amber-600 dark:text-amber-400 scale-[1.02]' : 'text-gray-500 hover:text-gray-700'
+              tab === t.key ? 'bg-white dark:bg-gray-700 shadow-sm text-accent dark:text-accent scale-[1.02]' : 'text-gray-500 hover:text-gray-700'
             }`}>
             <t.Icon size={16} strokeWidth={1.8} />{t.label}
           </button>
@@ -270,7 +270,7 @@ export default function JarPage() {
 
           {goals.length === 0 ? (
             <div className="card card-soft p-10 text-center">
-              <Target size={48} strokeWidth={1} className="text-amber-400 mx-auto mb-4 animate-[float_3s_ease-in-out_infinite]" />
+              <Target size={48} strokeWidth={1} className="text-accent mx-auto mb-4 animate-[float_3s_ease-in-out_infinite]" />
               <p className="text-muted text-sm">设定一个心愿，用每次守住的光来填满它</p>
             </div>
           ) : (
@@ -349,7 +349,7 @@ export default function JarPage() {
                       </p>
                     </div>
                     <div className="text-right flex-shrink-0">
-                      <p className={`text-sm font-mono font-bold ${rm.expired ? 'text-amber-500' : 'text-blue-600'}`}>{rm.text}</p>
+                      <p className={`text-sm font-mono font-bold ${rm.expired ? 'text-accent' : 'text-blue-600'}`}>{rm.text}</p>
                       <p className="text-xs text-muted">剩余</p>
                     </div>
                     <button onClick={() => handleDeleteEvent(evt.id)} className="btn-icon btn-icon-danger flex-shrink-0"><X size={12} /></button>
@@ -361,20 +361,20 @@ export default function JarPage() {
 
           {pendingReviewEvents.length > 0 && (
             <div className="space-y-3">
-              <div className="flex items-center gap-2 text-sm font-medium text-amber-600 dark:text-amber-400">
+              <div className="flex items-center gap-2 text-sm font-medium text-accent dark:text-accent">
                 <AlertTriangle size={16} />等待确认 ({pendingReviewEvents.length})
               </div>
               {pendingReviewEvents.map(evt => (
                 <div key={evt.id} className="card card-list p-4 flex items-center gap-3 breathe border-amber-300/60 dark:border-amber-700/40">
                   <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
-                    <ShieldCheck size={18} className="text-amber-500" />
+                    <ShieldCheck size={18} className="text-accent" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium truncate">{evt.description}</p>
                     <p className="text-xs text-muted">
                       {evt.amount > 0 && formatAmount(evt.amount) + ' · '}
                       渴望 {evt.desireLevel}/5 · 必要 {evt.necessityLevel}/5
-                      {evt.aiAnalysis && <span className="ml-1 text-amber-500">AI 已分析</span>}
+                      {evt.aiAnalysis && <span className="ml-1 text-accent">AI 已分析</span>}
                     </p>
                   </div>
                   <button onClick={() => { setReviewEvent(evt); setReviewDesire(evt.desireLevel); setReviewNote(''); setShowPurchaseOptions(false) }}
@@ -387,7 +387,7 @@ export default function JarPage() {
 
           {coolingEvents.length === 0 && pendingReviewEvents.length === 0 && (
             <div className="card p-10 text-center">
-              <ShieldCheck size={48} strokeWidth={1} className="text-amber-400 mx-auto mb-4 animate-[float_3s_ease-in-out_infinite]" />
+              <ShieldCheck size={48} strokeWidth={1} className="text-accent mx-auto mb-4 animate-[float_3s_ease-in-out_infinite]" />
               <p className="text-muted text-sm">遇到犹豫的消费？先冷却一下</p>
             </div>
           )}
@@ -412,7 +412,7 @@ export default function JarPage() {
               {!evtAIResult ? (
                 <button onClick={handleAIAnalyze} disabled={!evtDesc.trim() || evtAILoading}
                   className={`w-full py-3 rounded-2xl text-sm font-medium transition-all flex items-center justify-center gap-2 ${
-                    evtAILoading ? 'bg-gray-100 dark:bg-gray-800 text-gray-400' : 'bg-gray-100 dark:bg-gray-800 text-amber-600 dark:text-amber-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                    evtAILoading ? 'bg-gray-100 dark:bg-gray-800 text-gray-400' : 'bg-gray-100 dark:bg-gray-800 text-accent dark:text-accent hover:bg-gray-200 dark:hover:bg-gray-700'
                   } disabled:opacity-50`}>
                   <Zap size={16} className={evtAILoading ? 'animate-pulse' : ''} />
                   {evtAILoading ? '分析中...' : 'AI 心理分析'}
@@ -420,15 +420,15 @@ export default function JarPage() {
               ) : (
                 <div className="bg-gray-50/80 dark:bg-gray-800/50 rounded-2xl p-3.5 space-y-3 text-sm border border-gray-100/60 dark:border-gray-700/30">
                   <div className="flex items-center gap-2">
-                    <Zap size={14} className="text-amber-500" />
-                    <span className="text-xs text-amber-600 font-medium">AI 分析</span>
+                    <Zap size={14} className="text-accent" />
+                    <span className="text-xs text-accent font-medium">AI 分析</span>
                     <span className="text-xs text-muted ml-auto">{Math.round(evtAIResult.confidence * 100)}%</span>
                   </div>
                   <p className="text-muted leading-relaxed">{evtAIResult.summary}</p>
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div className="bg-white/70 dark:bg-gray-800/70 rounded-xl p-2">
                       <span className="text-muted">类型</span>
-                      <p className="font-bold text-amber-600">{evtAIResult.impulseType === 'emotional' ? '情绪消费' : evtAIResult.impulseType === 'impulsive' ? '冲动消费' : '不确定'}</p>
+                      <p className="font-bold text-accent">{evtAIResult.impulseType === 'emotional' ? '情绪消费' : evtAIResult.impulseType === 'impulsive' ? '冲动消费' : '不确定'}</p>
                     </div>
                     <div className="bg-white/70 dark:bg-gray-800/70 rounded-xl p-2">
                       <span className="text-muted">建议冷却</span>
@@ -436,7 +436,7 @@ export default function JarPage() {
                     </div>
                     <div className="bg-white/70 dark:bg-gray-800/70 rounded-xl p-2">
                       <span className="text-muted">渴望度</span>
-                      <p className="font-bold text-amber-500">{evtAIResult.suggestedDesire}/5</p>
+                      <p className="font-bold text-accent">{evtAIResult.suggestedDesire}/5</p>
                     </div>
                     <div className="bg-white/70 dark:bg-gray-800/70 rounded-xl p-2">
                       <span className="text-muted">必要性</span>
@@ -483,14 +483,14 @@ export default function JarPage() {
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-xs text-gray-400">冷却时间</span>
-                  <span className="text-xs font-medium text-amber-500">{cooldownLabel(evtCooldownHours)}</span>
+                  <span className="text-xs font-medium text-accent">{cooldownLabel(evtCooldownHours)}</span>
                 </div>
                 <div className="flex gap-1.5 flex-wrap">
                   {[6, 12, 24, 48, 72, 168].map(h => (
                     <button key={h} onClick={() => setEvtCooldownHours(h)}
                       className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
                         evtCooldownHours === h
-                          ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 ring-1 ring-amber-300'
+                          ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-accent ring-1 ring-amber-300'
                           : 'bg-gray-50 dark:bg-gray-800 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'
                       }`}>{cooldownLabel(h)}</button>
                   ))}
@@ -515,11 +515,11 @@ export default function JarPage() {
               <p className="text-xs text-muted mt-1">守住率</p>
             </div>
             <div className="card card-stat p-3 text-center">
-              <p className="text-2xl font-bold text-amber-500">{formatAmount(totalResistedAmount)}</p>
+              <p className="text-2xl font-bold text-accent">{formatAmount(totalResistedAmount)}</p>
               <p className="text-xs text-muted mt-1">守住金额</p>
             </div>
             <div className="card card-stat p-3 text-center">
-              <p className="text-2xl font-bold text-amber-500">{totalStars}</p>
+              <p className="text-2xl font-bold text-accent">{totalStars}</p>
               <p className="text-xs text-muted mt-1">星光总数</p>
             </div>
           </div>
@@ -532,7 +532,7 @@ export default function JarPage() {
             ]).map(f => (
               <button key={f.key} onClick={() => setHistoryFilter(f.key)}
                 className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
-                  historyFilter === f.key ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 font-medium' : 'bg-gray-50 text-gray-500 dark:bg-gray-800'
+                  historyFilter === f.key ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-accent font-medium' : 'bg-gray-50 text-gray-500 dark:bg-gray-800'
                 }`}>{f.label}</button>
             ))}
           </div>
@@ -591,7 +591,7 @@ export default function JarPage() {
               <>
                 <div className="text-center">
                   <div className="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mx-auto mb-3">
-                    <ShieldCheck size={32} className="text-amber-500" />
+                    <ShieldCheck size={32} className="text-accent" />
                   </div>
                   <h2 className="h2">冷静之后，你的决定是？</h2>
                 </div>
@@ -607,7 +607,7 @@ export default function JarPage() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted">冷却前渴望</span>
-                    <span className="font-bold text-amber-500">{'★'.repeat(reviewEvent.desireLevel)}{'☆'.repeat(5 - reviewEvent.desireLevel)}</span>
+                    <span className="font-bold text-accent">{'★'.repeat(reviewEvent.desireLevel)}{'☆'.repeat(5 - reviewEvent.desireLevel)}</span>
                   </div>
                   {reviewEvent.aiAnalysis?.summary && (
                     <p className="text-xs text-muted italic mt-2 border-t border-gray-200 dark:border-gray-700 pt-2">{reviewEvent.aiAnalysis.summary}</p>
@@ -617,7 +617,7 @@ export default function JarPage() {
                 <div>
                   <div className="flex justify-between text-sm mb-1">
                     <span className="text-muted">现在的渴望程度</span>
-                    <span className="font-bold text-amber-500">{reviewDesire}/5</span>
+                    <span className="font-bold text-accent">{reviewDesire}/5</span>
                   </div>
                   <input type="range" min="1" max="5" value={reviewDesire} onChange={e => setReviewDesire(parseInt(e.target.value))}
                     className="w-full accent-amber-500" />
@@ -633,7 +633,7 @@ export default function JarPage() {
                   <button onClick={() => setShowPurchaseOptions(true)} className="btn btn-secondary w-full text-base py-3">
                     <Flame size={18} />还是想要
                   </button>
-                  <button onClick={handleRetryCooldown} className="w-full text-sm text-muted hover:text-amber-500 py-2 transition-colors">
+                  <button onClick={handleRetryCooldown} className="w-full text-sm text-muted hover:text-accent py-2 transition-colors">
                     再冷静一下
                   </button>
                 </div>
@@ -656,7 +656,7 @@ export default function JarPage() {
                     <Timer size={18} />再冷静一下
                   </button>
                   <button onClick={() => setShowPurchaseOptions(false)}
-                    className="w-full text-sm text-muted hover:text-amber-500 py-2 transition-colors">返回</button>
+                    className="w-full text-sm text-muted hover:text-accent py-2 transition-colors">返回</button>
                 </div>
               </>
             )}

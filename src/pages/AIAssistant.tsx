@@ -84,7 +84,7 @@ function ReportTab() {
           <p className="text-sm font-bold">{currentBudget ? formatAmount(budgetRemaining) : '—'}</p>
         </div>
         <div className="card card-stat p-3">
-          <div className="flex items-center gap-1.5 mb-1"><TrendingUp size={14} className="text-amber-400"/><span className="text-[10px] text-muted">结余</span></div>
+          <div className="flex items-center gap-1.5 mb-1"><TrendingUp size={14} className="text-accent"/><span className="text-[10px] text-muted">结余</span></div>
           <p className={`text-sm font-bold ${stats.balance < 0 ? 'text-red-400' : ''}`}>{formatAmount(stats.balance)}</p>
         </div>
       </div>
@@ -144,7 +144,7 @@ function ReportTab() {
 
       {report && (
         <div className="card card-chart p-5">
-          <div className="flex items-center justify-between mb-4"><h3 className="text-sm font-bold tracking-tight">报告</h3><button onClick={() => navigator.clipboard.writeText(report)} className="text-xs text-amber-500 font-medium flex items-center gap-1"><Copy size={13} />复制</button></div>
+          <div className="flex items-center justify-between mb-4"><h3 className="text-sm font-bold tracking-tight">报告</h3><button onClick={() => navigator.clipboard.writeText(report)} className="text-xs text-accent font-medium flex items-center gap-1"><Copy size={13} />复制</button></div>
           <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: md(report) }} />
         </div>
       )}
@@ -205,7 +205,7 @@ function PsychTab() {
                 <m.Icon size={20} strokeWidth={1.8} color={m.color} />
                 <span className="flex-1 font-medium text-sm">{m.label}</span>
                 <span className="text-muted text-xs">{m.count}笔</span>
-                <span className="font-semibold text-amber-600 dark:text-amber-400 text-sm">{formatAmount(m.amount)}</span>
+                <span className="font-semibold text-accent dark:text-accent text-sm">{formatAmount(m.amount)}</span>
               </div>
             ))}
           </div>
@@ -220,7 +220,7 @@ function PsychTab() {
 
       {report && (
         <div className="card card-chart p-5">
-          <div className="flex items-center justify-between mb-4"><h3 className="text-sm font-bold tracking-tight">分析结果</h3><button onClick={() => navigator.clipboard.writeText(report)} className="text-xs text-amber-500 font-medium flex items-center gap-1"><Copy size={13} />复制</button></div>
+          <div className="flex items-center justify-between mb-4"><h3 className="text-sm font-bold tracking-tight">分析结果</h3><button onClick={() => navigator.clipboard.writeText(report)} className="text-xs text-accent font-medium flex items-center gap-1"><Copy size={13} />复制</button></div>
           <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: report.split('\n').map(l => {
             if (l.startsWith('### ')) return `<h3 class="text-base font-semibold mt-4 mb-2">${l.slice(4)}</h3>`
             if (l.startsWith('## ')) return `<h2 class="text-lg font-semibold mt-5 mb-2">${l.slice(3)}</h2>`
@@ -273,7 +273,7 @@ function ChatTab() {
       <div className="flex-1 overflow-y-auto space-y-3 mb-3">
         {messages.length === 0 ? (
           <div className="text-center py-12">
-            <MessageCircle size={48} strokeWidth={1} className="text-amber-400 mx-auto mb-4" />
+            <MessageCircle size={48} strokeWidth={1} className="text-accent mx-auto mb-4" />
             <p className="text-gray-500 text-sm font-medium">我是你的 AI 心理记账助手</p>
             <p className="text-gray-400 text-xs mt-1">可以问我收支、心情、消费习惯</p>
           </div>

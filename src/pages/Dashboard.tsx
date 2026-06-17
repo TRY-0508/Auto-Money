@@ -24,7 +24,7 @@ function CalendarHeatmap({ transactions, yearMonth, selectedDay, onSelectDay, on
   const tr=useRef(0)
   return (
     <div className="card card-chart p-4" onTouchStart={e=>{tr.current=e.touches[0].clientX}} onTouchEnd={e=>{const d=tr.current-e.changedTouches[0].clientX;if(Math.abs(d)>60)d>0?nx():pv()}}>
-      <div className="flex items-center justify-between mb-2"><button onClick={pv} className="p-1 text-gray-400 hover:text-amber-500 text-lg">‹</button><h3 className="text-sm font-semibold">月历</h3><button onClick={nx} className="p-1 text-gray-400 hover:text-amber-500 text-lg">›</button></div>
+      <div className="flex items-center justify-between mb-2"><button onClick={pv} className="p-1 text-gray-400 hover:text-accent text-lg">‹</button><h3 className="text-sm font-semibold">月历</h3><button onClick={nx} className="p-1 text-gray-400 hover:text-accent text-lg">›</button></div>
       <div className="grid grid-cols-7 gap-1 mb-1">{['日','一','二','三','四','五','六'].map(d=><div key={d} className="text-center text-[10px] text-gray-400 font-medium">{d}</div>)}</div>
       {wks.map((w,wi)=>(
         <div key={wi} className="grid grid-cols-7 gap-1 mb-1">
@@ -39,7 +39,7 @@ function CalendarHeatmap({ transactions, yearMonth, selectedDay, onSelectDay, on
           })}
         </div>
       ))}
-      <div className="flex items-center justify-center gap-2 mt-2 text-[10px] text-gray-400"><span>少</span><div className="w-3 h-3 rounded-sm bg-gray-100 dark:bg-gray-800"/><div className="w-3 h-3 rounded-sm bg-yellow-200/80 dark:bg-yellow-700/80"/><div className="w-3 h-3 rounded-sm bg-orange-300/80 dark:bg-orange-600/80"/><div className="w-3 h-3 rounded-sm bg-red-400/80 dark:bg-red-600/80"/><span>多</span>{selectedDay&&<button onClick={()=>onSelectDay(null)} className="ml-auto text-amber-500 font-medium">清除</button>}</div>
+      <div className="flex items-center justify-center gap-2 mt-2 text-[10px] text-gray-400"><span>少</span><div className="w-3 h-3 rounded-sm bg-gray-100 dark:bg-gray-800"/><div className="w-3 h-3 rounded-sm bg-yellow-200/80 dark:bg-yellow-700/80"/><div className="w-3 h-3 rounded-sm bg-orange-300/80 dark:bg-orange-600/80"/><div className="w-3 h-3 rounded-sm bg-red-400/80 dark:bg-red-600/80"/><span>多</span>{selectedDay&&<button onClick={()=>onSelectDay(null)} className="ml-auto text-accent font-medium">清除</button>}</div>
     </div>
   )
 }
@@ -119,7 +119,7 @@ export default function Dashboard() {
 
       {txs.length===0?(
         <div className="card p-10 text-center">
-          <EmptyState icon={<BarChart3 size={48} strokeWidth={1.2} className="text-amber-400"/>} title="开始认识自己" description="记下第一笔账，同步记录心情" action={{label:'记一笔',onClick:()=>setShowAdd(true)}}/>
+          <EmptyState icon={<BarChart3 size={48} strokeWidth={1.2} className="text-accent"/>} title="开始认识自己" description="记下第一笔账，同步记录心情" action={{label:'记一笔',onClick:()=>setShowAdd(true)}}/>
         </div>
       ):(
         <>
@@ -136,7 +136,7 @@ export default function Dashboard() {
               {expenseChange !== 0 && <p className={`text-xs mt-0.5 ${expenseChange > 0 ? 'text-red-400' : 'text-emerald-500'}`}>{expenseChange > 0 ? '+' : ''}{expenseChange}% 环比</p>}
             </div>
             <div className="card card-stat card-hover bento-col-2 md:bento-col-2 p-4">
-              <div className="flex items-center gap-2 mb-1"><div className="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center"><TrendingUp size={16} className="text-amber-500"/></div><span className="text-xs text-muted">本月结余</span></div>
+              <div className="flex items-center gap-2 mb-1"><div className="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center"><TrendingUp size={16} className="text-accent"/></div><span className="text-xs text-muted">本月结余</span></div>
               <p className={`text-xl font-bold amount ${stats.balance < 0 ? 'text-red-400' : ''}`}>{formatAmount(stats.balance)}</p>
               <p className="text-xs text-muted mt-0.5">{stats.count} 笔交易</p>
             </div>
@@ -159,7 +159,7 @@ export default function Dashboard() {
           {/* Charts Row */}
           <div className="bento stagger">
             <div className="card card-chart card-hover bento-col-2">
-              <div className="card-header"><PieChart size={18} strokeWidth={1.8} className="text-amber-500"/>五型消费分布</div>
+              <div className="card-header"><PieChart size={18} strokeWidth={1.8} className="text-accent"/>五型消费分布</div>
               <div className="card-body">
                 {expBrk.length>0?(
                   <div className="flex items-center gap-4">
@@ -183,7 +183,7 @@ export default function Dashboard() {
             </div>
 
             <div className="card card-chart card-hover bento-col-2">
-              <div className="card-header"><BarChart3 size={18} strokeWidth={1.8} className="text-amber-500"/>心情×消费</div>
+              <div className="card-header"><BarChart3 size={18} strokeWidth={1.8} className="text-accent"/>心情×消费</div>
               <div className="card-body">
                 {moodBarData.length>0?(
                   <div className="h-44">
@@ -205,7 +205,7 @@ export default function Dashboard() {
 
           {/* Daily Trend Line Chart */}
           <div className="card card-chart card-hover overflow-hidden">
-            <div className="card-header"><TrendingUp size={18} strokeWidth={1.8} className="text-amber-500"/>30日收支趋势</div>
+            <div className="card-header"><TrendingUp size={18} strokeWidth={1.8} className="text-accent"/>30日收支趋势</div>
             <div className="card-body">
               <div className="h-40">
                 <ResponsiveContainer>
@@ -233,7 +233,7 @@ export default function Dashboard() {
 
           {/* Mood Timeline */}
           <div className="card card-list card-hover overflow-hidden">
-            <div className="card-header"><CalendarIcon size={18} strokeWidth={1.8} className="text-amber-500"/>心情时间线</div>
+            <div className="card-header"><CalendarIcon size={18} strokeWidth={1.8} className="text-accent"/>心情时间线</div>
             <div className="card-body overflow-x-auto scrollbar-hide">
               <div className="flex gap-3 pb-1">{moodTimeline.map(d=>{const MI=d.moodVal?MOOD_ICON_MAP[d.moodVal]:null;const color=d.moodVal?MOOD_COLOR_MAP[d.moodVal]:null;return(
                 <div key={d.date} className="flex flex-col items-center gap-1.5 flex-shrink-0 w-11">
@@ -291,7 +291,7 @@ export default function Dashboard() {
             <div className="space-y-3">
               <div className="flex gap-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-2xl">{['expense','income'].map(t=><button key={t} onClick={()=>setEType(t as any)} className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${eType===t?(t==='expense'?'bg-red-400 text-white shadow-sm':'bg-emerald-400 text-white shadow-sm'):'text-gray-500'}`}>{t==='expense'?'支出':'收入'}</button>)}</div>
               <input type="number" value={eAmt} onChange={e=>setEAmt(e.target.value)} placeholder="0.00" className="input input-lg"/>
-              <div className="grid grid-cols-4 gap-2">{curCats.map(c=>{const Icon=CATEGORY_ICON_MAP[c.icon]||MoreHorizontal;return<button key={c.id} onClick={()=>setECat(c.id)} className={`flex flex-col items-center gap-1 p-2.5 rounded-2xl text-xs transition-all ${eCat===c.id?'bg-amber-50 dark:bg-amber-900/30 ring-2 ring-amber-400 scale-105 shadow-sm':'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100'}`}><Icon size={20} strokeWidth={1.8} className={eCat===c.id?'text-amber-500':'text-gray-400'}/><span className="font-medium">{c.name}</span></button>})}</div>
+              <div className="grid grid-cols-4 gap-2">{curCats.map(c=>{const Icon=CATEGORY_ICON_MAP[c.icon]||MoreHorizontal;return<button key={c.id} onClick={()=>setECat(c.id)} className={`flex flex-col items-center gap-1 p-2.5 rounded-2xl text-xs transition-all ${eCat===c.id?'bg-amber-50 dark:bg-amber-900/30 ring-2 ring-amber-400 scale-105 shadow-sm':'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100'}`}><Icon size={20} strokeWidth={1.8} className={eCat===c.id?'text-accent':'text-gray-400'}/><span className="font-medium">{c.name}</span></button>})}</div>
               <input type="date" value={eDate} onChange={e=>setEDate(e.target.value)} className="input"/>
               <input type="text" value={eDesc} onChange={e=>setEDesc(e.target.value)} placeholder="备注" className="input"/>
               <div><p className="label mb-2">心情</p><div className="flex flex-wrap gap-1.5">{MOOD_LIST.map(m=>{const MI=m.Icon;return<button key={m.value} onClick={()=>setEMood(eMood===m.value?'':m.value)} className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-sm font-medium transition-all ${eMood===m.value?'bg-amber-50 dark:bg-amber-900/30 ring-2 ring-amber-400 scale-105 shadow-sm':'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100'}`}><MI size={15} strokeWidth={1.8}/><span>{m.label}</span></button>})}</div></div>

@@ -66,7 +66,7 @@ export default function Settings() {
     <div className="max-w-lg mx-auto space-y-4 slide-up pb-24 md:pb-4">
       {/* API */}
       <div className="glow-card p-5">
-        <h3 className="text-sm font-bold tracking-tight mb-4 flex items-center gap-2"><SettingsIcon size={18} strokeWidth={1.8} className="text-amber-500" />API 配置</h3>
+        <h3 className="text-sm font-bold tracking-tight mb-4 flex items-center gap-2"><SettingsIcon size={18} strokeWidth={1.8} className="text-accent" />API 配置</h3>
         <div className="space-y-3">
           <div><label className="text-xs text-gray-400 mb-1 block">API Key</label><input type="password" value={apiKey} onChange={e => setApiKey(e.target.value)} placeholder={settings?.apiKey ? '已配置' : 'sk-'} className="w-full px-3 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300" /></div>
           <div><label className="text-xs text-gray-400 mb-1 block">Base URL</label><input type="text" value={baseUrl} onChange={e => setBaseUrl(e.target.value)} className="w-full px-3 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300" /></div>
@@ -78,17 +78,17 @@ export default function Settings() {
 
       {/* Speech */}
       <div className="glow-card p-5">
-        <h3 className="text-sm font-bold tracking-tight mb-4 flex items-center gap-2"><Mic size={18} strokeWidth={1.8} className="text-amber-500" />语音识别</h3>
+        <h3 className="text-sm font-bold tracking-tight mb-4 flex items-center gap-2"><Mic size={18} strokeWidth={1.8} className="text-accent" />语音识别</h3>
         <div className="space-y-3">
           <div className="flex gap-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-2xl">
-            <button onClick={() => updateSettings?.({ speechProvider: 'baidu' })} className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${settings?.speechProvider === 'baidu' ? 'bg-white dark:bg-gray-700 shadow-sm text-amber-600' : 'text-gray-500'}`}>百度语音</button>
-            <button onClick={() => updateSettings?.({ speechProvider: 'none' })} className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${!settings?.speechProvider || settings?.speechProvider === 'none' ? 'bg-white dark:bg-gray-700 shadow-sm text-amber-600' : 'text-gray-500'}`}>不使用</button>
+            <button onClick={() => updateSettings?.({ speechProvider: 'baidu' })} className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${settings?.speechProvider === 'baidu' ? 'bg-white dark:bg-gray-700 shadow-sm text-accent' : 'text-gray-500'}`}>百度语音</button>
+            <button onClick={() => updateSettings?.({ speechProvider: 'none' })} className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${!settings?.speechProvider || settings?.speechProvider === 'none' ? 'bg-white dark:bg-gray-700 shadow-sm text-accent' : 'text-gray-500'}`}>不使用</button>
           </div>
           {settings?.speechProvider === 'baidu' && (
             <>
               <div><label className="text-xs text-gray-400 mb-1 block">API Key</label><input type="password" value={speechApiKey} onChange={e => setSpeechApiKey(e.target.value)} placeholder={settings.speechApiKey ? '已配置' : ''} className="w-full px-3 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300" /></div>
               <div><label className="text-xs text-gray-400 mb-1 block">Secret Key</label><input type="password" value={speechSecretKey} onChange={e => setSpeechSecretKey(e.target.value)} placeholder={settings.speechSecretKey ? '已配置' : ''} className="w-full px-3 py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300" /></div>
-              <p className="text-xs text-muted">前往 <a href="https://console.bce.baidu.com/ai/#/ai/speech/overview/index" target="_blank" className="text-amber-500 underline">百度智能云</a> 创建应用获取密钥，免费额度 5 万次/年</p>
+              <p className="text-xs text-muted">前往 <a href="https://console.bce.baidu.com/ai/#/ai/speech/overview/index" target="_blank" className="text-accent underline">百度智能云</a> 创建应用获取密钥，免费额度 5 万次/年</p>
               <button onClick={handleSaveSpeech} className="w-full py-2.5 rounded-2xl bg-primary-gradient text-white text-sm font-semibold shadow-lg">{speechSaved ? '已保存' : '保存语音配置'}</button>
               </>
           )}
@@ -97,15 +97,15 @@ export default function Settings() {
 
       {/* Color Scheme */}
       <div className="glow-card p-5">
-        <h3 className="text-sm font-bold tracking-tight mb-4 flex items-center gap-2"><Palette size={18} strokeWidth={1.8} className="text-amber-500" />主题配色</h3>
+        <h3 className="text-sm font-bold tracking-tight mb-4 flex items-center gap-2"><Palette size={18} strokeWidth={1.8} className="text-accent" />主题配色</h3>
         <p className="text-xs text-muted mb-3">选择喜欢的配色方案，影响所有界面的主色调</p>
 
         <p className="text-xs font-semibold text-muted mb-2">配色模式</p>
         <div className="flex gap-2 mb-4 p-1 bg-gray-100 dark:bg-gray-800 rounded-2xl">
           <button onClick={() => updateSettings?.({ themeMode: 'dynamic' })}
-            className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${settings?.themeMode !== 'fixed' ? 'bg-white dark:bg-gray-700 shadow-sm text-amber-600' : 'text-gray-500'}`}>动态心情</button>
+            className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${settings?.themeMode !== 'fixed' ? 'bg-white dark:bg-gray-700 shadow-sm text-accent' : 'text-gray-500'}`}>动态心情</button>
           <button onClick={() => updateSettings?.({ themeMode: 'fixed' })}
-            className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${settings?.themeMode === 'fixed' ? 'bg-white dark:bg-gray-700 shadow-sm text-amber-600' : 'text-gray-500'}`}>固定配色</button>
+            className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${settings?.themeMode === 'fixed' ? 'bg-white dark:bg-gray-700 shadow-sm text-accent' : 'text-gray-500'}`}>固定配色</button>
         </div>
 
         {settings?.themeMode !== 'fixed' ? (
@@ -159,7 +159,7 @@ export default function Settings() {
       {/* Categories */}
       <div className="glow-card overflow-hidden p-0">
         <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 dark:border-gray-800">
-          <h3 className="text-sm font-bold tracking-tight flex items-center gap-2"><Tag size={18} strokeWidth={1.8} className="text-amber-500" />收支分类</h3>
+          <h3 className="text-sm font-bold tracking-tight flex items-center gap-2"><Tag size={18} strokeWidth={1.8} className="text-accent" />收支分类</h3>
           <button onClick={() => setShowAddCat(!showAddCat)} className="text-xs text-accent hover:brightness-90 font-semibold">{showAddCat ? '取消' : '+ 新建'}</button>
         </div>
         {showAddCat && (
@@ -191,14 +191,14 @@ export default function Settings() {
 
       {/* Budget */}
       <div className="glow-card p-5">
-        <h3 className="text-sm font-bold tracking-tight mb-4 flex items-center gap-2"><Wallet size={18} strokeWidth={1.8} className="text-amber-500" />月度预算</h3>
+        <h3 className="text-sm font-bold tracking-tight mb-4 flex items-center gap-2"><Wallet size={18} strokeWidth={1.8} className="text-accent" />月度预算</h3>
         <p className="text-xs text-gray-400 mb-3">设定每月预算，盈余可转入心愿，超出形成亏空需优先填平</p>
         {currentBudget ? (
           <div className="space-y-3">
             <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 dark:bg-gray-800">
               <div>
                 <p className="text-xs text-muted">{currentYM} 预算</p>
-                <p className="text-xl font-bold text-amber-600 dark:text-amber-400">{formatAmount(currentBudget.amount)}</p>
+                <p className="text-xl font-bold text-accent dark:text-amber-400">{formatAmount(currentBudget.amount)}</p>
               </div>
               <div className="flex gap-1">
                 <button onClick={() => { setBudgetAmount(String(currentBudget.amount)); setBudgetEditing(true) }} className="btn-icon"><Edit3 size={14} /></button>
@@ -216,7 +216,7 @@ export default function Settings() {
         ) : (
           <div className="space-y-2">
             {!budgetEditing ? (
-              <button onClick={() => setBudgetEditing(true)} className="w-full py-2.5 rounded-2xl border border-dashed border-amber-300 dark:border-amber-700 text-amber-500 text-sm font-medium flex items-center justify-center gap-1.5 hover:bg-amber-50 dark:hover:bg-amber-900/20"><Plus size={15} />设定本月预算</button>
+              <button onClick={() => setBudgetEditing(true)} className="w-full py-2.5 rounded-2xl border border-dashed border-amber-300 dark:border-amber-700 text-accent text-sm font-medium flex items-center justify-center gap-1.5 hover:bg-amber-50 dark:hover:bg-amber-900/20"><Plus size={15} />设定本月预算</button>
             ) : (
               <div className="flex gap-2">
                 <input type="number" value={budgetAmount} onChange={e => setBudgetAmount(e.target.value)} placeholder="预算金额" className="input flex-1" autoFocus />
@@ -242,7 +242,7 @@ export default function Settings() {
       {/* Projects */}
       <div className="glow-card overflow-hidden p-0">
         <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 dark:border-gray-800">
-          <h3 className="text-sm font-bold tracking-tight flex items-center gap-2"><FolderOpen size={18} strokeWidth={1.8} className="text-amber-500" />分账单</h3>
+          <h3 className="text-sm font-bold tracking-tight flex items-center gap-2"><FolderOpen size={18} strokeWidth={1.8} className="text-accent" />分账单</h3>
           <button onClick={() => setShowAddProject(!showAddProject)} className="text-xs text-accent hover:brightness-90 font-semibold">{showAddProject ? '取消' : '+ 新建'}</button>
         </div>
         {showAddProject && (
@@ -257,7 +257,7 @@ export default function Settings() {
 
       {/* Data */}
       <div className="glow-card p-5">
-        <h3 className="text-sm font-bold tracking-tight mb-3 flex items-center gap-2"><Database size={18} strokeWidth={1.8} className="text-amber-500" />数据管理</h3>
+        <h3 className="text-sm font-bold tracking-tight mb-3 flex items-center gap-2"><Database size={18} strokeWidth={1.8} className="text-accent" />数据管理</h3>
         <div className="space-y-2">
           <button onClick={handleExportJSON} className="w-full py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center justify-center gap-2"><Download size={15} />导出全部数据 (JSON)</button>
           <button onClick={handleExportCSV} className="w-full py-2.5 rounded-2xl border border-gray-200 dark:border-gray-700 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center justify-center gap-2"><Download size={15} />导出交易记录 (CSV)</button>
