@@ -115,9 +115,8 @@ export default function Dashboard() {
         {(()=>{const o:{v:string;l:string}[]=[];const n=new Date();for(let i=0;i<12;i++){const d=new Date(n.getFullYear(),n.getMonth()-i,1);o.push({v:`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`,l:`${d.getFullYear()}年${d.getMonth()+1}月`})}return o})().map(o=><option key={o.v} value={o.v}>{o.l}</option>)}
       </select>
 
-      {/* Mood Banner */}
-      <div className={`rounded-3xl p-6 text-white shadow-2xl relative overflow-hidden ${settings?.themeMode!=='fixed'?BANNER[moodKey]||BANNER.neutral:''}`}
-        style={settings?.themeMode==='fixed'?{background:'var(--c-primary-gradient)'}:undefined}>
+      {/* Mood Banner — uses theme gradient, mood determines content */}
+      <div className="rounded-3xl p-6 text-white shadow-2xl relative overflow-hidden" style={{background:'var(--c-primary-gradient)'}}>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.2),transparent_50%),radial-gradient(circle_at_bottom_left,rgba(0,0,0,0.1),transparent_40%)]"/>
         <div className="absolute inset-0 dot-pattern"/>
         <div className="relative z-10 flex items-start justify-between">
