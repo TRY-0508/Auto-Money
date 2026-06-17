@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useJarGoals, useCoolDownEvents } from '@/db/hooks'
+import { useJarGoals, useCoolDownEvents, useSettings } from '@/db/hooks'
 import type { CoolDownEvent, CoolDownAIAnalysis } from '@/types'
 import StarJar from '@/components/StarJar'
 import { analyzeCalmEvent } from '@/services/llm'
@@ -38,6 +38,7 @@ type Tab = 'goals' | 'events' | 'history'
 export default function JarPage() {
   const { goals, addGoal, updateGoal, deleteGoal } = useJarGoals()
   const { events, addEvent, updateEvent, deleteEvent } = useCoolDownEvents()
+  const { settings, updateSettings } = useSettings()
 
   const [tab, setTab] = useState<Tab>('goals')
   const [tick, setTick] = useState(0)
@@ -88,7 +89,7 @@ export default function JarPage() {
   const failedCount = events.filter(e => e.status === 'failed' || e.status === 'purchased').length
   const totalResistedAmount = events.filter(e => e.status === 'resisted').reduce((s, e) => s + e.amount, 0)
   const successRate = resistedCount + failedCount > 0 ? Math.round((resistedCount / (resistedCount + failedCount)) * 100) : 0
-  const totalStars = goals.reduce((s, g) => s + g.starCount, 0)
+  const totalStars = settings?.totalStars || 0
 
   // ── Goal handlers ──
   const handleAddGoal = async () => {
@@ -96,7 +97,7 @@ export default function JarPage() {
     await addGoal({
       name: goalName.trim(),
       targetAmount: parseFloat(goalTarget) || 1000,
-      currentAmount: 0, starCount: 0,
+      currentAmount: 0,
       description: goalDesc.trim(),
       color: GOAL_COLORS[Math.floor(Math.random() * GOAL_COLORS.length)],
     })
@@ -160,12 +161,7 @@ export default function JarPage() {
       goalId: goalId || reviewEvent.goalId,
     })
     if (goalId) {
-      const goal = goals.find(g => g.id === goalId)
-      if (goal) {
-        await updateGoal(goalId, {
-          starCount: goal.starCount + 1,
-        })
-      }
+      await updateSettings?.({ totalStars: (settings?.totalStars || 0) + 1 })
     }
     setReviewEvent(null); setReviewNote(''); setShowPurchaseOptions(false)
   }
@@ -297,7 +293,7 @@ export default function JarPage() {
                     </div>
 
                     <StarJar
-                      starCount={goal.starCount}
+                      starCount={settings?.totalStars||0}
                       targetAmount={goal.targetAmount}
                       currentAmount={goal.currentAmount}
                       color={goal.color}

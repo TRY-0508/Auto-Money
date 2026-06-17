@@ -52,6 +52,7 @@ export interface Settings {
   colorScheme: 'most-frequent' | 'latest' | 'neutral' | 'adaptive'
   themeMode: 'dynamic' | 'fixed'
   fixedTheme: string
+  totalStars: number
 }
 
 export interface Deficit {
@@ -85,7 +86,6 @@ export interface JarGoal {
   name: string
   targetAmount: number
   currentAmount: number
-  starCount: number
   description: string
   color: string
   createdAt: number

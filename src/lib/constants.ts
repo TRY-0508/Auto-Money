@@ -39,6 +39,7 @@ export const DEFAULT_SETTINGS: Settings = {
   colorScheme: 'most-frequent',
   themeMode: 'dynamic',
   fixedTheme: 'warm-amber',
+  totalStars: 0,
 }
 
 export const CATEGORY_DESCRIPTIONS: Record<string, { desc: string; theory: string }> = {
