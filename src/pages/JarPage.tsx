@@ -568,9 +568,8 @@ export default function JarPage() {
                         {statusBadge(evt.status)}
                       </div>
                       <p className="text-xs text-muted mt-0.5">
-                        {evt.amount > 0 ? formatAmount(evt.amount) + ' ' : ''}
-                        渴望 {evt.desireLevel}→{evt.reEvaluationDesire ?? evt.desireLevel}
-                        {goal && <span style={{ color: goal.color }}> · {goal.name}</span>}
+                        {evt.amount > 0 && <span>{formatAmount(evt.amount)} </span>}
+                        {goal && <span style={{ color: goal.color }}>{goal.name}</span>}
                       </p>
                       {evt.reEvaluationNote && <p className="text-xs text-muted mt-0.5 italic">"{evt.reEvaluationNote}"</p>}
                     </div>
