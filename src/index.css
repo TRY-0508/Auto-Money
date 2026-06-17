@@ -145,6 +145,21 @@ body {
 .bg-income-soft { background: rgba(16,185,129,0.08); }
 .bg-expense-soft { background: rgba(244,63,94,0.08); }
 
+/* ── Glow Card (Settings sections) ── */
+.glow-card {
+  background: var(--s-card);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 1.5rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.03), 0 8px 24px rgba(0,0,0,0.05);
+}
+.dark .glow-card {
+  background: rgba(17, 24, 39, 0.65);
+  border-color: rgba(255,255,255,0.08);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.2);
+}
+
 /* ── Card System ── */
 .card {
   background: var(--s-card);

@@ -140,7 +140,7 @@ export default function Dashboard() {
               <p className={`text-xl font-bold amount ${stats.balance < 0 ? 'text-red-400' : ''}`}>{formatAmount(stats.balance)}</p>
               <p className="text-xs text-muted mt-0.5">{stats.count} 笔交易</p>
             </div>
-            <div className="card card-stats card-hover bento-col-2 md:bento-col-2 p-4">
+            <div className="card card-stat card-hover bento-col-2 md:bento-col-2 p-4">
               <div className="flex items-center gap-2 mb-1"><div className="w-8 h-8 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center"><Wallet size={16} className="text-purple-500"/></div><span className="text-xs text-muted">本月预算</span></div>
               {currentBudget ? (
                 <>
@@ -247,7 +247,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <button onClick={()=>setShowCalendar(!showCalendar)} className="text-xs font-medium text-amber-500 hover:text-amber-600 w-full text-center">{showCalendar?'收起月历 ▲':'展开月历 ▼'}</button>
+          <button onClick={()=>setShowCalendar(!showCalendar)} className="text-xs font-medium text-accent hover:brightness-90 w-full text-center">{showCalendar?'收起月历 ▲':'展开月历 ▼'}</button>
           {showCalendar&&<CalendarHeatmap transactions={calTxs} yearMonth={calendarMonth} selectedDay={selectedDay} onSelectDay={setSelectedDay} onMonthChange={setCalendarMonth}/>}
 
           <div className="flex flex-wrap items-center gap-1.5">

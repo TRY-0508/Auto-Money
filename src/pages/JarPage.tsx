@@ -226,7 +226,7 @@ export default function JarPage() {
       {/* ── Tab bar ── */}
       <div className="flex bg-white/40 dark:bg-gray-800/30 rounded-2xl p-1 gap-1">
         {([
-          { key: 'goals' as Tab, label: '心愿目标', Icon: Target },
+          { key: 'goals' as Tab, label: '心愿', Icon: Target },
           { key: 'events' as Tab, label: '欲望冷却', Icon: ShieldCheck },
           { key: 'history' as Tab, label: '成长轨迹', Icon: BarChart3 },
         ]).map(t => (
@@ -248,11 +248,11 @@ export default function JarPage() {
         <div className="space-y-4">
           {!showNewGoal ? (
             <button onClick={() => setShowNewGoal(true)}
-              className="w-full border-2 border-dashed border-amber-300 dark:border-amber-700 rounded-2xl p-4 text-amber-400 hover:border-amber-400 hover:text-amber-500 transition-all flex items-center justify-center gap-2">
+              className="w-full border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl p-4 text-gray-400 hover:border-gray-400 hover:text-gray-500 dark:hover:border-gray-500 dark:hover:text-gray-400 transition-all flex items-center justify-center gap-2">
               <Plus size={18} />创建心愿
             </button>
           ) : (
-            <div className="card p-4 space-y-3">
+            <div className="card card-accent p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="h3">新心愿</span>
                 <button onClick={() => setShowNewGoal(false)} className="btn-icon"><X size={14} /></button>
@@ -260,7 +260,7 @@ export default function JarPage() {
               <input type="text" value={goalName} onChange={e => setGoalName(e.target.value)}
                 placeholder="心愿名称" className="input" autoFocus />
               <input type="number" value={goalTarget} onChange={e => setGoalTarget(e.target.value)}
-                placeholder="目标金额" className="input" />
+                placeholder="心愿金额" className="input" />
               <textarea value={goalDesc} onChange={e => setGoalDesc(e.target.value)}
                 placeholder="为什么想实现它？（可选）" className="input resize-none h-16" />
               <button onClick={handleAddGoal} disabled={!goalName.trim() || !goalTarget}
@@ -269,14 +269,14 @@ export default function JarPage() {
           )}
 
           {goals.length === 0 ? (
-            <div className="card p-10 text-center">
+            <div className="card card-soft p-10 text-center">
               <Target size={48} strokeWidth={1} className="text-amber-400 mx-auto mb-4 animate-[float_3s_ease-in-out_infinite]" />
               <p className="text-muted text-sm">设定一个心愿，用每次守住的光来填满它</p>
             </div>
           ) : (
             <div className="space-y-4">
               {goals.map(goal => (
-                <div key={goal.id} className="card overflow-hidden">
+                <div key={goal.id} className="card card-accent overflow-hidden">
                   <div className="p-5">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-3">
@@ -330,7 +330,7 @@ export default function JarPage() {
                 const ringR = 15; const ringC = 2 * Math.PI * ringR
                 const timerColor = elapsedPct > 80 ? '#ef4444' : elapsedPct > 50 ? '#f59e0b' : '#3b82f6'
                 return (
-                  <div key={evt.id} className="card p-4 flex items-center gap-3">
+                   <div key={evt.id} className="card card-list p-4 flex items-center gap-3">
                     <div className="relative w-10 h-10 flex-shrink-0 flex items-center justify-center">
                       <svg viewBox="0 0 38 38" className="w-full h-full -rotate-90">
                         <circle cx="19" cy="19" r={ringR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="3" />
@@ -365,7 +365,7 @@ export default function JarPage() {
                 <AlertTriangle size={16} />等待确认 ({pendingReviewEvents.length})
               </div>
               {pendingReviewEvents.map(evt => (
-                <div key={evt.id} className="card p-4 flex items-center gap-3 breathe border-amber-300/60 dark:border-amber-700/40">
+                <div key={evt.id} className="card card-list p-4 flex items-center gap-3 breathe border-amber-300/60 dark:border-amber-700/40">
                   <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
                     <ShieldCheck size={18} className="text-amber-500" />
                   </div>
@@ -461,8 +461,8 @@ export default function JarPage() {
                       ))}
                     </div>
                   )}
-                  <button onClick={() => { setEvtAIResult(null); setEvtAIError('') }}
-                    className="text-xs text-amber-500 hover:text-amber-600">重新分析</button>
+                   <button onClick={() => { setEvtAIResult(null); setEvtAIError('') }}
+                     className="text-xs text-accent hover:brightness-90">重新分析</button>
                 </div>
               )}
 
@@ -510,15 +510,15 @@ export default function JarPage() {
       {tab === 'history' && (
         <div className="space-y-4">
           <div className="grid grid-cols-3 gap-3">
-            <div className="card p-3 text-center">
+            <div className="card card-stat p-3 text-center">
               <p className="text-2xl font-bold text-green-500">{successRate}%</p>
               <p className="text-xs text-muted mt-1">守住率</p>
             </div>
-            <div className="card p-3 text-center">
+            <div className="card card-stat p-3 text-center">
               <p className="text-2xl font-bold text-amber-500">{formatAmount(totalResistedAmount)}</p>
               <p className="text-xs text-muted mt-1">守住金额</p>
             </div>
-            <div className="card p-3 text-center">
+            <div className="card card-stat p-3 text-center">
               <p className="text-2xl font-bold text-amber-500">{totalStars}</p>
               <p className="text-xs text-muted mt-1">星光总数</p>
             </div>
@@ -538,7 +538,7 @@ export default function JarPage() {
           </div>
 
           {filteredHistory.length === 0 ? (
-            <div className="card p-8 text-center">
+              <div className="card card-soft p-8 text-center">
               <BarChart3 size={36} strokeWidth={1} className="text-muted mx-auto mb-3 animate-[float_3s_ease-in-out_infinite]" />
               <p className="text-muted text-sm">暂无记录</p>
             </div>
@@ -547,7 +547,7 @@ export default function JarPage() {
               {filteredHistory.map((evt, idx) => {
                 const goal = evt.goalId ? goals.find(g => g.id === evt.goalId) : null
                 return (
-                  <div key={evt.id} className="card p-3.5 flex items-center gap-3"
+                  <div key={evt.id} className="card card-list p-3.5 flex items-center gap-3"
                     style={{ animationDelay: `${idx * 30}ms` }}>
                     <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${
                       evt.status === 'resisted' ? 'bg-green-100 dark:bg-green-900/30' :

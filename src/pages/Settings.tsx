@@ -160,7 +160,7 @@ export default function Settings() {
       <div className="glow-card overflow-hidden p-0">
         <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 dark:border-gray-800">
           <h3 className="text-sm font-bold tracking-tight flex items-center gap-2"><Tag size={18} strokeWidth={1.8} className="text-amber-500" />收支分类</h3>
-          <button onClick={() => setShowAddCat(!showAddCat)} className="text-xs text-amber-500 hover:text-amber-600 font-semibold">{showAddCat ? '取消' : '+ 新建'}</button>
+          <button onClick={() => setShowAddCat(!showAddCat)} className="text-xs text-accent hover:brightness-90 font-semibold">{showAddCat ? '取消' : '+ 新建'}</button>
         </div>
         {showAddCat && (
           <div className="p-4 border-b border-gray-100 dark:border-gray-800 space-y-3 bg-gray-50 dark:bg-gray-800/50">
@@ -243,7 +243,7 @@ export default function Settings() {
       <div className="glow-card overflow-hidden p-0">
         <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 dark:border-gray-800">
           <h3 className="text-sm font-bold tracking-tight flex items-center gap-2"><FolderOpen size={18} strokeWidth={1.8} className="text-amber-500" />分账单</h3>
-          <button onClick={() => setShowAddProject(!showAddProject)} className="text-xs text-amber-500 hover:text-amber-600 font-semibold">{showAddProject ? '取消' : '+ 新建'}</button>
+          <button onClick={() => setShowAddProject(!showAddProject)} className="text-xs text-accent hover:brightness-90 font-semibold">{showAddProject ? '取消' : '+ 新建'}</button>
         </div>
         {showAddProject && (
           <div className="p-4 border-b border-gray-100 dark:border-gray-800 space-y-2 bg-gray-50 dark:bg-gray-800/50">

@@ -250,7 +250,7 @@ export default function AddModal({ open, onClose }: Props) {
                   return (
                     <button key={cat.id} onClick={() => setManualCategoryId(cat.id)}
                       className={`flex flex-col items-center gap-1 p-2.5 rounded-2xl text-xs transition-all ${manualCategoryId === cat.id ? 'bg-amber-50 dark:bg-amber-900/30 ring-2 ring-amber-400 scale-105' : 'bg-gray-50 dark:bg-gray-800'}`}>
-                      <Icon size={22} strokeWidth={1.8} color={manualCategoryId === cat.id ? '#d97706' : '#6b7280'} />
+                      <Icon size={22} strokeWidth={1.8} color={manualCategoryId === cat.id ? 'var(--c-primary)' : '#6b7280'} />
                       <span className="text-[10px]">{cat.name}</span>
                     </button>
                   )
