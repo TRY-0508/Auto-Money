@@ -198,7 +198,7 @@ export default function Settings() {
             <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 dark:bg-gray-800">
               <div>
                 <p className="text-xs text-muted">{currentYM} 预算</p>
-                <p className="text-xl font-bold text-accent dark:text-amber-400">{formatAmount(currentBudget.amount)}</p>
+                <p className="text-xl font-bold text-accent dark:text-accent">{formatAmount(currentBudget.amount)}</p>
               </div>
               <div className="flex gap-1">
                 <button onClick={() => { setBudgetAmount(String(currentBudget.amount)); setBudgetEditing(true) }} className="btn-icon"><Edit3 size={14} /></button>

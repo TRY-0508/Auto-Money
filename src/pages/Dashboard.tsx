@@ -118,7 +118,7 @@ export default function Dashboard() {
       </div>
 
       {txs.length===0?(
-        <div className="card p-10 text-center">
+        <div className="card card-soft p-10 text-center">
           <EmptyState icon={<BarChart3 size={48} strokeWidth={1.2} className="text-accent"/>} title="开始认识自己" description="记下第一笔账，同步记录心情" action={{label:'记一笔',onClick:()=>setShowAdd(true)}}/>
         </div>
       ):(

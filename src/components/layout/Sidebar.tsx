@@ -20,7 +20,7 @@ export default function Sidebar() {
             { to: '/settings', label: '设置', Icon: Settings },
           ].map(({ to, label, Icon }) => (
             <NavLink key={to} to={to} onClick={() => setSidebarOpen(false)}
-              className={({ isActive }) => `flex items-center gap-3 px-3 py-2.5 rounded-2xl text-sm transition-all ${isActive ? 'bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 text-accent dark:text-amber-400 font-medium' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100/50'}`}>
+              className={({ isActive }) => `flex items-center gap-3 px-3 py-2.5 rounded-2xl text-sm transition-all ${isActive ? 'bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 text-accent dark:text-accent font-medium' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100/50'}`}>
               <Icon size={20} strokeWidth={1.8} />
               {label}
             </NavLink>

@@ -281,7 +281,7 @@ export default function AddModal({ open, onClose }: Props) {
               <input type="text" value={manualDesc} onChange={e => setManualDesc(e.target.value)} placeholder="备注（可选）" className="w-full px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300" />
 
               <div>
-                <p className="text-sm font-medium text-accent dark:text-amber-400 mb-2">此刻心情</p>
+                <p className="text-sm font-medium text-accent dark:text-accent mb-2">此刻心情</p>
                 <div className="grid grid-cols-4 gap-2">
                   {MOOD_LIST.map(m => (
                     <button key={m.value} onClick={() => setManualMood(manualMood === m.value ? '' : m.value)}

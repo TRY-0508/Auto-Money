@@ -386,7 +386,7 @@ export default function JarPage() {
           )}
 
           {coolingEvents.length === 0 && pendingReviewEvents.length === 0 && (
-            <div className="card p-10 text-center">
+            <div className="card card-soft p-10 text-center">
               <ShieldCheck size={48} strokeWidth={1} className="text-accent mx-auto mb-4 animate-[float_3s_ease-in-out_infinite]" />
               <p className="text-muted text-sm">遇到犹豫的消费？先冷却一下</p>
             </div>
@@ -398,7 +398,7 @@ export default function JarPage() {
               <Plus size={18} />记录冲动
             </button>
           ) : (
-            <div className="card p-4 space-y-3">
+            <div className="card card-accent p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="h3">记录消费冲动</span>
                 <button onClick={() => { setShowNewEvent(false); setEvtAIResult(null); setEvtAIError('') }} className="btn-icon"><X size={14} /></button>
