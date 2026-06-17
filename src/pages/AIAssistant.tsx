@@ -4,7 +4,7 @@ import { generateReport, chatQuery } from '@/services/llm'
 import { getMonthlyStats, getCategoryBreakdown } from '@/lib/stats'
 import { formatAmount, getCurrentYearMonth } from '@/lib/utils'
 import { MOOD_LIST, BarChart3, Brain, MessageCircle, Copy, AlertTriangle, Trash2, ArrowUpRight, ArrowDownRight, TrendingUp, Wallet } from '@/lib/icons'
-import { PieChart as RPie, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 
 const CHART_COLORS = ['#3b82f6','#10b981','#f43f5e','#f59e0b','#f97316','#ec4899','#06b6d4','#84cc16','#d97706','#14b8a6','#eab308','#78716c']
 const SUGGESTIONS = ['我这个月开心的时候花了多少？', '焦虑时我最常买什么？', '帮我分析情绪和消费的关系', '给我一些改善消费习惯的建议']
@@ -89,51 +89,23 @@ function ReportTab() {
         </div>
       </div>
 
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <div className="card card-chart p-5">
-          <h3 className="text-xs font-semibold text-muted mb-3">支出分类分布</h3>
-          {breakdown.length > 0 ? (
-            <div className="flex items-center gap-4">
-              <div className="w-28 h-28 flex-shrink-0 relative">
-                <ResponsiveContainer><RPie><Pie data={breakdown} cx="50%" cy="50%" innerRadius={32} outerRadius={46} paddingAngle={3} dataKey="amount" stroke="none">{breakdown.map((e,i)=><Cell key={e.categoryId} fill={CHART_COLORS[i%CHART_COLORS.length]}/>)}</Pie></RPie></ResponsiveContainer>
-                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  <span className="text-[9px] text-muted">总支出</span>
-                  <span className="text-xs font-bold">{formatAmount(stats.totalExpense)}</span>
-                </div>
-              </div>
-              <div className="flex-1 space-y-1 min-w-0">{breakdown.slice(0,5).map((item,i)=>
-                <div key={item.categoryId} className="flex items-center gap-1.5 text-[11px]"><span className="w-2 h-2 rounded-full flex-shrink-0 shadow-sm" style={{backgroundColor:CHART_COLORS[i%CHART_COLORS.length]}}/><span className="flex-1 truncate">{item.categoryName}</span><span className="text-muted">{item.percentage}%</span></div>
-              )}</div>
-            </div>
-          ) : <p className="text-xs text-muted text-center py-6">暂无数据</p>}
-        </div>
-
-        <div className="card card-chart p-5">
-          <h3 className="text-xs font-semibold text-muted mb-3">心情×消费</h3>
-          {moodBarData.length > 0 ? (
-            <div className="h-36">
-              <ResponsiveContainer>
-                <BarChart data={moodBarData} layout="vertical" margin={{ top: 2, right: 24, left: 0, bottom: 2 }} barCategoryGap="30%">
-                  <defs>
-                    {moodBarData.map((entry,idx) => (
-                      <linearGradient key={idx} id={`aiBarGrad-${idx}`} x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0%" stopColor={entry.color} stopOpacity={0.5}/>
-                        <stop offset="100%" stopColor={entry.color} stopOpacity={0.8}/>
-                      </linearGradient>
-                    ))}
-                  </defs>
-                  <XAxis type="number" hide />
-                  <YAxis type="category" dataKey="name" tick={{fontSize:10,fill:'#a8a29e',fontWeight:500}} axisLine={false} tickLine={false} width={28} />
-                  <Tooltip cursor={{fill:'rgba(0,0,0,0.03)',rx:8}} contentStyle={{borderRadius:'14px',border:'none',boxShadow:'0 8px 32px rgba(0,0,0,0.1)',fontSize:'11px',padding:'6px 12px'}} formatter={(v:number)=>(['¥'+v.toFixed(2),'消费金额'])} />
-                  <Bar dataKey="value" radius={[3,6,6,3]} barSize={14} animationBegin={200}>
-                    {moodBarData.map((entry,idx) => <Cell key={idx} fill={`url(#aiBarGrad-${idx})`} />)}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          ) : <p className="text-xs text-muted text-center py-6">暂无心情数据</p>}
-        </div>
+      {/* Consumption bar chart only */}
+      <div className="card card-chart p-5">
+        <h3 className="text-xs font-semibold text-muted mb-3">支出分类 · 金额分布</h3>
+        {breakdown.length > 0 ? (
+          <div className="h-48">
+            <ResponsiveContainer>
+              <BarChart data={breakdown.slice(0,5)} margin={{ top: 8, right: 8, left: 0, bottom: 0 }} barCategoryGap="35%">
+                <XAxis dataKey="categoryName" tick={{fontSize:11,fill:'#a8a29e'}} axisLine={false} tickLine={false} />
+                <YAxis tick={{fontSize:10,fill:'#a8a29e'}} axisLine={false} tickLine={false} width={44} tickFormatter={(v:number)=>v>0?'¥'+(v/1000).toFixed(0)+'k':''} />
+                <Tooltip cursor={{fill:'rgba(0,0,0,0.03)',rx:8}} contentStyle={{borderRadius:'14px',border:'none',boxShadow:'0 8px 32px rgba(0,0,0,0.1)',fontSize:'12px',padding:'8px 14px'}} formatter={(v:number)=>(['¥'+v.toFixed(2),'金额'])} />
+                {breakdown.slice(0,5).map((d,i)=>(
+                  <Bar key={d.categoryId} dataKey="amount" name={d.categoryName} radius={[6,6,0,0]} barSize={32} fill={CHART_COLORS[i%CHART_COLORS.length]} fillOpacity={0.8} stroke={CHART_COLORS[i%CHART_COLORS.length]} strokeWidth={0} />
+                ))}
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        ) : <p className="text-xs text-muted text-center py-8">暂无消费数据</p>}
       </div>
 
       {/* Budget progress */}
@@ -190,27 +162,19 @@ function PsychTab() {
 
   return (
     <div className="space-y-5">
-      {/* Mood Bar Chart */}
+      {/* Mood Bar Chart — vertical bars with custom colors */}
       <div className="card card-chart p-5">
         <h3 className="text-xs font-semibold text-muted mb-3">心情×消费金额</h3>
         {moodBarData.length > 0 ? (
-          <div className="h-44">
+          <div className="h-48">
             <ResponsiveContainer>
-              <BarChart data={moodBarData} layout="vertical" margin={{ top: 2, right: 24, left: 0, bottom: 2 }} barCategoryGap="25%">
-                <defs>
-                  {moodBarData.map((entry,idx) => (
-                    <linearGradient key={idx} id={`psychBarGrad-${idx}`} x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stopColor={entry.color} stopOpacity={0.5}/>
-                      <stop offset="100%" stopColor={entry.color} stopOpacity={0.8}/>
-                    </linearGradient>
-                  ))}
-                </defs>
-                <XAxis type="number" hide />
-                <YAxis type="category" dataKey="name" tick={{fontSize:11,fill:'#a8a29e',fontWeight:500}} axisLine={false} tickLine={false} width={32} />
+              <BarChart data={moodBarData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }} barCategoryGap="35%">
+                <XAxis dataKey="name" tick={{fontSize:11,fill:'#a8a29e'}} axisLine={false} tickLine={false} />
+                <YAxis tick={{fontSize:10,fill:'#a8a29e'}} axisLine={false} tickLine={false} width={44} tickFormatter={(v:number)=>v>0?'¥'+(v/1000).toFixed(0)+'k':''} />
                 <Tooltip cursor={{fill:'rgba(0,0,0,0.03)',rx:8}} contentStyle={{borderRadius:'14px',border:'none',boxShadow:'0 8px 32px rgba(0,0,0,0.1)',fontSize:'12px',padding:'8px 14px'}} formatter={(v:number)=>(['¥'+v.toFixed(2),'消费金额'])} />
-                <Bar dataKey="value" radius={[4,8,8,4]} barSize={18} animationBegin={200}>
-                  {moodBarData.map((entry,idx) => <Cell key={idx} fill={`url(#psychBarGrad-${idx})`} />)}
-                </Bar>
+                {moodBarData.map((entry,idx)=>(
+                  <Bar key={idx} dataKey="value" name={entry.name} radius={[6,6,0,0]} barSize={36} fill={entry.color} fillOpacity={0.75} stroke={entry.color} strokeWidth={0} />
+                ))}
               </BarChart>
             </ResponsiveContainer>
           </div>

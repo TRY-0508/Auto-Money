@@ -8,7 +8,7 @@ import CategoryIcon from '@/components/CategoryIcon'
 import AddModal from '@/components/AddModal'
 import ProjectSwitcher from '@/components/ProjectSwitcher'
 import type { Transaction } from '@/types'
-import { PieChart as RPie, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, LineChart, Line, AreaChart, Area } from 'recharts'
+import { PieChart as RPie, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, AreaChart, Area } from 'recharts'
 
 const BANNER: Record<string, string> = { happy:'banner-happy',calm:'banner-calm',neutral:'banner-neutral',sad:'banner-sad',anxious:'banner-anxious',angry:'banner-angry',excited:'banner-excited',tired:'banner-tired' }
 type FilterType = 'all'|'expense'|'income'
@@ -181,105 +181,89 @@ export default function Dashboard() {
         </div>
       ):(
         <>
-          {/* Stats Row */}
+          {/* Stats Row — compact */}
           <div className="bento stagger">
-            <div className="card card-stat card-hover bento-col-2 md:bento-col-2 p-4">
-              <div className="flex items-center gap-2 mb-1"><div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center"><ArrowUpRight size={16} className="text-emerald-500"/></div><span className="text-xs text-muted">本月收入</span></div>
-              <p className="text-xl font-bold amount truncate">{formatAmount(stats.totalIncome)}</p>
-              {incomeChange !== 0 && <p className={`text-xs mt-0.5 ${incomeChange > 0 ? 'text-emerald-500' : 'text-red-400'}`}>{incomeChange > 0 ? '+' : ''}{incomeChange}% 环比</p>}
+            <div className="card card-stat card-hover bento-col-1 p-3">
+              <div className="flex items-center gap-1.5 mb-0.5"><ArrowUpRight size={14} className="text-emerald-400"/><span className="text-[10px] text-muted">收入</span></div>
+              <p className="text-lg font-bold amount truncate">{formatAmount(stats.totalIncome)}</p>
+              {incomeChange!==0&&<p className={`text-[10px] ${incomeChange>0?'text-emerald-500':'text-red-400'}`}>{incomeChange>0?'+':''}{incomeChange}%</p>}
             </div>
-            <div className="card card-stat card-hover bento-col-2 md:bento-col-2 p-4">
-              <div className="flex items-center gap-2 mb-1"><div className="w-8 h-8 rounded-xl bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center"><ArrowDownRight size={16} className="text-rose-400"/></div><span className="text-xs text-muted">本月支出</span></div>
-              <p className="text-xl font-bold amount truncate">{formatAmount(stats.totalExpense)}</p>
-              {expenseChange !== 0 && <p className={`text-xs mt-0.5 ${expenseChange > 0 ? 'text-red-400' : 'text-emerald-500'}`}>{expenseChange > 0 ? '+' : ''}{expenseChange}% 环比</p>}
+            <div className="card card-stat card-hover bento-col-1 p-3">
+              <div className="flex items-center gap-1.5 mb-0.5"><ArrowDownRight size={14} className="text-rose-400"/><span className="text-[10px] text-muted">支出</span></div>
+              <p className="text-lg font-bold amount truncate">{formatAmount(stats.totalExpense)}</p>
+              {expenseChange!==0&&<p className={`text-[10px] ${expenseChange>0?'text-red-400':'text-emerald-500'}`}>{expenseChange>0?'+':''}{expenseChange}%</p>}
             </div>
-            <div className="card card-stat card-hover bento-col-2 md:bento-col-2 p-4">
-              <div className="flex items-center gap-2 mb-1"><div className="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center"><TrendingUp size={16} className="text-accent"/></div><span className="text-xs text-muted">本月结余</span></div>
-              <p className={`text-xl font-bold amount truncate ${stats.balance < 0 ? 'text-red-400' : ''}`}>{formatAmount(stats.balance)}</p>
-              <p className="text-xs text-muted mt-0.5">{stats.count} 笔交易</p>
+            <div className="card card-stat card-hover bento-col-1 p-3">
+              <div className="flex items-center gap-1.5 mb-0.5"><TrendingUp size={14} className="text-accent"/><span className="text-[10px] text-muted">结余</span></div>
+              <p className={`text-lg font-bold amount truncate ${stats.balance<0?'text-red-400':''}`}>{formatAmount(stats.balance)}</p>
+              <p className="text-[10px] text-muted">{stats.count}笔</p>
             </div>
-            <div className="card card-stat card-hover bento-col-2 md:bento-col-2 p-4">
-              <div className="flex items-center gap-2 mb-1"><div className="w-8 h-8 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center"><Wallet size={16} className="text-purple-500"/></div><span className="text-xs text-muted">本月预算</span></div>
-              {currentBudget ? (
-                <>
-                  <p className="text-xl font-bold amount truncate">{formatAmount(budgetRemaining)}<span className="text-sm font-normal text-muted"> / {formatAmount(currentBudget.amount)}</span></p>
-                  <div className="mt-2 h-2 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
-                    <div className={`h-full rounded-full transition-all duration-700 ${budgetPct > 90 ? 'bg-red-400' : budgetPct > 70 ? 'bg-amber-400' : 'bg-emerald-400'}`} style={{width:`${budgetPct}%`}}/>
-                  </div>
-                  <p className="text-xs text-muted mt-1">{budgetOverspent > 0 ? <span className="text-red-400">超出 {formatAmount(budgetOverspent)}</span> : `已用 ${Math.round(budgetPct)}%`}</p>
-                </>
-              ) : (
-                <p className="text-sm text-muted">未设定</p>
-              )}
+            <div className="card card-stat card-hover bento-col-1 p-3">
+              <div className="flex items-center gap-1.5 mb-0.5"><Wallet size={14} className="text-purple-400"/><span className="text-[10px] text-muted">预算</span></div>
+              {currentBudget?<>
+                <p className="text-lg font-bold amount truncate">{Math.round(budgetPct)}%</p>
+                <div className="mt-1 h-1.5 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden"><div className={`h-full rounded-full transition-all duration-700 ${budgetPct>90?'bg-red-400':budgetPct>70?'bg-amber-400':'bg-emerald-400'}`} style={{width:`${budgetPct}%`}}/></div>
+              </>:<p className="text-sm text-muted">—</p>}
             </div>
           </div>
 
-          {/* Charts Row */}
-          <div className="bento stagger">
-            <div className="card card-chart card-hover bento-col-2">
-              <div className="card-header"><PieChart size={18} strokeWidth={1.8} className="text-accent"/>五型消费分布</div>
-              <div className="card-body">
+          {/* Charts Row — two donuts side by side */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="card card-chart">
+              <div className="card-header"><PieChart size={16} strokeWidth={1.8} className="text-accent"/>五型消费分布</div>
+              <div className="card-body flex items-center justify-center">
                 {expBrk.length>0?(
-                  <div className="flex items-center gap-4">
-                    <div className="w-36 h-36 flex-shrink-0 relative">
-                      <ResponsiveContainer>
-                        <RPie>
-                          <defs>
-                            {CHART_COLORS.map((c,i)=><filter key={i} id={`shadow-${i}`}><feDropShadow dx="0" dy="1" stdDeviation="2" floodOpacity="0.15"/></filter>)}
-                          </defs>
-                          <Pie data={expBrk} cx="50%" cy="50%" innerRadius={38} outerRadius={58} paddingAngle={3} dataKey="amount" stroke="none">
-                            {expBrk.map((e,i)=><Cell key={e.categoryId} fill={CHART_COLORS[i%CHART_COLORS.length]} filter={`url(#shadow-${i})`}/>)}
-                          </Pie>
-                        </RPie>
-                      </ResponsiveContainer>
-                      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                        <span className="text-[10px] text-muted">总支出</span>
-                        <span className="text-sm font-bold amount">{formatAmount(stats.totalExpense)}</span>
-                      </div>
+                  <div className="w-full max-w-[200px] aspect-square relative">
+                    <ResponsiveContainer>
+                      <RPie>
+                        <Pie data={expBrk} cx="50%" cy="50%" innerRadius={42} outerRadius={64} paddingAngle={2} dataKey="amount" stroke="#fff" strokeWidth={2}>
+                          {expBrk.map((e,i)=><Cell key={e.categoryId} fill={CHART_COLORS[i%CHART_COLORS.length]}/>)}
+                        </Pie>
+                      </RPie>
+                    </ResponsiveContainer>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                      <span className="text-[10px] text-muted">总支出</span>
+                      <span className="text-sm font-bold amount">{formatAmount(stats.totalExpense)}</span>
                     </div>
-                    <div className="flex-1 space-y-1.5 min-w-0">{expBrk.slice(0,5).map((item,i)=>{
-                      const dotColor = CHART_COLORS[i % CHART_COLORS.length]
-                      const cat = categories.find(c => c.id === item.categoryId)
-                      const Icon = cat ? (CATEGORY_ICON_MAP[cat.icon] || MoreHorizontal) : MoreHorizontal
-                      return (
-                        <div key={item.categoryId} className="flex items-center gap-2 text-xs group cursor-default">
-                          <span className="w-2.5 h-2.5 rounded-full flex-shrink-0 shadow-sm" style={{ backgroundColor: dotColor }} />
-                          {cat && <Icon size={14} strokeWidth={1.8} className="text-gray-400 flex-shrink-0" />}
-                          <span className="flex-1 font-medium truncate">{item.categoryName}</span>
-                          <span className="text-muted amount text-[11px]">{item.percentage}%</span>
-                        </div>
-                      )
-                    })}</div>
                   </div>
-                ):<p className="text-sm text-muted text-center py-8">暂无支出</p>}
+                ):<p className="text-sm text-muted py-8">暂无支出</p>}
+              </div>
+              <div className="px-4 pb-4 flex flex-wrap justify-center gap-x-3 gap-y-1">
+                {expBrk.slice(0,5).map((item,i)=>
+                  <span key={item.categoryId} className="flex items-center gap-1 text-[10px] text-muted">
+                    <span className="w-2 h-2 rounded-sm flex-shrink-0" style={{backgroundColor:CHART_COLORS[i%CHART_COLORS.length]}}/>
+                    {item.categoryName} {item.percentage}%
+                  </span>
+                )}
               </div>
             </div>
 
-            <div className="card card-chart card-hover bento-col-2">
-              <div className="card-header"><BarChart3 size={18} strokeWidth={1.8} className="text-accent"/>心情×消费</div>
-              <div className="card-body">
+            <div className="card card-chart">
+              <div className="card-header"><PieChart size={16} strokeWidth={1.8} className="text-accent"/>心情消费比例</div>
+              <div className="card-body flex items-center justify-center">
                 {moodBarData.length>0?(
-                  <div className="h-44">
+                  <div className="w-full max-w-[200px] aspect-square relative">
                     <ResponsiveContainer>
-                      <BarChart data={moodBarData} layout="vertical" margin={{ top: 4, right: 28, left: 0, bottom: 4 }} barCategoryGap="25%">
-                        <defs>
-                          {moodBarData.map((entry,idx) => (
-                            <linearGradient key={idx} id={`barGrad-${idx}`} x1="0" y1="0" x2="1" y2="0">
-                              <stop offset="0%" stopColor={entry.color} stopOpacity={0.55}/>
-                              <stop offset="100%" stopColor={entry.color} stopOpacity={0.85}/>
-                            </linearGradient>
-                          ))}
-                        </defs>
-                        <XAxis type="number" hide />
-                        <YAxis type="category" dataKey="name" tick={{fontSize:11,fill:'#a8a29e',fontWeight:500}} axisLine={false} tickLine={false} width={32} />
-                        <Tooltip cursor={{fill:'rgba(0,0,0,0.03)',rx:8}} contentStyle={{borderRadius:'14px',border:'none',boxShadow:'0 8px 32px rgba(0,0,0,0.1)',fontSize:'12px',padding:'8px 14px'}} formatter={(v:number)=>(['¥'+v.toFixed(2),'消费金额'])} />
-                        <Bar dataKey="value" radius={[4,8,8,4]} barSize={18} animationBegin={200} animationDuration={800}>
-                          {moodBarData.map((entry,idx) => <Cell key={idx} fill={`url(#barGrad-${idx})`} />)}
-                        </Bar>
-                      </BarChart>
+                      <RPie>
+                        <Pie data={moodBarData} cx="50%" cy="50%" innerRadius={42} outerRadius={64} paddingAngle={2} dataKey="value" stroke="#fff" strokeWidth={2} nameKey="name">
+                          {moodBarData.map((entry,idx)=><Cell key={idx} fill={entry.color}/>)}
+                        </Pie>
+                      </RPie>
                     </ResponsiveContainer>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                      <span className="text-[10px] text-muted">心情支出</span>
+                      <span className="text-sm font-bold amount">{formatAmount(moodBarData.reduce((s,d)=>s+d.value,0))}</span>
+                    </div>
                   </div>
-                ):<p className="text-sm text-muted text-center py-8">记账时选心情，这里就会出现统计</p>}
+                ):<p className="text-sm text-muted py-8">选心情记账后出现</p>}
+              </div>
+              <div className="px-4 pb-4 flex flex-wrap justify-center gap-x-3 gap-y-1">
+                {moodBarData.slice(0,5).map((entry)=>
+                  <span key={entry.name} className="flex items-center gap-1 text-[10px] text-muted">
+                    <span className="w-2 h-2 rounded-sm flex-shrink-0" style={{backgroundColor:entry.color}}/>
+                    {entry.name}
+                  </span>
+                )}
               </div>
             </div>
           </div>

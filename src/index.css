@@ -512,6 +512,7 @@ body {
   grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
 }
+.bento-col-1 { grid-column: span 1; }
 .bento-col-2 { grid-column: span 2; }
 .bento-col-3 { grid-column: span 3; }
 .bento-col-4 { grid-column: span 4; }
