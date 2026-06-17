@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
-import { useTransactions, useCategories, useChatMessages } from '@/db/hooks'
+import { useTransactions, useCategories, useBudgets, useChatMessages } from '@/db/hooks'
 import { generateReport, chatQuery } from '@/services/llm'
 import { getMonthlyStats, getCategoryBreakdown } from '@/lib/stats'
 import { formatAmount, getCurrentYearMonth } from '@/lib/utils'
@@ -34,11 +34,12 @@ export default function AIAssistant() {
 function ReportTab() {
   const [loading, setLoading] = useState(false); const [report, setReport] = useState(''); const [error, setError] = useState('')
   const yearMonth = getCurrentYearMonth(); const { transactions } = useTransactions({ month: yearMonth })
-  const { categories } = useCategories()
+  const { categories } = useCategories(); const { budgets } = useBudgets()
   const stats = useMemo(() => getMonthlyStats(transactions, yearMonth), [transactions, yearMonth])
   const breakdown = useMemo(() => getCategoryBreakdown(transactions, categories, 'expense', yearMonth), [transactions, categories, yearMonth])
-  const incomeBrk = useMemo(() => getCategoryBreakdown(transactions, categories, 'income', yearMonth), [transactions, categories, yearMonth])
   const [year, month] = yearMonth.split('-')
+  const currentBudget = useMemo(() => budgets.find(b => b.yearMonth === yearMonth && b.categoryId === null), [budgets, yearMonth])
+  const budgetPct = currentBudget && currentBudget.amount > 0 ? Math.min((stats.totalExpense / currentBudget.amount) * 100, 100) : 0
 
   const moodBarData = useMemo(() => {
     const map: Record<string, number> = {}
@@ -48,8 +49,9 @@ function ReportTab() {
 
   const handleGenerate = async () => {
     setLoading(true); setError(''); setReport('')
-    const s = `交易: ${stats.count}\n收入: ${formatAmount(stats.totalIncome)}\n支出: ${formatAmount(stats.totalExpense)}\n结余: ${formatAmount(stats.balance)}\n\n支出分类:\n${breakdown.map(b => `- ${b.categoryName}: ${formatAmount(b.amount)} (${b.percentage}%)`).join('\n')}\n\n收入来源:\n${incomeBrk.map(b => `- ${b.categoryName}: ${formatAmount(b.amount)} (${b.percentage}%)`).join('\n')}`
-    try { setReport(await generateReport(s, '', 'monthly', `${year}年${month}月`)) }
+    const s = `交易: ${stats.count}\n支出: ${formatAmount(stats.totalExpense)}\n收入: ${formatAmount(stats.totalIncome)}\n${currentBudget ? `预算: ${formatAmount(currentBudget.amount)} (已用${Math.round(budgetPct)}%)\n剩余: ${formatAmount(Math.max(currentBudget.amount-stats.totalExpense,0))}` : ''}\n\n支出分类:\n${breakdown.map(b => `- ${b.categoryName}: ${formatAmount(b.amount)} (${b.percentage}%)`).join('\n')}`
+    const bi = currentBudget ? `预算: ${formatAmount(currentBudget.amount)}` : ''
+    try { setReport(await generateReport(s, bi, 'monthly', `${year}年${month}月`)) }
     catch (err: any) { setError(err.message || '失败') }
     finally { setLoading(false) }
   }
@@ -67,18 +69,22 @@ function ReportTab() {
     <div className="space-y-3 sm:space-y-5">
       {/* Stats — nested inline */}
       <div className="card card-stat overflow-hidden">
-        <div className="grid grid-cols-3 divide-x divide-gray-100 dark:divide-gray-800">
-          <div className="p-2.5 sm:p-3 text-center">
-            <p className="text-[10px] text-muted">收入</p>
-            <p className="text-sm font-bold mt-0.5">{formatAmount(stats.totalIncome)}</p>
-          </div>
+        <div className="grid grid-cols-4 divide-x divide-gray-100 dark:divide-gray-800">
           <div className="p-2.5 sm:p-3 text-center">
             <p className="text-[10px] text-muted">支出</p>
             <p className="text-sm font-bold mt-0.5">{formatAmount(stats.totalExpense)}</p>
           </div>
           <div className="p-2.5 sm:p-3 text-center">
-            <p className="text-[10px] text-muted">结余</p>
-            <p className={`text-sm font-bold mt-0.5 ${stats.balance < 0 ? 'text-red-400' : ''}`}>{formatAmount(stats.balance)}</p>
+            <p className="text-[10px] text-muted">收入</p>
+            <p className="text-sm font-bold mt-0.5">{formatAmount(stats.totalIncome)}</p>
+          </div>
+          <div className="p-2.5 sm:p-3 text-center">
+            <p className="text-[10px] text-muted">预算</p>
+            <p className="text-sm font-bold mt-0.5">{currentBudget ? formatAmount(currentBudget.amount) : '—'}</p>
+          </div>
+          <div className="p-2.5 sm:p-3 text-center">
+            <p className="text-[10px] text-muted">剩余</p>
+            <p className={`text-sm font-bold mt-0.5 ${currentBudget&&currentBudget.amount-stats.totalExpense<0?'text-red-400':''}`}>{currentBudget?formatAmount(currentBudget.amount-stats.totalExpense):'—'}</p>
           </div>
         </div>
       </div>
@@ -102,24 +108,18 @@ function ReportTab() {
         ) : <p className="text-xs text-muted text-center py-6">暂无消费数据</p>}
       </div>
 
-      {/* Income bar chart */}
-      <div className="card card-chart p-5">
-        <h3 className="text-xs font-semibold text-muted mb-3">收入分类</h3>
-        {incomeBrk.length > 0 ? (
-          <div className="h-40">
-            <ResponsiveContainer>
-              <BarChart data={incomeBrk.slice(0,5)} margin={{ top: 8, right: 8, left: 0, bottom: 0 }} barCategoryGap="35%">
-                <XAxis dataKey="categoryName" tick={{fontSize:11,fill:'#a8a29e'}} axisLine={false} tickLine={false} />
-                <YAxis tick={{fontSize:10,fill:'#a8a29e'}} axisLine={false} tickLine={false} width={44} />
-                <Tooltip cursor={{fill:'rgba(0,0,0,0.03)',rx:8}} contentStyle={{borderRadius:'14px',border:'none',boxShadow:'0 8px 32px rgba(0,0,0,0.1)',fontSize:'12px',padding:'8px 14px'}} formatter={(v:number)=>(['¥'+v.toFixed(2),'金额'])} />
-                <Bar dataKey="amount" radius={[6,6,0,0]} barSize={32} fillOpacity={0.85}>
-                  {incomeBrk.slice(0,5).map((d,i)=>(<Cell key={d.categoryId} fill={CHART_COLORS[(i+5)%CHART_COLORS.length]} />))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+      {/* Budget progress */}
+      {currentBudget && (
+        <div className="card card-accent p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-semibold">预算进度</span>
+            <span className="text-xs text-muted">{formatAmount(stats.totalExpense)} / {formatAmount(currentBudget.amount)}</span>
           </div>
-        ) : <p className="text-xs text-muted text-center py-6">暂无收入数据</p>}
-      </div>
+          <div className="h-2.5 rounded-full bg-gray-200/60 dark:bg-gray-700/60 overflow-hidden">
+            <div className={`h-full rounded-full transition-all ${budgetPct>90?'bg-red-400':budgetPct>70?'bg-amber-400':'bg-emerald-400'}`} style={{width:`${budgetPct}%`}}/>
+          </div>
+        </div>
+      )}
 
       {/* Generate button */}
       {error && <div className="mb-4 p-3 rounded-2xl bg-red-50 dark:bg-red-900/20 text-red-500 text-sm flex items-center gap-2"><AlertTriangle size={14} />{error}</div>}

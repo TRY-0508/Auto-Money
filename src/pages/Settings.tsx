@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { useSettings, useCategories, useTransactions, useProjects } from '@/db/hooks'
+import { useSettings, useCategories, useTransactions, useProjects, useBudgets } from '@/db/hooks'
 import { encryptApiKey, decryptApiKey } from '@/lib/crypto'
 import { exportAllData, importAllData, exportCSV, downloadFile } from '@/services/export'
 import { db } from '@/db'
@@ -33,6 +33,7 @@ export default function Settings() {
   const { categories, addCategory, updateCategory, deleteCategory } = useCategories()
   const { transactions } = useTransactions()
   const { projects, addProject, deleteProject } = useProjects()
+  const { budgets, addBudget, updateBudget, deleteBudget } = useBudgets()
 
   const [apiKey, setApiKey] = useState(''); const [baseUrl, setBaseUrl] = useState('https://api.deepseek.com/v1'); const [model, setModel] = useState('deepseek-chat'); const [saved, setSaved] = useState(false); const [testResult, setTestResult] = useState('')
   const [speechApiKey, setSpeechApiKey] = useState(''); const [speechSecretKey, setSpeechSecretKey] = useState(''); const [speechSaved, setSpeechSaved] = useState(false)
@@ -40,6 +41,11 @@ export default function Settings() {
   const [showAddProject, setShowAddProject] = useState(false); const [newProjectName, setNewProjectName] = useState(''); const [newProjectIcon, setNewProjectIcon] = useState('package'); const [newProjectColor, setNewProjectColor] = useState('#3b82f6')
   const [showClearConfirm, setShowClearConfirm] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null); const [importMessage, setImportMessage] = useState('')
+
+  const [budgetAmount, setBudgetAmount] = useState('')
+  const [budgetEditing, setBudgetEditing] = useState(false)
+  const currentYM = getCurrentYearMonth()
+  const currentBudget = budgets.find(b => b.yearMonth === currentYM && b.categoryId === null)
 
   useEffect(() => { if (settings) { setBaseUrl(settings.apiBaseUrl || 'https://api.deepseek.com/v1'); setModel(settings.model || 'deepseek-chat') } }, [settings])
 
@@ -145,6 +151,45 @@ export default function Settings() {
                 </button>
               )
             })}
+          </div>
+        )}
+      </div>
+
+      {/* Budget */}
+      <div className="glow-card p-5">
+        <h3 className="text-sm font-bold tracking-tight mb-4 flex items-center gap-2"><Wallet size={18} strokeWidth={1.8} className="text-accent" />月度预算</h3>
+        <p className="text-xs text-muted mb-3">设定每月消费上限，剩余额度可转入心愿</p>
+        {currentBudget ? (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 dark:bg-gray-800">
+              <div>
+                <p className="text-xs text-muted">{currentYM} 预算</p>
+                <p className="text-xl font-bold text-accent">{formatAmount(currentBudget.amount)}</p>
+              </div>
+              <div className="flex gap-1">
+                <button onClick={() => { setBudgetAmount(String(currentBudget.amount)); setBudgetEditing(true) }} className="btn-icon"><Edit3 size={14} /></button>
+                <button onClick={() => deleteBudget(currentBudget.id)} className="btn-icon btn-icon-danger"><Trash2 size={14} /></button>
+              </div>
+            </div>
+            {budgetEditing && (
+              <div className="flex gap-2">
+                <input type="number" value={budgetAmount} onChange={e => setBudgetAmount(e.target.value)} placeholder="金额" className="input flex-1" autoFocus />
+                <button onClick={async () => { await updateBudget(currentBudget.id, { amount: parseFloat(budgetAmount) || 0 }); setBudgetEditing(false) }} className="btn btn-primary btn-sm"><Check size={14} /></button>
+                <button onClick={() => setBudgetEditing(false)} className="btn btn-secondary btn-sm"><X size={14} /></button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {!budgetEditing ? (
+              <button onClick={() => setBudgetEditing(true)} className="w-full py-2.5 rounded-2xl border border-dashed border-gray-300 dark:border-gray-600 text-muted text-sm font-medium flex items-center justify-center gap-1.5 hover:border-gray-400"><Plus size={15} />设定本月预算</button>
+            ) : (
+              <div className="flex gap-2">
+                <input type="number" value={budgetAmount} onChange={e => setBudgetAmount(e.target.value)} placeholder="预算金额" className="input flex-1" autoFocus />
+                <button onClick={async () => { await addBudget({ categoryId: null, amount: parseFloat(budgetAmount) || 0, period: 'monthly', yearMonth: currentYM }); setBudgetEditing(false); setBudgetAmount('') }} disabled={!budgetAmount} className="btn btn-primary btn-sm"><Check size={14} /></button>
+                <button onClick={() => { setBudgetEditing(false); setBudgetAmount('') }} className="btn btn-secondary btn-sm"><X size={14} /></button>
+              </div>
+            )}
           </div>
         )}
       </div>

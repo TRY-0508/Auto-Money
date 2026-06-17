@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef } from 'react'
-import { useTransactions, useCategories, useProjects, useSettings, useJarGoals } from '@/db/hooks'
+import { useTransactions, useCategories, useProjects, useBudgets, useSettings } from '@/db/hooks'
 import { getMonthlyStats, getCategoryBreakdown, getDailyTrend } from '@/lib/stats'
 import { getCurrentYearMonth, formatAmount, formatDate } from '@/lib/utils'
 import { CATEGORY_DESCRIPTIONS } from '@/lib/constants'
@@ -75,24 +75,21 @@ export default function Dashboard() {
   const [calendarMonth,setCalendarMonth]=useState(getCurrentYearMonth());const [selectedDay,setSelectedDay]=useState<string|null>(null)
   const [calendarView,setCalendarView]=useState<'expense'|'income'|'balance'>('expense')
   const [showCalendar,setShowCalendar]=useState(false);const [showAdd,setShowAdd]=useState(false)
-  const [showSavePopup,setShowSavePopup]=useState(false);const [saveGoalId,setSaveGoalId]=useState('')
   const [editing,setEditing]=useState<Transaction|null>(null);const [deleteId,setDeleteId]=useState<string|null>(null)
   const [eAmt,setEAmt]=useState('');const [eDesc,setEDesc]=useState('');const [eDate,setEDate]=useState('');const [eCat,setECat]=useState('');const [eType,setEType]=useState<'expense'|'income'>('expense');const [eMood,setEMood]=useState('');const [eProj,setEProj]=useState('')
 
   const [yearMonth,setYearMonth]=useState(getCurrentYearMonth());const [year,month]=yearMonth.split('-').map(Number)
   const {transactions:all,updateTransaction,deleteTransaction}=useTransactions({month:yearMonth})
-  const {categories}=useCategories();const {projects}=useProjects();const {settings}=useSettings();const {goals,updateGoal}=useJarGoals()
+  const {categories}=useCategories();const {projects}=useProjects();const {budgets}=useBudgets();const {settings}=useSettings()
   const txs=useMemo(()=>projectId?all.filter(t=>t.projectId===projectId):all,[all,projectId])
   const stats=useMemo(()=>getMonthlyStats(txs,yearMonth),[txs,yearMonth])
   const expBrk=useMemo(()=>getCategoryBreakdown(txs,categories,'expense',yearMonth),[txs,categories,yearMonth])
-  const incBrk=useMemo(()=>getCategoryBreakdown(txs,categories,'income',yearMonth),[txs,categories,yearMonth])
   const dailyTrend=useMemo(()=>getDailyTrend(txs,14),[txs])
-  const flowData=useMemo(()=>dailyTrend.map(d=>({date:d.date.slice(5),收入:d.income,支出:-d.expense,结余:d.income-d.expense})),[dailyTrend])
+  const flowData=useMemo(()=>dailyTrend.map(d=>({date:d.date.slice(5),支出:-d.expense})),[dailyTrend])
   const prevStats=useMemo(()=>{const [y,m]=yearMonth.split('-').map(Number);let py=y,pm=m-1;if(pm===0){pm=12;py--};return getMonthlyStats(all,`${py}-${String(pm).padStart(2,'0')}`)},[all,yearMonth])
 
   const expMoodStats=useMemo(()=>{const m:Record<string,number>={};for(const t of txs){if(!t.mood||t.type!=='expense')continue;m[t.mood]=(m[t.mood]||0)+1};const top=Object.entries(m).sort((a,b)=>b[1]-a[1]);return top.length>0?MOOD_LIST.find(x=>x.value===top[0][0]):undefined},[txs])
   const expMoodData=useMemo(()=>{const m:Record<string,number>={};for(const t of txs){if(!t.mood||t.type!=='expense')continue;m[t.mood]=(m[t.mood]||0)+t.amount};return MOOD_LIST.filter(x=>m[x.value]).map(x=>({name:x.label,value:m[x.value]||0,color:x.color})).sort((a,b)=>b.value-a.value)},[txs])
-  const incMoodData=useMemo(()=>{const m:Record<string,number>={};for(const t of txs){if(!t.mood||t.type!=='income')continue;m[t.mood]=(m[t.mood]||0)+t.amount};return MOOD_LIST.filter(x=>m[x.value]).map(x=>({name:x.label,value:m[x.value]||0,color:x.color})).sort((a,b)=>b.value-a.value)},[txs])
 
   const dom=expMoodStats;const moodKey=dom?.value||'neutral'
 
@@ -101,7 +98,8 @@ export default function Dashboard() {
   const filtered=useMemo(()=>{let d=txs;if(filterType!=='all')d=d.filter(t=>t.type===filterType);if(filterMood)d=d.filter(t=>t.mood===filterMood);if(filterCategory)d=d.filter(t=>t.categoryId===filterCategory);if(dateFrom)d=d.filter(t=>t.date>=dateFrom);if(dateTo)d=d.filter(t=>t.date<=dateTo);if(selectedDay)d=d.filter(t=>t.date===selectedDay);if(searchQuery.trim()){const q=searchQuery.toLowerCase();d=d.filter(t=>t.description.toLowerCase().includes(q)||(categories.find(c=>c.id===t.categoryId)?.name||'').toLowerCase().includes(q))};return d},[txs,filterType,filterMood,filterCategory,dateFrom,dateTo,selectedDay,searchQuery,categories])
   const grouped=useMemo(()=>{const g:Record<string,Transaction[]>={};for(const t of filtered)g[t.date]=[...(g[t.date]||[]),t];return Object.entries(g).sort((a,b)=>b[0].localeCompare(a[0]))},[filtered])
   const calTxs=useMemo(()=>all.filter(t=>t.date.startsWith(calendarMonth)),[all,calendarMonth])
-  const todayStr=new Date().toISOString().slice(0,10);const todayBalance=useMemo(()=>{const dt=all.filter(t=>t.date===todayStr);return dt.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0)-dt.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0)},[all,todayStr])
+  const currentBudget=useMemo(()=>budgets.find(b=>b.yearMonth===yearMonth&&b.categoryId===null),[budgets,yearMonth])
+  const budgetPct=currentBudget&&currentBudget.amount>0?Math.min((stats.totalExpense/currentBudget.amount)*100,100):0
 
   const hEdit=(t:Transaction)=>{setEditing(t);setEAmt(String(t.amount));setEDesc(t.description);setEDate(t.date);setECat(t.categoryId);setEType(t.type);setEMood(t.mood||'');setEProj(t.projectId||'')}
   const hSave=async()=>{if(!editing)return;const a=parseFloat(eAmt);if(!a||a<=0)return;await updateTransaction(editing.id,{amount:a,description:eDesc,date:eDate,categoryId:eCat,type:eType,mood:eMood||undefined,projectId:eProj||undefined});setEditing(null)}
@@ -219,65 +217,42 @@ export default function Dashboard() {
                 <p className={`text-base sm:text-lg font-bold amount truncate ${stats.balance<0?'text-red-400':''}`}>{formatAmount(stats.balance)}</p>
                 <p className="text-[10px] text-muted mt-0.5">{stats.count}笔</p>
               </div>
-              <div className="p-3 sm:p-4 relative">
-                <p className="text-[10px] text-muted mb-0.5">今日结余</p>
-                <p className={`text-base sm:text-lg font-bold amount truncate ${todayBalance<0?'text-red-400':''}`}>{formatAmount(todayBalance)}</p>
-                {todayBalance!==0&&goals.length>0&&<button onClick={()=>setShowSavePopup(true)} className="absolute right-3 bottom-3 text-[9px] bg-[var(--c-primary-soft)] hover:bg-[var(--c-primary-soft)] text-accent rounded-lg px-2 py-1 font-medium">{todayBalance>0?'存入' :'记录'}</button>}
+              <div className="p-3 sm:p-4">
+                <p className="text-[10px] text-muted mb-0.5">预算</p>
+                {currentBudget?<>
+                  <p className="text-base sm:text-lg font-bold amount truncate">{formatAmount(currentBudget.amount - stats.totalExpense)}</p>
+                  <div className="mt-1 h-1 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden"><div className={`h-full rounded-full ${budgetPct>90?'bg-red-400':budgetPct>70?'bg-amber-400':'bg-emerald-400'}`} style={{width:`${budgetPct}%`}}/></div>
+                  <p className="text-[9px] text-muted mt-0.5">剩余 {Math.round(100-budgetPct)}%</p>
+                </>:<p className="text-sm text-muted">—</p>}
               </div>
             </div>
           </div>
 
-          {/* 2x2 Donut Grid */}
-          <div className="space-y-2 sm:space-y-3">
-            <p className="text-[10px] text-muted px-1">{year}年{month}月</p>
-            <div className="grid grid-cols-2 gap-2 sm:gap-3">
-              <div className="card card-chart p-2 sm:p-3"><span className="text-[9px] sm:text-[10px] font-semibold">消费类型</span>
-                {expBrk.length>0?<div className="flex flex-col items-center gap-1 mt-1"><div className="w-16 h-16 sm:w-20 sm:h-20 relative"><ResponsiveContainer><RPie><Pie data={expBrk} cx="50%" cy="50%" innerRadius={18} outerRadius={28} paddingAngle={2} dataKey="amount" stroke="#fff" strokeWidth={1}>{expBrk.map((e,i)=><Cell key={e.categoryId} fill={CHART_COLORS[i%CHART_COLORS.length]}/>)}</Pie></RPie></ResponsiveContainer><div className="absolute inset-0 flex items-center justify-center pointer-events-none"><span className="text-[9px] sm:text-[10px] font-bold">{formatAmount(stats.totalExpense)}</span></div></div><div className="flex flex-wrap justify-center gap-x-1.5 gap-y-0.5">{expBrk.slice(0,4).map((item,i)=><span key={item.categoryId} className="text-[8px] text-muted flex items-center gap-0.5"><span className="w-1 h-1 rounded-sm flex-shrink-0" style={{backgroundColor:CHART_COLORS[i%CHART_COLORS.length]}}/>{item.categoryName}</span>)}</div></div>:<p className="text-[9px] text-muted py-6">—</p>}
-              </div>
-              <div className="card card-chart p-2 sm:p-3"><span className="text-[9px] sm:text-[10px] font-semibold">消费心情</span>
-                {expMoodData.length>0?<>
-                  <div className="flex justify-center mt-1"><div className="w-16 h-16 sm:w-20 sm:h-20"><ResponsiveContainer><RPie><Pie data={expMoodData} cx="50%" cy="50%" innerRadius={0} outerRadius={28} paddingAngle={1} dataKey="value" stroke="#fff" strokeWidth={1}>{expMoodData.map((e,i)=><Cell key={i} fill={e.color}/>)}</Pie></RPie></ResponsiveContainer></div></div>
-                  <div className="flex flex-wrap justify-center gap-x-1.5 gap-y-0.5 mt-1">{expMoodData.slice(0,4).map(e=><span key={e.name} className="text-[8px] text-muted flex items-center gap-0.5"><span className="w-1 h-1 rounded-sm flex-shrink-0" style={{backgroundColor:e.color}}/>{e.name}</span>)}</div>
-                </>:<p className="text-[9px] text-muted py-6">—</p>}
-              </div>
-              <div className="card card-chart p-2 sm:p-3"><span className="text-[9px] sm:text-[10px] font-semibold">收入类型</span>
-                {incBrk.length>0?<div className="flex flex-col items-center gap-1 mt-1"><div className="w-16 h-16 sm:w-20 sm:h-20 relative"><ResponsiveContainer><RPie><Pie data={incBrk} cx="50%" cy="50%" innerRadius={18} outerRadius={28} paddingAngle={2} dataKey="amount" stroke="#fff" strokeWidth={1}>{incBrk.map((e,i)=><Cell key={e.categoryId} fill={CHART_COLORS[(i+5)%CHART_COLORS.length]}/>)}</Pie></RPie></ResponsiveContainer><div className="absolute inset-0 flex items-center justify-center pointer-events-none"><span className="text-[9px] sm:text-[10px] font-bold">{formatAmount(stats.totalIncome)}</span></div></div><div className="flex flex-wrap justify-center gap-x-1.5 gap-y-0.5">{incBrk.slice(0,4).map((item,i)=><span key={item.categoryId} className="text-[8px] text-muted flex items-center gap-0.5"><span className="w-1 h-1 rounded-sm flex-shrink-0" style={{backgroundColor:CHART_COLORS[(i+5)%CHART_COLORS.length]}}/>{item.categoryName}</span>)}</div></div>:<p className="text-[9px] text-muted py-6">—</p>}
-              </div>
-              <div className="card card-chart p-2 sm:p-3"><span className="text-[9px] sm:text-[10px] font-semibold">收入心情</span>
-                {incMoodData.length>0?<>
-                  <div className="flex justify-center mt-1"><div className="w-16 h-16 sm:w-20 sm:h-20"><ResponsiveContainer><RPie><Pie data={incMoodData} cx="50%" cy="50%" innerRadius={0} outerRadius={28} paddingAngle={1} dataKey="value" stroke="#fff" strokeWidth={1}>{incMoodData.map((e,i)=><Cell key={i} fill={e.color}/>)}</Pie></RPie></ResponsiveContainer></div></div>
-                  <div className="flex flex-wrap justify-center gap-x-1.5 gap-y-0.5 mt-1">{incMoodData.slice(0,4).map(e=><span key={e.name} className="text-[8px] text-muted flex items-center gap-0.5"><span className="w-1 h-1 rounded-sm flex-shrink-0" style={{backgroundColor:e.color}}/>{e.name}</span>)}</div>
-                </>:<p className="text-[9px] text-muted py-6">—</p>}
-              </div>
+          {/* Donut row — 消费类型 + 消费心情 */}
+          <div className="grid grid-cols-2 gap-2 sm:gap-3">
+            <div className="card card-chart p-2 sm:p-3"><span className="text-[9px] sm:text-[10px] font-semibold">消费类型</span>
+              {expBrk.length>0?<div className="flex flex-col items-center gap-1 mt-1"><div className="w-20 h-20 sm:w-24 sm:h-24 relative"><ResponsiveContainer><RPie><Pie data={expBrk} cx="50%" cy="50%" innerRadius={26} outerRadius={38} paddingAngle={2} dataKey="amount" stroke="#fff" strokeWidth={1.5}>{expBrk.map((e,i)=><Cell key={e.categoryId} fill={CHART_COLORS[i%CHART_COLORS.length]}/>)}</Pie></RPie></ResponsiveContainer><div className="absolute inset-0 flex items-center justify-center pointer-events-none"><span className="text-sm font-bold">{formatAmount(stats.totalExpense)}</span></div></div><div className="flex flex-wrap justify-center gap-x-1.5 gap-y-0.5">{expBrk.slice(0,4).map((item,i)=><span key={item.categoryId} className="text-[9px] text-muted flex items-center gap-0.5"><span className="w-1.5 h-1.5 rounded-sm flex-shrink-0" style={{backgroundColor:CHART_COLORS[i%CHART_COLORS.length]}}/>{item.categoryName}</span>)}</div></div>:<p className="text-xs text-muted py-8">—</p>}
+            </div>
+            <div className="card card-chart p-2 sm:p-3"><span className="text-[9px] sm:text-[10px] font-semibold">消费心情</span>
+              {expMoodData.length>0?<div className="flex flex-col items-center gap-1 mt-1"><div className="w-20 h-20 sm:w-24 sm:h-24"><ResponsiveContainer><RPie><Pie data={expMoodData} cx="50%" cy="50%" innerRadius={0} outerRadius={38} paddingAngle={1} dataKey="value" stroke="#fff" strokeWidth={1.5}>{expMoodData.map((e,i)=><Cell key={i} fill={e.color}/>)}</Pie></RPie></ResponsiveContainer></div><div className="flex flex-wrap justify-center gap-x-1.5 gap-y-0.5 mt-1">{expMoodData.slice(0,4).map(e=><span key={e.name} className="text-[9px] text-muted flex items-center gap-0.5"><span className="w-1.5 h-1.5 rounded-sm flex-shrink-0" style={{backgroundColor:e.color}}/>{e.name}</span>)}</div></div>:<p className="text-xs text-muted py-8">—</p>}
             </div>
           </div>
 
-          {/* 14-Day Flow — dual fill + balance line */}
+          {/* 14-Day Flow — expense only */}
           <div className="card card-chart overflow-hidden p-2 sm:p-3">
             <div className="flex items-center justify-between px-1 mb-1">
-              <span className="text-[10px] sm:text-xs font-semibold">14日收支流</span>
-              <div className="flex items-center gap-2 text-[9px]">
-                <span className="flex items-center gap-1"><span className="w-2 h-0.5 bg-emerald-400 rounded"/><span className="text-muted">收入</span></span>
-                <span className="flex items-center gap-1"><span className="w-2 h-0.5 bg-rose-400 rounded"/><span className="text-muted">支出</span></span>
-                <span className="flex items-center gap-1"><span className="w-2 h-0.5 bg-amber-400 rounded"/><span className="text-muted">结余</span></span>
-              </div>
+              <span className="text-[10px] sm:text-xs font-semibold">14日支出流</span>
+              {currentBudget&&<span className="text-[9px] text-muted">预算 {formatAmount(currentBudget.amount)}</span>}
             </div>
-            <div className="h-24 sm:h-28">
+            <div className="h-20 sm:h-24">
               <ResponsiveContainer>
                 <AreaChart data={flowData} margin={{top:4,right:4,left:0,bottom:0}}>
                   <defs>
-                    <linearGradient id="fIn" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#10b981" stopOpacity={0.25}/><stop offset="100%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
-                    <linearGradient id="fEx" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f43f5e" stopOpacity={0.2}/><stop offset="100%" stopColor="#f43f5e" stopOpacity={0}/></linearGradient>
+                    <linearGradient id="fEx" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#f43f5e" stopOpacity={0.25}/><stop offset="100%" stopColor="#f43f5e" stopOpacity={0}/></linearGradient>
                   </defs>
-                  <Area type="monotone" dataKey="收入" stroke="#10b981" strokeWidth={1.5} fill="url(#fIn)" dot={false} />
                   <Area type="monotone" dataKey="支出" stroke="#f43f5e" strokeWidth={1.5} fill="url(#fEx)" dot={false} />
-                  <Area type="monotone" dataKey="结余" stroke="#f59e0b" strokeWidth={2} fill="none" dot={false} />
                 </AreaChart>
               </ResponsiveContainer>
-            </div>
-            <div className="flex justify-between text-[9px] text-muted px-1 mt-0.5">
-              <span>收 {formatAmount(stats.totalIncome)}</span>
-              <span className={stats.balance<0?'text-red-400':''}>余 {formatAmount(stats.balance)}</span>
             </div>
           </div>
 
@@ -386,30 +361,6 @@ export default function Dashboard() {
 
       <button onClick={()=>setShowAdd(true)} className="fab fixed bottom-safe right-6 rounded-2xl text-white text-2xl z-40 flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-200 font-light shadow-2xl">+</button>
       <AddModal open={showAdd} onClose={()=>setShowAdd(false)}/>
-
-      {showSavePopup&&(
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-end md:items-center justify-center p-4 fade-in backdrop-blur-sm" onClick={()=>setShowSavePopup(false)}>
-          <div className="bg-white dark:bg-gray-900 rounded-t-3xl md:rounded-3xl w-full max-w-xs shadow-2xl p-5" onClick={e=>e.stopPropagation()}>
-            <h3 className="font-bold text-lg mb-1">{todayBalance>0?'存入心愿':'记录亏空'}</h3>
-            <p className="text-sm text-muted mb-4">{formatAmount(todayBalance)} 将转入所选心愿</p>
-            <div className="space-y-2 mb-4">
-              {goals.map(g=>(
-                <button key={g.id} onClick={()=>setSaveGoalId(g.id)} className={`w-full text-left p-3 rounded-xl border transition-all flex items-center justify-between ${saveGoalId===g.id?'border-[var(--c-primary)] bg-[var(--c-primary-soft)]':'border-gray-200 dark:border-gray-700 hover:border-gray-300'}`}>
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm" style={{background:g.color}}>{g.name.charAt(0)}</div>
-                    <div><p className="text-sm font-medium">{g.name}</p><p className="text-[10px] text-muted">{formatAmount(g.currentAmount)} / {formatAmount(g.targetAmount)}</p></div>
-                  </div>
-                  {saveGoalId===g.id&&<Check size={16} className="text-accent"/>}
-                </button>
-              ))}
-            </div>
-            <div className="flex gap-2">
-              <button onClick={()=>setShowSavePopup(false)} className="btn btn-secondary flex-1 text-sm">取消</button>
-              <button onClick={async()=>{if(!saveGoalId)return;const g=goals.find(x=>x.id===saveGoalId);if(!g)return;await updateGoal(saveGoalId,{currentAmount:g.currentAmount+Math.max(0,todayBalance)});setShowSavePopup(false);setSaveGoalId('')}} disabled={!saveGoalId} className="btn btn-primary flex-1 text-sm">{todayBalance>0?'确认存入':'确认记录'}</button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
