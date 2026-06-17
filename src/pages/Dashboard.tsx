@@ -89,9 +89,10 @@ export default function Dashboard() {
   const flowData=useMemo(()=>dailyTrend.map(d=>({date:d.date.slice(5),收入:d.income,支出:-d.expense})),[dailyTrend])
   const prevStats=useMemo(()=>{const [y,m]=yearMonth.split('-').map(Number);let py=y,pm=m-1;if(pm===0){pm=12;py--};return getMonthlyStats(all,`${py}-${String(pm).padStart(2,'0')}`)},[all,yearMonth])
 
-  const moodStats=useMemo(()=>{const m:Record<string,{count:number;totalSpent:number}>={};for(const t of txs){if(!t.mood||t.type!=='expense')continue;if(!m[t.mood])m[t.mood]={count:0,totalSpent:0};m[t.mood].count++;m[t.mood].totalSpent+=t.amount};return MOOD_LIST.filter(x=>m[x.value]).map(x=>({...x,...m[x.value]})).sort((a,b)=>b.count-a.count)},[txs])
+  const expMoodStats=useMemo(()=>{const m:Record<string,{count:number;totalSpent:number}>={};for(const t of txs){if(!t.mood||t.type!=='expense')continue;if(!m[t.mood])m[t.mood]={count:0,totalSpent:0};m[t.mood].count++;m[t.mood].totalSpent+=t.amount};return MOOD_LIST.filter(x=>m[x.value]).map(x=>({...x,...m[x.value]})).sort((a,b)=>b.count-a.count)},[txs])
+  const allMoodData=useMemo(()=>{const m:Record<string,number>={};for(const t of txs){if(!t.mood)continue;m[t.mood]=(m[t.mood]||0)+t.amount};return MOOD_LIST.filter(x=>m[x.value]).map(x=>({name:x.label,value:m[x.value]||0,color:x.color})).sort((a,b)=>b.value-a.value)},[txs])
 
-  const dom=moodStats[0];const moodKey=dom?.value||'neutral'
+  const dom=expMoodStats[0];const moodKey=dom?.value||'neutral'
 
   const moodTimeline=useMemo(()=>{const today=new Date();return Array.from({length:14},(_,i)=>{const d=new Date(today);d.setDate(d.getDate()-(13-i));const ds=d.toISOString().slice(0,10);const dayTxs=txs.filter(t=>t.date===ds);const lm=dayTxs.filter(t=>t.mood).pop();return{date:ds,label:i===13?'今天':i===12?'昨天':`${d.getMonth()+1}/${d.getDate()}`,moodVal:lm?.mood||null,spent:dayTxs.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0)}})},[txs])
 
@@ -116,11 +117,6 @@ export default function Dashboard() {
 
   const incomeChange = prevStats.totalIncome > 0 ? Math.round(((stats.totalIncome - prevStats.totalIncome) / prevStats.totalIncome) * 100) : 0
   const expenseChange = prevStats.totalExpense > 0 ? Math.round(((stats.totalExpense - prevStats.totalExpense) / prevStats.totalExpense) * 100) : 0
-
-  const moodBarData = useMemo(() => MOOD_LIST.filter(m => moodStats.find(ms => ms.value === m.value)).map(m => {
-    const ms = moodStats.find(x => x.value === m.value)
-    return { name: m.label, value: ms?.totalSpent || 0, count: ms?.count || 0, color: m.color }
-  }).sort((a,b) => b.value - a.value), [moodStats])
 
   return (
     <div className="max-w-4xl mx-auto space-y-3 sm:space-y-5 slide-up pb-safe">
@@ -236,40 +232,28 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Charts Row — two compact donuts side by side */}
-          <div className="grid grid-cols-2 gap-2 sm:gap-4">
-            <div className="card card-chart p-2 sm:p-4">
-              <div className="flex items-center gap-1.5 mb-1.5 px-0.5"><PieChart size={13} strokeWidth={1.8} className="text-accent"/><span className="text-[10px] sm:text-xs font-semibold">消费分布</span></div>
-              {expBrk.length>0?(
-                <div className="flex items-center gap-1.5 sm:gap-3">
-                  <div className="w-14 h-14 sm:w-24 sm:h-24 flex-shrink-0 relative">
-                    <ResponsiveContainer>
-                      <RPie><Pie data={expBrk} cx="50%" cy="50%" innerRadius={18} outerRadius={28} paddingAngle={2} dataKey="amount" stroke="#fff" strokeWidth={1.5}>{expBrk.map((e,i)=><Cell key={e.categoryId} fill={CHART_COLORS[i%CHART_COLORS.length]}/>)}</Pie></RPie>
-                    </ResponsiveContainer>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"><span className="text-[8px] sm:text-[10px] text-muted">总</span><span className="text-[9px] sm:text-xs font-bold amount">{formatAmount(stats.totalExpense)}</span></div>
-                  </div>
-                  <div className="flex-1 min-w-0 space-y-0.5">{expBrk.slice(0,5).map((item,i)=>
-                    <div key={item.categoryId} className="flex items-center gap-1 text-[9px] sm:text-[10px]"><span className="w-1.5 h-1.5 rounded-sm flex-shrink-0" style={{backgroundColor:CHART_COLORS[i%CHART_COLORS.length]}}/><span className="flex-1 truncate">{item.categoryName}</span><span className="text-muted">{item.percentage}%</span></div>
-                  )}</div>
-                </div>
-              ):<p className="text-[10px] text-muted py-4 text-center">暂无支出</p>}
+          {/* Charts — 3 compact donuts: 消费 / 收入 / 心情 */}
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
+            <div className="card card-chart p-2 sm:p-3">
+              <span className="text-[9px] sm:text-[10px] font-semibold">消费</span>
+              {expBrk.length>0?<div className="flex flex-col items-center gap-1 mt-1">
+                <div className="w-14 h-14 sm:w-20 sm:h-20 relative"><ResponsiveContainer><RPie><Pie data={expBrk} cx="50%" cy="50%" innerRadius={16} outerRadius={26} paddingAngle={2} dataKey="amount" stroke="#fff" strokeWidth={1}>{expBrk.map((e,i)=><Cell key={e.categoryId} fill={CHART_COLORS[i%CHART_COLORS.length]}/>)}</Pie></RPie></ResponsiveContainer><div className="absolute inset-0 flex items-center justify-center pointer-events-none"><span className="text-[8px] sm:text-[10px] font-bold amount">{formatAmount(stats.totalExpense)}</span></div></div>
+                <div className="flex flex-wrap justify-center gap-x-1.5 gap-y-0.5">{expBrk.slice(0,4).map((item,i)=><span key={item.categoryId} className="text-[8px] text-muted flex items-center gap-0.5"><span className="w-1 h-1 rounded-sm flex-shrink-0" style={{backgroundColor:CHART_COLORS[i%CHART_COLORS.length]}}/>{item.categoryName}</span>)}</div>
+              </div>:<p className="text-[9px] text-muted py-4 text-center">—</p>}
             </div>
-
-            <div className="card card-chart p-2 sm:p-4">
-              <div className="flex items-center gap-1.5 mb-1.5 px-0.5"><PieChart size={13} strokeWidth={1.8} className="text-accent"/><span className="text-[10px] sm:text-xs font-semibold">心情分布</span></div>
-              {moodBarData.length>0?(
-                <div className="flex items-center gap-1.5 sm:gap-3">
-                  <div className="w-14 h-14 sm:w-24 sm:h-24 flex-shrink-0 relative">
-                    <ResponsiveContainer>
-                      <RPie><Pie data={moodBarData} cx="50%" cy="50%" innerRadius={18} outerRadius={28} paddingAngle={2} dataKey="value" stroke="#fff" strokeWidth={1.5} nameKey="name">{moodBarData.map((entry,idx)=><Cell key={idx} fill={entry.color}/>)}</Pie></RPie>
-                    </ResponsiveContainer>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"><span className="text-[8px] sm:text-[10px] text-muted">心情</span><span className="text-[9px] sm:text-xs font-bold amount">{moodBarData.length}</span></div>
-                  </div>
-                  <div className="flex-1 min-w-0 space-y-0.5">{moodBarData.slice(0,4).map((entry)=>
-                    <div key={entry.name} className="flex items-center gap-1 text-[9px] sm:text-[10px]"><span className="w-1.5 h-1.5 rounded-sm flex-shrink-0" style={{backgroundColor:entry.color}}/><span className="flex-1 truncate">{entry.name}</span><span className="text-muted">{formatAmount(entry.value)}</span></div>
-                  )}</div>
-                </div>
-              ):<p className="text-[10px] text-muted py-4 text-center">选心情记账后出现</p>}
+            <div className="card card-chart p-2 sm:p-3">
+              <span className="text-[9px] sm:text-[10px] font-semibold">收入</span>
+              {incBrk.length>0?<div className="flex flex-col items-center gap-1 mt-1">
+                <div className="w-14 h-14 sm:w-20 sm:h-20 relative"><ResponsiveContainer><RPie><Pie data={incBrk} cx="50%" cy="50%" innerRadius={16} outerRadius={26} paddingAngle={2} dataKey="amount" stroke="#fff" strokeWidth={1}>{incBrk.map((e,i)=><Cell key={e.categoryId} fill={CHART_COLORS[(i+5)%CHART_COLORS.length]}/>)}</Pie></RPie></ResponsiveContainer><div className="absolute inset-0 flex items-center justify-center pointer-events-none"><span className="text-[8px] sm:text-[10px] font-bold amount">{formatAmount(stats.totalIncome)}</span></div></div>
+                <div className="flex flex-wrap justify-center gap-x-1.5 gap-y-0.5">{incBrk.slice(0,4).map((item,i)=><span key={item.categoryId} className="text-[8px] text-muted flex items-center gap-0.5"><span className="w-1 h-1 rounded-sm flex-shrink-0" style={{backgroundColor:CHART_COLORS[(i+5)%CHART_COLORS.length]}}/>{item.categoryName}</span>)}</div>
+              </div>:<p className="text-[9px] text-muted py-4 text-center">—</p>}
+            </div>
+            <div className="card card-chart p-2 sm:p-3">
+              <span className="text-[9px] sm:text-[10px] font-semibold">心情</span>
+              {allMoodData.length>0?<div className="flex flex-col items-center gap-1 mt-1">
+                <div className="w-14 h-14 sm:w-20 sm:h-20 relative"><ResponsiveContainer><RPie><Pie data={allMoodData} cx="50%" cy="50%" innerRadius={16} outerRadius={26} paddingAngle={2} dataKey="value" stroke="#fff" strokeWidth={1} nameKey="name">{allMoodData.map((entry,idx)=><Cell key={idx} fill={entry.color}/>)}</Pie></RPie></ResponsiveContainer><div className="absolute inset-0 flex items-center justify-center pointer-events-none"><span className="text-[8px] sm:text-[10px] font-bold amount">{allMoodData.length}</span></div></div>
+                <div className="flex flex-wrap justify-center gap-x-1.5 gap-y-0.5">{allMoodData.slice(0,4).map((entry)=><span key={entry.name} className="text-[8px] text-muted flex items-center gap-0.5"><span className="w-1 h-1 rounded-sm flex-shrink-0" style={{backgroundColor:entry.color}}/>{entry.name}</span>)}</div>
+              </div>:<p className="text-[9px] text-muted py-4 text-center">—</p>}
             </div>
           </div>
 

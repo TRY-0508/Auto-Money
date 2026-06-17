@@ -91,25 +91,42 @@ function ReportTab() {
         </div>
       </div>
 
-      {/* Consumption bar chart only */}
+      {/* Consumption bar chart */}
       <div className="card card-chart p-5">
         <h3 className="text-xs font-semibold text-muted mb-3">消费分类</h3>
         {breakdown.length > 0 ? (
-          <div className="h-48">
+          <div className="h-40">
             <ResponsiveContainer>
               <BarChart data={breakdown.slice(0,5)} margin={{ top: 8, right: 8, left: 0, bottom: 0 }} barCategoryGap="35%">
                 <XAxis dataKey="categoryName" tick={{fontSize:11,fill:'#a8a29e'}} axisLine={false} tickLine={false} />
                 <YAxis tick={{fontSize:10,fill:'#a8a29e'}} axisLine={false} tickLine={false} width={44} />
                 <Tooltip cursor={{fill:'rgba(0,0,0,0.03)',rx:8}} contentStyle={{borderRadius:'14px',border:'none',boxShadow:'0 8px 32px rgba(0,0,0,0.1)',fontSize:'12px',padding:'8px 14px'}} formatter={(v:number)=>(['¥'+v.toFixed(2),'金额'])} />
                 <Bar dataKey="amount" radius={[6,6,0,0]} barSize={32} fillOpacity={0.85}>
-                  {breakdown.slice(0,5).map((d,i)=>(
-                    <Cell key={d.categoryId} fill={CHART_COLORS[i%CHART_COLORS.length]} />
-                  ))}
+                  {breakdown.slice(0,5).map((d,i)=>(<Cell key={d.categoryId} fill={CHART_COLORS[i%CHART_COLORS.length]} />))}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
-        ) : <p className="text-xs text-muted text-center py-8">暂无消费数据</p>}
+        ) : <p className="text-xs text-muted text-center py-6">暂无消费数据</p>}
+      </div>
+
+      {/* Income bar chart */}
+      <div className="card card-chart p-5">
+        <h3 className="text-xs font-semibold text-muted mb-3">收入来源</h3>
+        {incomeBrk.length > 0 ? (
+          <div className="h-40">
+            <ResponsiveContainer>
+              <BarChart data={incomeBrk.slice(0,5)} margin={{ top: 8, right: 8, left: 0, bottom: 0 }} barCategoryGap="35%">
+                <XAxis dataKey="categoryName" tick={{fontSize:11,fill:'#a8a29e'}} axisLine={false} tickLine={false} />
+                <YAxis tick={{fontSize:10,fill:'#a8a29e'}} axisLine={false} tickLine={false} width={44} />
+                <Tooltip cursor={{fill:'rgba(0,0,0,0.03)',rx:8}} contentStyle={{borderRadius:'14px',border:'none',boxShadow:'0 8px 32px rgba(0,0,0,0.1)',fontSize:'12px',padding:'8px 14px'}} formatter={(v:number)=>(['¥'+v.toFixed(2),'金额'])} />
+                <Bar dataKey="amount" radius={[6,6,0,0]} barSize={32} fillOpacity={0.85}>
+                  {incomeBrk.slice(0,5).map((d,i)=>(<Cell key={d.categoryId} fill={CHART_COLORS[(i+5)%CHART_COLORS.length]} />))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        ) : <p className="text-xs text-muted text-center py-6">暂无收入数据</p>}
       </div>
 
       {/* Budget progress */}
